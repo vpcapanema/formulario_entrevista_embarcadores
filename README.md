@@ -50,8 +50,8 @@ Aplicação web desenvolvida para facilitar a coleta de dados sobre transporte d
 
 1. **Clone ou baixe este repositório**
    ```bash
-   git clone https://github.com/seu-usuario/pli2050-formularios.git
-   cd pli2050-formularios
+   git clone https://github.com/vpcapanema/formulario_entrevista_embarcadores.git
+   cd formulario_entrevista_embarcadores
    ```
 
 2. **Abra o arquivo `index.html` em um navegador moderno**
@@ -65,6 +65,28 @@ Aplicação web desenvolvida para facilitar a coleta de dados sobre transporte d
    - Visualize as respostas
    - Analise os dados
    - Exporte os resultados
+
+### 🧪 Teste Automatizado
+
+Para testar rapidamente todas as funcionalidades:
+
+1. **Abra o arquivo `executar_teste.html` no navegador**
+
+2. **Siga as instruções na tela:**
+   - Clique em "Abrir Formulário para Teste"
+   - Abra o Console (F12)
+   - Cole o conteúdo de `test_auto_fill.js`
+   - Pressione Enter
+
+3. **O formulário será preenchido automaticamente** com dados realistas
+
+4. **Teste as funcionalidades:**
+   - Validação de campos obrigatórios
+   - Download automático de Excel
+   - Popup de confirmação
+   - Salvamento no IndexedDB
+
+📖 **Para mais detalhes:** Veja `GUIA_TESTES.md`
 
 ### Implantação no GitHub Pages
 
@@ -92,14 +114,27 @@ Aplicação web desenvolvida para facilitar a coleta de dados sobre transporte d
 ## 📁 Estrutura de Arquivos
 
 ```
-pli2050-formularios/
+formulario_entrevista_embarcadores/
 │
-├── index.html          # Estrutura HTML principal
-├── styles.css          # Estilos e design responsivo
-├── database.js         # Gerenciamento do IndexedDB
-├── app.js              # Lógica principal da aplicação
-├── analytics.js        # Gráficos e análises
-└── README.md           # Este arquivo
+├── index.html                  # Estrutura HTML principal (SPA com 5 páginas)
+├── styles.css                  # Estilos e design responsivo
+├── database.js                 # Gerenciamento do IndexedDB
+├── app.js                      # Lógica principal da aplicação
+├── analytics.js                # Gráficos e análises (Chart.js)
+├── validation.js               # Validação de campos e mapeamento de perguntas
+│
+├── instrucoes.html             # Página standalone de instruções (backup)
+├── visualizador_dados.html     # Página standalone do visualizador (backup)
+│
+├── test_auto_fill.js           # Script para preenchimento automático de teste
+├── executar_teste.html         # Interface para executar testes
+├── GUIA_TESTES.md              # Documentação completa de testes
+│
+├── README.md                   # Este arquivo
+├── DEPLOY_GITHUB_PAGES.md      # Guia de implantação no GitHub Pages
+├── .gitignore                  # Arquivos ignorados pelo Git
+│
+└── assets/                     # (reservado para imagens/ícones futuros)
 ```
 
 ## 🎯 Estrutura do Formulário
