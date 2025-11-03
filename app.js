@@ -1111,13 +1111,13 @@ function preencherFormularioTeste() {
         }
     }
     
-    // Função auxiliar para marcar checkbox
-    function checkBox(id) {
-        const el = document.getElementById(id);
-        if (el && el.type === 'checkbox') {
-            el.checked = true;
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+    // Função auxiliar para marcar checkbox por valor
+    function checkBoxByValue(name, value) {
+        const checkboxes = document.querySelectorAll(`input[name="${name}"][value="${value}"]`);
+        checkboxes.forEach(cb => {
+            cb.checked = true;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+        });
     }
     
     // Função auxiliar para selecionar radio
@@ -1210,8 +1210,7 @@ function preencherFormularioTeste() {
     
     // Card 5: Características do Transporte
     setTimeout(() => {
-        setVal('volume-anual', '50000');
-        setVal('unidade-volume', 'toneladas');
+        setVal('tipo-transporte', 'nacional');
         
         setVal('origem-pais', 'Brasil');
         setVal('origem-estado', 'Mato Grosso');
@@ -1223,27 +1222,28 @@ function preencherFormularioTeste() {
         
         setVal('distancia', '1850');
         
-        checkBox('modal-rodoviario');
-        checkBox('modal-ferroviario');
+        setVal('tem-paradas', 'sim');
+        setVal('num-paradas', '2');
+        
+        // Modos de transporte (checkboxes)
+        checkBoxByValue('modo', 'rodoviario');
+        checkBoxByValue('modo', 'ferroviario');
+        
+        setVal('config-veiculo', 'bitrem');
+        
+        setVal('capacidade-utilizada', '85');
+        setVal('peso-carga', '50000');
+        setVal('unidade-peso', 'toneladas');
+        setVal('custo-transporte', '125.50');
+        setVal('valor-carga', '85000');
+        setVal('tipo-embalagem', 'granel');
+        setVal('carga-perigosa', 'nao');
         
         setVal('tempo-dias', '3');
         setVal('tempo-horas', '12');
         setVal('tempo-minutos', '0');
         
-        setVal('custo-transporte', '125.50');
-        setVal('valor-carga', '85000');
-        setVal('tipo-frete', 'cif');
-        
-        selectRadio('responsavel-contratacao', 'propria');
-        
-        setVal('acondicionamento', 'Granel (caminhão graneleiro)');
-        setVal('embalagem', 'Sem embalagem - transporte a granel');
-        
-        setVal('frequencia-anual', '120');
-        setVal('sazonalidade', 'Maior movimentação entre março e agosto (período de safra)');
-        
-        selectRadio('armazenagem', 'sim');
-        setVal('tempo-armazenagem', '15');
+        setVal('frequencia', 'semanal');
     }, 1000);
     
     // Card 6: Fatores de Decisão Modal
@@ -1266,21 +1266,23 @@ function preencherFormularioTeste() {
     
     // Card 7: Análise Estratégica
     setTimeout(() => {
-        selectRadio('tipo-cadeia', 'distribuicao');
+        setVal('tipo-cadeia', 'distribuicao');
         
-        checkBox('alternativo-ferroviario');
-        checkBox('alternativo-hidroviario');
+        // Modais alternativos (checkboxes)
+        checkBoxByValue('modal-alternativo', 'ferrovia');
+        checkBoxByValue('modal-alternativo', 'hidrovia');
         
         setVal('fator-adicional', 'Disponibilidade de infraestrutura portuária e questões ambientais relacionadas ao transporte');
     }, 1400);
     
     // Card 8: Dificuldades Logísticas
     setTimeout(() => {
-        checkBox('dif-infraestrutura');
-        checkBox('dif-custos');
-        checkBox('dif-confiabilidade');
+        // Dificuldades (checkboxes)
+        checkBoxByValue('dificuldade', 'infra-rodoviaria');
+        checkBoxByValue('dificuldade', 'infra-portuaria');
+        checkBoxByValue('dificuldade', 'acessos-portos');
         
-        setVal('detalhamento-dificuldades', 'Principais desafios: estado precário das rodovias no trecho MT-SP, alto custo do frete rodoviário e baixa disponibilidade de vagões ferroviários. A infraestrutura portuária em Santos apresenta congestionamentos frequentes durante a safra.');
+        setVal('detalhe-dificuldade', 'Principais desafios: estado precário das rodovias no trecho MT-SP, alto custo do frete rodoviário e baixa disponibilidade de vagões ferroviários. A infraestrutura portuária em Santos apresenta congestionamentos frequentes durante a safra.');
         
         console.log('✅ Formulário preenchido com sucesso!');
         console.log('📋 Próximo passo: Role até o final e clique em "💾 Salvar Respostas"');
