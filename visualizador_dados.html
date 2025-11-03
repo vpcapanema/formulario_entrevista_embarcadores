@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Dados IndexedDB</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        .info-box {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .info-box h2 {
+            color: #3498db;
+            margin-top: 0;
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .data-viewer {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Visualizador de Dados do IndexedDB</h1>
+    
+    <div class="info-box">
+        <h2>📊 Informações do Banco de Dados</h2>
+        <div id="db-info"></div>
+    </div>
+
+    <div class="info-box">
+        <h2>📁 Localização Física dos Dados</h2>
+        <div class="status info">
+            <strong>Navegador Atual:</strong> <span id="browser-name"></span><br><br>
+            <strong>Caminho Provável:</strong><br>
+            <div id="storage-path" style="margin-top: 0.5rem;"></div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h2>💾 Dados Salvos</h2>
+        <button onclick="loadData()">🔄 Carregar Dados</button>
+        <button onclick="showRawData()">📄 Ver JSON Completo</button>
+        <button onclick="calculateSize()">📊 Calcular Tamanho</button>
+        <div id="data-container"></div>
+    </div>
+
+    <div class="info-box">
+        <h2>🛠️ Ferramentas de Desenvolvedor</h2>
+        <div class="warning">
+            <strong>💡 Dica:</strong> Para ver o IndexedDB visualmente:<br>
+            1. Pressione <kbd>F12</kbd> para abrir DevTools<br>
+            2. Vá na aba <strong>"Application"</strong> (Chrome) ou <strong>"Storage"</strong> (Firefox)<br>
+            3. No menu lateral, expanda <strong>"IndexedDB"</strong><br>
+            4. Clique em <strong>"PLI2050_Database"</strong> → <strong>"respostas"</strong>
+        </div>
+    </div>
+
+    <script>
+        // Detectar navegador
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browserName = "Desconhecido";
+            let storagePath = "";
+
+            if (userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1) {
+                browserName = "Google Chrome";
+                storagePath = `C:\\Users\\${window.navigator.userAgent.includes('Windows') ? '[SeuUsuario]' : 'Usuario'}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\IndexedDB\\`;
+            } else if (userAgent.indexOf("Edg") > -1) {
+                browserName = "Microsoft Edge";
+                storagePath = `C:\\Users\\[SeuUsuario]\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\IndexedDB\\`;
+            } else if (userAgent.indexOf("Firefox") > -1) {
+                browserName = "Mozilla Firefox";
+                storagePath = `C:\\Users\\[SeuUsuario]\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\[profile]\\storage\\default\\`;
+            } else if (userAgent.indexOf("Safari") > -1) {
+                browserName = "Safari";
+                storagePath = `~/Library/Safari/Databases/`;
+            }
+
+            document.getElementById('browser-name').textContent = browserName;
+            document.getElementById('storage-path').innerHTML = `<code style="background: #2c3e50; color: #ecf0f1; padding: 0.5rem; display: block; border-radius: 4px;">${storagePath}</code>`;
+        }
+
+        // Informações do banco
+        async function showDatabaseInfo() {
+            const dbInfo = document.getElementById('db-info');
+            
+            try {
+                const request = indexedDB.open('PLI2050_Database', 1);
+                
+                request.onsuccess = function(event) {
+                    const db = event.target.result;
+                    const objectStoreNames = Array.from(db.objectStoreNames);
+                    
+                    let html = `
+                        <div class="status success">
+                            ✅ <strong>Banco de Dados Encontrado!</strong><br><br>
+                            <strong>Nome do Banco:</strong> PLI2050_Database<br>
+                            <strong>Versão:</strong> ${db.version}<br>
+                            <strong>Tabelas (Object Stores):</strong> ${objectStoreNames.join(', ')}<br>
+                        </div>
+                    `;
+                    
+                    dbInfo.innerHTML = html;
+                };
+                
+                request.onerror = function() {
+                    dbInfo.innerHTML = `
+                        <div class="status warning">
+                            ⚠️ Banco de dados ainda não foi criado.<br>
+                            Preencha um formulário primeiro para criar o banco.
+                        </div>
+                    `;
+                };
+            } catch (error) {
+                dbInfo.innerHTML = `
+                    <div class="status warning">
+                        ❌ Erro ao acessar IndexedDB: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Carregar dados
+        async function loadData() {
+            const container = document.getElementById('data-container');
+            container.innerHTML = '<p>Carregando...</p>';
+            
+            try {
+                const request = indexedDB.open('PLI2050_Database', 1);
+                
+                request.onsuccess = function(event) {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['respostas'], 'readonly');
+                    const objectStore = transaction.objectStore('respostas');
+                    const getAllRequest = objectStore.getAll();
+                    
+                    getAllRequest.onsuccess = function() {
+                        const respostas = getAllRequest.result;
+                        
+                        if (respostas.length === 0) {
+                            container.innerHTML = `
+                                <div class="status info">
+                                    📭 Nenhuma resposta salva ainda.<br>
+                                    Vá para a página principal e preencha um formulário!
+                                </div>
+                            `;
+                        } else {
+                            let html = `
+                                <div class="status success">
+                                    ✅ <strong>${respostas.length}</strong> resposta(s) encontrada(s)!
+                                </div>
+                                <h3>Resumo das Respostas:</h3>
+                            `;
+                            
+                            respostas.forEach((r, i) => {
+                                html += `
+                                    <div style="background: #ecf0f1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                                        <strong>Resposta ${i + 1}:</strong><br>
+                                        <strong>ID:</strong> ${r.id}<br>
+                                        <strong>Empresa:</strong> ${r.nomeEmpresa}<br>
+                                        <strong>Entrevistado:</strong> ${r.nome}<br>
+                                        <strong>Data:</strong> ${new Date(r.dataEntrevista).toLocaleString('pt-BR')}<br>
+                                        <strong>Produto Principal:</strong> ${r.produtoPrincipal}
+                                    </div>
+                                `;
+                            });
+                            
+                            container.innerHTML = html;
+                        }
+                    };
+                };
+                
+                request.onerror = function() {
+                    container.innerHTML = `
+                        <div class="status warning">
+                            ⚠️ Erro ao acessar os dados. Banco ainda não foi criado.
+                        </div>
+                    `;
+                };
+            } catch (error) {
+                container.innerHTML = `<p>Erro: ${error.message}</p>`;
+            }
+        }
+
+        // Mostrar JSON completo
+        async function showRawData() {
+            const container = document.getElementById('data-container');
+            
+            try {
+                const request = indexedDB.open('PLI2050_Database', 1);
+                
+                request.onsuccess = function(event) {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['respostas'], 'readonly');
+                    const objectStore = transaction.objectStore('respostas');
+                    const getAllRequest = objectStore.getAll();
+                    
+                    getAllRequest.onsuccess = function() {
+                        const respostas = getAllRequest.result;
+                        const json = JSON.stringify(respostas, null, 2);
+                        
+                        container.innerHTML = `
+                            <h3>JSON Completo:</h3>
+                            <div class="data-viewer">${json}</div>
+                        `;
+                    };
+                };
+            } catch (error) {
+                container.innerHTML = `<p>Erro: ${error.message}</p>`;
+            }
+        }
+
+        // Calcular tamanho
+        async function calculateSize() {
+            const container = document.getElementById('data-container');
+            
+            try {
+                const request = indexedDB.open('PLI2050_Database', 1);
+                
+                request.onsuccess = function(event) {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['respostas'], 'readonly');
+                    const objectStore = transaction.objectStore('respostas');
+                    const getAllRequest = objectStore.getAll();
+                    
+                    getAllRequest.onsuccess = function() {
+                        const respostas = getAllRequest.result;
+                        const json = JSON.stringify(respostas);
+                        const sizeInBytes = new Blob([json]).size;
+                        const sizeInKB = (sizeInBytes / 1024).toFixed(2);
+                        const sizeInMB = (sizeInBytes / 1024 / 1024).toFixed(2);
+                        
+                        container.innerHTML = `
+                            <div class="status success">
+                                <h3>📊 Tamanho dos Dados:</h3>
+                                <strong>Bytes:</strong> ${sizeInBytes.toLocaleString('pt-BR')}<br>
+                                <strong>KB:</strong> ${sizeInKB} KB<br>
+                                <strong>MB:</strong> ${sizeInMB} MB<br><br>
+                                <strong>Total de Respostas:</strong> ${respostas.length}
+                            </div>
+                        `;
+                    };
+                };
+            } catch (error) {
+                container.innerHTML = `<p>Erro: ${error.message}</p>`;
+            }
+        }
+
+        // Inicializar
+        detectBrowser();
+        showDatabaseInfo();
+        loadData();
+    </script>
+</body>
+</html>
