@@ -1014,3 +1014,155 @@ document.addEventListener('DOMContentLoaded', function() {
         detectBrowserAndPath();
     }
 });
+
+// Função de Preenchimento Automático para Testes
+function preencherFormularioTeste() {
+    if (!confirm('⚠️ Isso irá preencher o formulário com dados de teste.\n\nDeseja continuar?')) {
+        return;
+    }
+    
+    console.log('🧪 Preenchendo formulário com dados de teste...');
+    
+    // Card 1: Dados do Entrevistado
+    document.getElementById('nome').value = 'João Silva Santos';
+    document.getElementById('funcao').value = 'Gerente de Logística';
+    document.getElementById('telefone').value = '(11) 98765-4321';
+    document.getElementById('email').value = 'joao.silva@exemplo.com.br';
+    
+    // Card 2: Dados da Empresa
+    document.getElementById('tipo-empresa').value = 'embarcador';
+    document.getElementById('nome-empresa').value = 'Transportes ABC Logística Ltda';
+    document.getElementById('municipio').value = 'São Paulo-SP';
+    
+    // Card 3: Adicionar produtos
+    const tbody = document.getElementById('produtos-tbody');
+    tbody.innerHTML = ''; // Limpa produtos existentes
+    
+    // Produto 1
+    addProdutoRow();
+    setTimeout(() => {
+        const row1 = tbody.rows[0];
+        row1.cells[0].querySelector('input').value = 'Soja em Grãos';
+        row1.cells[1].querySelector('input').value = '50000';
+        row1.cells[2].querySelector('input').value = 'Mato Grosso-MT';
+        row1.cells[3].querySelector('input').value = 'Santos-SP';
+        row1.cells[4].querySelector('input').value = '1850';
+        row1.cells[5].querySelector('input').value = 'Rodoviário';
+        row1.cells[6].querySelector('input').value = 'Granel';
+    }, 100);
+    
+    // Produto 2
+    setTimeout(() => {
+        addProdutoRow();
+        setTimeout(() => {
+            const row2 = tbody.rows[1];
+            row2.cells[0].querySelector('input').value = 'Milho';
+            row2.cells[1].querySelector('input').value = '30000';
+            row2.cells[2].querySelector('input').value = 'Goiás-GO';
+            row2.cells[3].querySelector('input').value = 'Campinas-SP';
+            row2.cells[4].querySelector('input').value = '920';
+            row2.cells[5].querySelector('input').value = 'Ferroviário';
+            row2.cells[6].querySelector('input').value = 'Container';
+        }, 100);
+    }, 300);
+    
+    // Produto 3
+    setTimeout(() => {
+        addProdutoRow();
+        setTimeout(() => {
+            const row3 = tbody.rows[2];
+            row3.cells[0].querySelector('input').value = 'Fertilizantes';
+            row3.cells[1].querySelector('input').value = '15000';
+            row3.cells[2].querySelector('input').value = 'Uberaba-MG';
+            row3.cells[3].querySelector('input').value = 'Ribeirão Preto-SP';
+            row3.cells[4].querySelector('input').value = '350';
+            row3.cells[5].querySelector('input').value = 'Rodoviário';
+            row3.cells[6].querySelector('input').value = 'Ensacado';
+        }, 100);
+    }, 600);
+    
+    // Card 4: Produto Principal
+    setTimeout(() => {
+        document.getElementById('produto-principal').value = 'Soja em Grãos';
+        document.getElementById('agrupamento-produto').value = 'cereais';
+    }, 800);
+    
+    // Card 5: Características do Transporte
+    setTimeout(() => {
+        document.getElementById('volume-anual').value = '50000';
+        document.getElementById('unidade-volume').value = 'toneladas';
+        
+        document.getElementById('origem-pais').value = 'Brasil';
+        document.getElementById('origem-estado').value = 'Mato Grosso';
+        document.getElementById('origem-municipio').value = 'Sorriso';
+        
+        document.getElementById('destino-pais').value = 'Brasil';
+        document.getElementById('destino-estado').value = 'São Paulo';
+        document.getElementById('destino-municipio').value = 'Santos';
+        
+        document.getElementById('distancia').value = '1850';
+        
+        document.getElementById('modal-rodoviario').checked = true;
+        document.getElementById('modal-ferroviario').checked = true;
+        
+        document.getElementById('tempo-dias').value = '3';
+        document.getElementById('tempo-horas').value = '12';
+        document.getElementById('tempo-minutos').value = '0';
+        
+        document.getElementById('custo-transporte').value = '125.50';
+        document.getElementById('valor-carga').value = '85000';
+        document.getElementById('tipo-frete').value = 'cif';
+        
+        document.querySelector('input[name="responsavel-contratacao"][value="propria"]').checked = true;
+        
+        document.getElementById('acondicionamento').value = 'Granel (caminhão graneleiro)';
+        document.getElementById('embalagem').value = 'Sem embalagem - transporte a granel';
+        
+        document.getElementById('frequencia-anual').value = '120';
+        document.getElementById('sazonalidade').value = 'Maior movimentação entre março e agosto (período de safra)';
+        
+        document.querySelector('input[name="armazenagem"][value="sim"]').checked = true;
+        document.getElementById('tempo-armazenagem').value = '15';
+    }, 1000);
+    
+    // Card 6: Fatores de Decisão Modal
+    setTimeout(() => {
+        document.getElementById('importancia-custo').value = 'muito-alta';
+        document.getElementById('variacao-custo').value = '8';
+        
+        document.getElementById('importancia-tempo').value = 'alta';
+        document.getElementById('variacao-tempo').value = '15';
+        
+        document.getElementById('importancia-confiabilidade').value = 'muito-alta';
+        document.getElementById('variacao-confiabilidade').value = '5';
+        
+        document.getElementById('importancia-seguranca').value = 'alta';
+        document.getElementById('variacao-seguranca').value = '10';
+        
+        document.getElementById('importancia-capacidade').value = 'media';
+        document.getElementById('variacao-capacidade').value = '20';
+    }, 1200);
+    
+    // Card 7: Análise Estratégica
+    setTimeout(() => {
+        document.querySelector('input[name="tipo-cadeia"][value="distribuicao"]').checked = true;
+        
+        document.getElementById('alternativo-ferroviario').checked = true;
+        document.getElementById('alternativo-hidroviario').checked = true;
+        
+        document.getElementById('fator-adicional').value = 'Disponibilidade de infraestrutura portuária e questões ambientais relacionadas ao transporte';
+    }, 1400);
+    
+    // Card 8: Dificuldades Logísticas
+    setTimeout(() => {
+        document.getElementById('dif-infraestrutura').checked = true;
+        document.getElementById('dif-custos').checked = true;
+        document.getElementById('dif-confiabilidade').checked = true;
+        
+        document.getElementById('detalhamento-dificuldades').value = 'Principais desafios: estado precário das rodovias no trecho MT-SP, alto custo do frete rodoviário e baixa disponibilidade de vagões ferroviários. A infraestrutura portuária em Santos apresenta congestionamentos frequentes durante a safra.';
+        
+        console.log('✅ Formulário preenchido com sucesso!');
+        console.log('📋 Próximo passo: Role até o final e clique em "💾 Salvar Respostas"');
+        alert('✅ Formulário preenchido com dados de teste!\n\nRole até o final e clique em "💾 Salvar Respostas" para testar.');
+    }, 1600);
+}
