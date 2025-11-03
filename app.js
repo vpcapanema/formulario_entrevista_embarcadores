@@ -33,13 +33,13 @@ function setupEventListeners() {
     // Tipo de empresa
     document.getElementById('tipo-empresa').addEventListener('change', function() {
         const outroContainer = document.getElementById('outro-tipo-container');
-        outroContainer.style.display = this.value === 'outro' ? 'block' : 'none';
+        outroContainer.classList.toggle('hidden-field', this.value !== 'outro');
     });
     
     // Agrupamento de produto
     document.getElementById('agrupamento-produto').addEventListener('change', function() {
         const outroContainer = document.getElementById('outro-produto-container');
-        outroContainer.style.display = this.value === 'outro-produto' ? 'block' : 'none';
+        outroContainer.classList.toggle('hidden-field', this.value !== 'outro-produto');
     });
     
     // Modo rodoviário
@@ -47,7 +47,7 @@ function setupEventListeners() {
         checkbox.addEventListener('change', function() {
             const configContainer = document.getElementById('config-veiculo-container');
             const rodoviarioChecked = document.querySelector('input[name="modo"][value="rodoviario"]').checked;
-            configContainer.style.display = rodoviarioChecked ? 'block' : 'none';
+            configContainer.classList.toggle('hidden-field', !rodoviarioChecked);
         });
     });
 }
@@ -56,7 +56,7 @@ function setupEventListeners() {
 function toggleParadas() {
     const temParadas = document.getElementById('tem-paradas').value;
     const numParadasContainer = document.getElementById('num-paradas-container');
-    numParadasContainer.style.display = temParadas === 'sim' ? 'block' : 'none';
+    numParadasContainer.classList.toggle('hidden-field', temParadas !== 'sim');
 }
 
 // Alternar frequência diária
@@ -65,8 +65,8 @@ function toggleFrequenciaDiaria() {
     const diariaContainer = document.getElementById('frequencia-diaria-container');
     const outraContainer = document.getElementById('frequencia-outra-container');
     
-    diariaContainer.style.display = frequencia === 'diaria' ? 'block' : 'none';
-    outraContainer.style.display = frequencia === 'outra' ? 'block' : 'none';
+    diariaContainer.classList.toggle('hidden-field', frequencia !== 'diaria');
+    outraContainer.classList.toggle('hidden-field', frequencia !== 'outra');
 }
 
 // Adicionar linha de produto na tabela

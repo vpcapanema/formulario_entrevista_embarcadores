@@ -28,7 +28,7 @@
                 <button class="nav-btn" onclick="showPage('analytics')">
                     <span>📈</span> Analytics
                 </button>
-                <a href="instrucoes.html" target="_blank" class="nav-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <a href="instrucoes.html" target="_blank" class="nav-btn nav-link-clean">
                     <span>📋</span> Instruções
                 </a>
             </div>
@@ -89,7 +89,7 @@
                                 <option value="outro">Outro</option>
                             </select>
                         </div>
-                        <div class="form-group" id="outro-tipo-container" style="display: none;">
+                        <div class="form-group hidden-field" id="outro-tipo-container">
                             <label for="outro-tipo">Especifique:</label>
                             <input type="text" id="outro-tipo" name="outro-tipo">
                         </div>
@@ -218,7 +218,7 @@
                                 <option value="outro-produto">Outro</option>
                             </select>
                         </div>
-                        <div class="form-group" id="outro-produto-container" style="display: none;">
+                        <div class="form-group hidden-field" id="outro-produto-container">
                             <label for="outro-produto">Especifique o produto:</label>
                             <input type="text" id="outro-produto" name="outro-produto">
                         </div>
@@ -282,7 +282,7 @@
                                     <option value="nao">Não</option>
                                 </select>
                             </div>
-                            <div class="form-group" id="num-paradas-container" style="display: none;">
+                            <div class="form-group hidden-field" id="num-paradas-container">
                                 <label for="num-paradas"><span class="question-number">16.</span> Número de paradas</label>
                                 <input type="number" id="num-paradas" name="num-paradas" min="0">
                             </div>
@@ -298,7 +298,7 @@
                                 <label><input type="checkbox" name="modo" value="aeroviario"> Aeroviário</label>
                             </div>
                         </div>
-                        <div class="form-group" id="config-veiculo-container" style="display: none;">
+                        <div class="form-group hidden-field" id="config-veiculo-container">
                             <label for="config-veiculo"><span class="question-number">18.</span> Configuração do veículo rodoviário:</label>
                             <select id="config-veiculo" name="config-veiculo">
                                 <option value="">Selecione...</option>
@@ -381,11 +381,11 @@
                                 <option value="outra">Outra</option>
                             </select>
                         </div>
-                        <div class="form-group" id="frequencia-diaria-container" style="display: none;">
+                        <div class="form-group hidden-field" id="frequencia-diaria-container">
                             <label for="frequencia-diaria"><span class="question-number">28.</span> Quantas vezes no dia?</label>
                             <input type="number" id="frequencia-diaria" name="frequencia-diaria" min="1">
                         </div>
-                        <div class="form-group" id="frequencia-outra-container" style="display: none;">
+                        <div class="form-group hidden-field" id="frequencia-outra-container">
                             <label for="frequencia-outra">Especifique a frequência:</label>
                             <input type="text" id="frequencia-outra" name="frequencia-outra">
                         </div>

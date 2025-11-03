@@ -726,3 +726,48 @@ td {
         break-inside: avoid;
     }
 }
+
+/* Utility Classes */
+.hidden-field {
+    display: none;
+}
+
+.nav-link-clean {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.margin-top-1 {
+    margin-top: 1rem;
+}
+
+.margin-top-half {
+    margin-top: 0.5rem;
+}
+
+.padding-left-1-half {
+    padding-left: 1.5rem;
+}
+
+.red-text {
+    color: red;
+}
+
+.footer-style {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    margin-top: 3rem;
+    border-top: 1px solid #ddd;
+}
+
+.footer-text-small {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
