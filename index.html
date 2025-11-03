@@ -28,9 +28,12 @@
                 <button class="nav-btn" onclick="showPage('analytics')">
                     <span>📈</span> Analytics
                 </button>
-                <a href="instrucoes.html" target="_blank" class="nav-btn nav-link-clean">
-                    <span>📋</span> Instruções
-                </a>
+                <button class="nav-btn" onclick="showPage('instrucoes')">
+                    <span>📖</span> Instruções
+                </button>
+                <button class="nav-btn" onclick="showPage('visualizador')">
+                    <span>�</span> Visualizador
+                </button>
             </div>
         </div>
     </nav>
@@ -673,6 +676,98 @@
                     <h3>Distância Média por Modalidade (km)</h3>
                     <canvas id="chart-distancia"></canvas>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Página 4: Instruções -->
+    <div id="page-instrucoes" class="page">
+        <div class="container">
+            <div class="instructions-container">
+                <div class="instructions-header">
+                    <h1>📋 Instruções de Preenchimento</h1>
+                    <p class="subtitle">Guia completo para preenchimento do Formulário de Entrevistas com Embarcadores - PLI 2050</p>
+                </div>
+
+                <!-- Seção 1: Introdução -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">🎯</span>
+                        <span>Objetivo do Formulário</span>
+                    </div>
+                    <p class="instruction-text">
+                        Este formulário faz parte do <strong>Plano de Logística Integrada 2050 (PLI 2050)</strong> e tem como objetivo coletar informações detalhadas sobre as operações logísticas e de transporte de empresas embarcadoras no Brasil.
+                    </p>
+                </div>
+
+                <!-- Seção 2: Antes de Começar -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">📝</span>
+                        <span>Antes de Começar</span>
+                    </div>
+                    
+                    <div class="highlight-box">
+                        <div class="title">⚠️ Campos Obrigatórios</div>
+                        <p>Os campos marcados com asterisco (<strong class="red-text">*</strong>) são obrigatórios.</p>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="title">💾 Salvamento Automático</div>
+                        <p>Ao clicar em "Salvar Respostas":</p>
+                        <ul class="margin-top-half">
+                            <li>✓ Os dados são salvos no navegador (IndexedDB)</li>
+                            <li>✓ Um arquivo Excel é gerado automaticamente</li>
+                            <li>✓ O download inicia automaticamente</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Mais seções de instruções seriam adicionadas aqui -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">📋</span>
+                        <span>Documentação Completa</span>
+                    </div>
+                    <p class="instruction-text">
+                        Para visualizar o guia completo de instruções com todos os detalhes de cada seção, 
+                        consulte o arquivo <a href="instrucoes.html" target="_blank" class="link-primary">instrucoes.html</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Página 5: Visualizador de Dados -->
+    <div id="page-visualizador" class="page">
+        <div class="container">
+            <div class="page-header">
+                <h2>🔍 Visualizador de Dados do IndexedDB</h2>
+                <p>Ferramenta de diagnóstico para inspecionar os dados armazenados localmente</p>
+            </div>
+
+            <div class="info-box margin-bottom-2">
+                <h3>📍 Localização do Banco de Dados</h3>
+                <p><strong>Nome do Banco:</strong> PLI2050_Database</p>
+                <p><strong>Object Store:</strong> respostas</p>
+                <p><strong>Navegador:</strong> <span id="browser-name-vis"></span></p>
+                <p><strong>Caminho Provável:</strong></p>
+                <div id="storage-path-vis" class="margin-top-half"></div>
+            </div>
+
+            <div class="card">
+                <h3>💾 Dados Salvos</h3>
+                <div class="button-group">
+                    <button onclick="loadDataVisualizer()" class="btn-primary">🔄 Carregar Dados</button>
+                    <button onclick="showRawDataVisualizer()" class="btn-secondary">📄 Ver JSON Completo</button>
+                    <button onclick="calculateSizeVisualizer()" class="btn-secondary">📊 Calcular Tamanho</button>
+                </div>
+                <div id="data-container-vis"></div>
+            </div>
+
+            <div class="card">
+                <h3>📊 Estatísticas</h3>
+                <div id="stats-container-vis"></div>
             </div>
         </div>
     </div>

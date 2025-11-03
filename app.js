@@ -861,3 +861,156 @@ async function exportToPDF() {
         alert('❌ Erro ao exportar arquivo PDF.');
     }
 }
+
+// ============================================
+// FUNÇÕES DO VISUALIZADOR DE DADOS
+// ============================================
+
+// Detectar navegador e mostrar caminho do IndexedDB
+function detectBrowserAndPath() {
+    const userAgent = navigator.userAgent;
+    let browserName = 'Desconhecido';
+    let storagePath = '';
+
+    if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1) {
+        browserName = 'Google Chrome';
+        storagePath = `
+            <strong>Windows:</strong><br>
+            C:\\Users\\[SeuUsuário]\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\IndexedDB\\
+            <br><br>
+            <strong>Mac:</strong><br>
+            ~/Library/Application Support/Google/Chrome/Default/IndexedDB/
+            <br><br>
+            <strong>Linux:</strong><br>
+            ~/.config/google-chrome/Default/IndexedDB/
+        `;
+    } else if (userAgent.indexOf('Edg') > -1) {
+        browserName = 'Microsoft Edge';
+        storagePath = `
+            <strong>Windows:</strong><br>
+            C:\\Users\\[SeuUsuário]\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\IndexedDB\\
+            <br><br>
+            <strong>Mac:</strong><br>
+            ~/Library/Application Support/Microsoft Edge/Default/IndexedDB/
+        `;
+    } else if (userAgent.indexOf('Firefox') > -1) {
+        browserName = 'Mozilla Firefox';
+        storagePath = `
+            <strong>Windows:</strong><br>
+            C:\\Users\\[SeuUsuário]\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\[profile]\\storage\\default\\
+            <br><br>
+            <strong>Mac:</strong><br>
+            ~/Library/Application Support/Firefox/Profiles/[profile]/storage/default/
+        `;
+    } else if (userAgent.indexOf('Safari') > -1) {
+        browserName = 'Safari';
+        storagePath = `
+            <strong>Mac:</strong><br>
+            ~/Library/Safari/Databases/
+        `;
+    }
+
+    const browserEl = document.getElementById('browser-name-vis');
+    const pathEl = document.getElementById('storage-path-vis');
+    
+    if (browserEl) browserEl.textContent = browserName;
+    if (pathEl) pathEl.innerHTML = storagePath;
+}
+
+// Carregar e exibir dados
+async function loadDataVisualizer() {
+    try {
+        const respostas = await dbManager.getAllRespostas();
+        const container = document.getElementById('data-container-vis');
+        
+        if (respostas.length === 0) {
+            container.innerHTML = '<p style="color: #666;">Nenhum dado encontrado no banco de dados.</p>';
+            return;
+        }
+
+        let html = `<p><strong>Total de registros:</strong> ${respostas.length}</p><hr>`;
+        
+        respostas.forEach((resp, index) => {
+            html += `
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <h4 style="color: var(--primary-color);">Registro ${index + 1} (ID: ${resp.id})</h4>
+                    <p><strong>Empresa:</strong> ${resp.nomeEmpresa}</p>
+                    <p><strong>Produto Principal:</strong> ${resp.produtoPrincipal}</p>
+                    <p><strong>Data:</strong> ${new Date(resp.dataEntrevista).toLocaleString('pt-BR')}</p>
+                    <details>
+                        <summary style="cursor: pointer; color: var(--secondary-color); font-weight: bold;">Ver dados completos</summary>
+                        <pre style="background: white; padding: 1rem; border-radius: 4px; overflow-x: auto; margin-top: 0.5rem;">${JSON.stringify(resp, null, 2)}</pre>
+                    </details>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+        // Atualizar estatísticas
+        const statsContainer = document.getElementById('stats-container-vis');
+        if (statsContainer) {
+            const totalProdutos = respostas.reduce((sum, r) => sum + (r.produtos?.length || 0), 0);
+            statsContainer.innerHTML = `
+                <p>📊 <strong>Total de entrevistas:</strong> ${respostas.length}</p>
+                <p>📦 <strong>Total de produtos cadastrados:</strong> ${totalProdutos}</p>
+                <p>📅 <strong>Última atualização:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        alert('Erro ao carregar dados do banco de dados.');
+    }
+}
+
+// Mostrar JSON completo
+async function showRawDataVisualizer() {
+    try {
+        const respostas = await dbManager.getAllRespostas();
+        const container = document.getElementById('data-container-vis');
+        
+        container.innerHTML = `
+            <div style="background: #2c3e50; color: #ecf0f1; padding: 1.5rem; border-radius: 8px; overflow-x: auto;">
+                <pre style="margin: 0; font-family: 'Courier New', monospace;">${JSON.stringify(respostas, null, 2)}</pre>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Erro ao mostrar JSON:', error);
+        alert('Erro ao exibir JSON.');
+    }
+}
+
+// Calcular tamanho dos dados
+async function calculateSizeVisualizer() {
+    try {
+        const respostas = await dbManager.getAllRespostas();
+        const jsonString = JSON.stringify(respostas);
+        const sizeInBytes = new Blob([jsonString]).size;
+        const sizeInKB = (sizeInBytes / 1024).toFixed(2);
+        const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+        
+        const statsContainer = document.getElementById('stats-container-vis');
+        if (statsContainer) {
+            statsContainer.innerHTML = `
+                <p>📊 <strong>Número de registros:</strong> ${respostas.length}</p>
+                <p>💾 <strong>Tamanho total:</strong> ${sizeInBytes} bytes (${sizeInKB} KB / ${sizeInMB} MB)</p>
+                <p>📏 <strong>Tamanho médio por registro:</strong> ${(sizeInBytes / respostas.length).toFixed(2)} bytes</p>
+                <p>🔢 <strong>Limite do IndexedDB:</strong> ~50 MB (depende do navegador)</p>
+                <p>📊 <strong>Uso estimado:</strong> ${((sizeInBytes / (50 * 1024 * 1024)) * 100).toFixed(2)}%</p>
+            `;
+        }
+    } catch (error) {
+        console.error('Erro ao calcular tamanho:', error);
+        alert('Erro ao calcular tamanho dos dados.');
+    }
+}
+
+// Inicializar visualizador quando a página for carregada
+document.addEventListener('DOMContentLoaded', function() {
+    // Detectar navegador apenas se a página do visualizador estiver ativa
+    const pageVis = document.getElementById('page-visualizador');
+    if (pageVis) {
+        detectBrowserAndPath();
+    }
+});
