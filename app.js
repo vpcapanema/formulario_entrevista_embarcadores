@@ -232,6 +232,84 @@ function collectFormData() {
     return formData;
 }
 
+// Gerar linha Excel a partir dos dados do formulário
+function generateExcelFromSingleResponse(data) {
+    const excelRow = {
+        // Card 1 - Dados do Entrevistado
+        'Q1. Nome': data.nome || '',
+        'Q2. Função': data.funcao || '',
+        'Q3. Telefone': data.telefone || '',
+        'Q4. Email': data.email || '',
+        
+        // Card 2 - Dados da Empresa
+        'Q5. Tipo de Empresa': data.tipoEmpresa || '',
+        'Q5.1. Outro Tipo': data.outroTipo || '',
+        'Q6. Nome da Empresa': data.nomeEmpresa || '',
+        'Q7. Município': data.municipio || '',
+        
+        // Card 3 - Produtos (resumo)
+        'Q8. Número de Produtos': (data.produtos && data.produtos.length) || 0,
+        
+        // Card 4 - Produto Principal
+        'Q9. Produto Principal': data.produtoPrincipal || '',
+        'Q10. Agrupamento': data.agrupamentoProduto || '',
+        'Q10.1. Outro Produto': data.outroProduto || '',
+        
+        // Card 5 - Características do Transporte
+        'Q11. Tipo de Transporte': data.tipoTransporte || '',
+        'Q12. Origem (País)': data.origemPais || '',
+        'Q12. Origem (Estado)': data.origemEstado || '',
+        'Q12. Origem (Município)': data.origemMunicipio || '',
+        'Q13. Destino (País)': data.destinoPais || '',
+        'Q13. Destino (Estado)': data.destinoEstado || '',
+        'Q13. Destino (Município)': data.destinoMunicipio || '',
+        'Q14. Distância (km)': data.distancia || '',
+        'Q15. Tem Paradas?': data.temParadas || '',
+        'Q16. Número de Paradas': data.numParadas || '',
+        'Q17. Modos': (data.modos && data.modos.join(', ')) || '',
+        'Q17.1. Config. Veículo': data.configVeiculo || '',
+        'Q18. Capacidade Utilizada (%)': data.capacidadeUtilizada || '',
+        'Q19. Peso da Carga': data.pesoCarga || '',
+        'Q19. Unidade': data.unidadePeso || '',
+        'Q20. Custo Transporte (R$/ton)': data.custoTransporte || '',
+        'Q21. Valor da Carga (R$)': data.valorCarga || '',
+        'Q22. Tipo de Embalagem': data.tipoEmbalagem || '',
+        'Q23. Carga Perigosa?': data.cargaPerigosa || '',
+        'Q24. Tempo (dias)': data.tempoDias || '',
+        'Q24. Tempo (horas)': data.tempoHoras || '',
+        'Q24. Tempo (minutos)': data.tempoMinutos || '',
+        'Q25. Frequência': data.frequencia || '',
+        'Q25.1. Freq. Diária': data.frequenciaDiaria || '',
+        'Q25.2. Freq. Outra': data.frequenciaOutra || '',
+        
+        // Card 6 - Fatores de Decisão
+        'Q26. Import. Custo': data.importanciaCusto || '',
+        'Q27. Variação Custo (%)': data.variacaoCusto || '',
+        'Q28. Import. Tempo': data.importanciaTempo || '',
+        'Q29. Variação Tempo (%)': data.variacaoTempo || '',
+        'Q30. Import. Confiabilidade': data.importanciaConfiabilidade || '',
+        'Q31. Variação Confiabilidade (%)': data.variacaoConfiabilidade || '',
+        'Q32. Import. Segurança': data.importanciaSeguranca || '',
+        'Q33. Variação Segurança (%)': data.variacaoSeguranca || '',
+        'Q34. Import. Capacidade': data.importanciaCapacidade || '',
+        'Q35. Variação Capacidade (%)': data.variacaoCapacidade || '',
+        
+        // Card 7 - Análise Estratégica
+        'Q36. Tipo de Cadeia': data.tipoCadeia || '',
+        'Q37. Modais Alternativos': (data.modaisAlternativos && data.modaisAlternativos.join(', ')) || '',
+        'Q38. Fator Adicional': data.fatorAdicional || '',
+        
+        // Card 8 - Dificuldades
+        'Q39. Dificuldades': (data.dificuldades && data.dificuldades.join(', ')) || '',
+        'Q40. Detalhamento': data.detalheDificuldade || '',
+        
+        // Metadados
+        'Data/Hora Resposta': new Date().toLocaleString('pt-BR')
+    };
+    
+    return excelRow;
+}
+
 // Enviar formulário
 async function handleFormSubmit(event) {
     event.preventDefault();
