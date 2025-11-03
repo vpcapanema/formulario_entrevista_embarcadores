@@ -696,8 +696,12 @@
                         <span>Objetivo do Formulário</span>
                     </div>
                     <p class="instruction-text">
-                        Este formulário faz parte do <strong>Plano de Logística Integrada 2050 (PLI 2050)</strong> e tem como objetivo coletar informações detalhadas sobre as operações logísticas e de transporte de empresas embarcadoras no Brasil.
+                        Este formulário faz parte do <strong>Plano de Logística Integrada 2050 (PLI 2050)</strong> e tem como objetivo coletar informações detalhadas sobre as operações logísticas e de transporte de empresas embarcadoras no Brasil. Os dados coletados serão fundamentais para o planejamento estratégico da infraestrutura logística nacional.
                     </p>
+                    <div class="success-box">
+                        <div class="title">✅ Importante</div>
+                        <p>Todas as informações fornecidas serão tratadas com confidencialidade e utilizadas exclusivamente para fins de planejamento e análise estratégica do setor logístico brasileiro.</p>
+                    </div>
                 </div>
 
                 <!-- Seção 2: Antes de Começar -->
@@ -709,7 +713,7 @@
                     
                     <div class="highlight-box">
                         <div class="title">⚠️ Campos Obrigatórios</div>
-                        <p>Os campos marcados com asterisco (<strong class="red-text">*</strong>) são obrigatórios.</p>
+                        <p>Os campos marcados com asterisco (<strong class="red-text">*</strong>) são obrigatórios. O sistema não permitirá salvar o formulário sem preencher todos esses campos.</p>
                     </div>
 
                     <div class="info-box">
@@ -719,20 +723,285 @@
                             <li>✓ Os dados são salvos no navegador (IndexedDB)</li>
                             <li>✓ Um arquivo Excel é gerado automaticamente</li>
                             <li>✓ O download inicia automaticamente</li>
+                            <li>✓ Um popup de confirmação aparecerá</li>
+                        </ul>
+                    </div>
+
+                    <p class="instruction-text"><strong>Documentos necessários:</strong></p>
+                    <ul class="instruction-list">
+                        <li>📊 Dados de movimentação anual de cargas (toneladas/ano)</li>
+                        <li>📍 Informações de origem e destino dos transportes</li>
+                        <li>💰 Custos de transporte e valores de carga</li>
+                        <li>📏 Distâncias percorridas (em quilômetros)</li>
+                        <li>⏱️ Tempos de transporte (dias, horas e minutos)</li>
+                    </ul>
+                </div>
+
+                <!-- Seção 3: Guia por Seções -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">📑</span>
+                        <span>Guia de Preenchimento por Seção</span>
+                    </div>
+
+                    <!-- Cards 1-8 com instruções detalhadas -->
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">1</span>
+                            <span>Dados do Entrevistado</span>
+                        </div>
+                        <p class="instruction-text"><span class="question-reference">Perguntas 1-4</span></p>
+                        <ul class="instruction-list">
+                            <li><strong>Nome completo:</strong> Informe o nome completo da pessoa responsável pelas informações logísticas</li>
+                            <li><strong>Função:</strong> Cargo ou posição na empresa (ex: Gerente de Logística, Coordenador de Transportes)</li>
+                            <li><strong>Telefone:</strong> Número com DDD para contato (ex: (11) 98765-4321)</li>
+                            <li><strong>E-mail:</strong> E-mail corporativo ou pessoal para comunicação</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">2</span>
+                            <span>Dados da Empresa</span>
+                        </div>
+                        <p class="instruction-text"><span class="question-reference">Perguntas 5-7</span></p>
+                        <ul class="instruction-list">
+                            <li><strong>Tipo de empresa:</strong> Selecione o segmento (indústria, varejo, atacado, etc.). Se selecionar "Outro", especifique no campo adicional</li>
+                            <li><strong>Nome da empresa:</strong> Razão social ou nome fantasia</li>
+                            <li><strong>Município:</strong> Cidade onde a empresa está localizada (incluir estado: ex: São Paulo-SP)</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">3</span>
+                            <span>Produtos Transportados (Tabela Dinâmica)</span>
+                        </div>
+                        <p class="instruction-text"><span class="question-reference">Pergunta 8</span></p>
+                        
+                        <div class="highlight-box">
+                            <div class="title"><span class="tip-icon">💡</span> Como usar a tabela de produtos</div>
+                            <ol class="margin-top-half padding-left-1-half">
+                                <li>Clique em <strong>"+ Adicionar Produto"</strong> para criar uma nova linha</li>
+                                <li>Preencha os 7 campos para cada produto</li>
+                                <li>Adicione quantos produtos forem necessários</li>
+                                <li>Use o botão 🗑️ para remover produtos</li>
+                            </ol>
+                        </div>
+
+                        <div class="success-box">
+                            <div class="title">✅ Exportação no Excel</div>
+                            <p>Os produtos serão exportados em uma <strong>aba separada</strong> chamada "Produtos Transportados", facilitando a análise.</p>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">4</span>
+                            <span>Produto Principal</span>
+                        </div>
+                        <p class="instruction-text"><span class="question-reference">Perguntas 9-10</span></p>
+                        <ul class="instruction-list">
+                            <li><strong>Produto mais representativo:</strong> Dentre os produtos listados acima, indique qual tem maior relevância para a empresa (por volume ou valor)</li>
+                            <li><strong>Agrupamento:</strong> Selecione a categoria que melhor classifica este produto. Se necessário, selecione "Outro" e especifique</li>
+                        </ul>
+                        <div class="info-box">
+                            <div class="title">📌 Importante</div>
+                            <p>As próximas perguntas do formulário (seções 5 a 8) devem ser respondidas <strong>considerando apenas este produto principal</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">5</span>
+                            <span>Características do Transporte</span>
+                        </div>
+                        <p class="instruction-text"><span class="question-reference">Perguntas 11-28</span></p>
+                        
+                        <p class="instruction-text"><strong>Origem e Destino (<span class="question-reference">12-13</span>):</strong></p>
+                        <ul class="instruction-list">
+                            <li>Informe País, Estado e Município tanto da origem quanto do destino</li>
+                            <li>Para transporte local, preencha o mesmo país/estado</li>
+                        </ul>
+
+                        <p class="instruction-text"><strong>Modalidades de Transporte (<span class="question-reference">16</span>):</strong></p>
+                        <ul class="instruction-list">
+                            <li>Pode marcar <strong>múltiplas opções</strong> se houver transporte intermodal</li>
+                            <li>Exemplo: Rodoviário + Ferroviário (caso use ambos)</li>
+                        </ul>
+
+                        <div class="highlight-box">
+                            <div class="title"><span class="tip-icon">💡</span> Dica</div>
+                            <p>Selecione a unidade correta (kg ou toneladas). O sistema converterá automaticamente para toneladas no Excel.</p>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">6</span>
+                            <span>Fatores de Decisão Modal</span>
+                        </div>
+                        <p class="instruction-text"><span class="question-reference">Perguntas 29-38</span></p>
+                        
+                        <div class="info-box">
+                            <div class="title">🎯 Como funciona esta seção</div>
+                            <p>Para cada fator (CUSTO, TEMPO, CONFIABILIDADE, SEGURANÇA, CAPACIDADE), você deve responder:</p>
+                            <ol class="margin-top-half padding-left-1-half">
+                                <li><strong>Importância:</strong> Qual o grau de importância deste fator? (Muito alta, Alta, Média, Baixa, Muito baixa)</li>
+                                <li><strong>Variação %:</strong> Qual percentual de variação faria você mudar o modal de transporte? (0-100%)</li>
+                            </ol>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="title"><span class="tip-icon">💡</span> Sensibilidade</div>
+                            <p>Valores menores (ex: 5%) indicam <strong>alta sensibilidade</strong> ao fator. Valores maiores (ex: 50%) indicam <strong>baixa sensibilidade</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">7</span>
+                            <span>Análise Estratégica</span>
+                        </div>
+                        <p class="instruction-text"><span class="question-reference">Perguntas 39-41</span></p>
+                        <ul class="instruction-list">
+                            <li><strong>Tipo de Cadeia (<span class="question-reference">39</span>):</strong> Indique se é cadeia de suprimento (compra/recebimento) ou distribuição (venda/entrega)</li>
+                            <li><strong>Modais Alternativos (<span class="question-reference">40</span>):</strong> Pode marcar múltiplas opções. Indique quais modais você consideraria usar</li>
+                            <li><strong>Fator Adicional (<span class="question-reference">41</span>):</strong> Campo aberto para mencionar outros fatores importantes não listados anteriormente</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">8</span>
+                            <span>Dificuldades Logísticas</span>
+                        </div>
+                        <p class="instruction-text"><span class="question-reference">Perguntas 42-43</span></p>
+                        <ul class="instruction-list">
+                            <li><strong>Principais dificuldades (<span class="question-reference">42</span>):</strong> Pode marcar múltiplas opções que representem os desafios enfrentados</li>
+                            <li><strong>Detalhamento (<span class="question-reference">43</span>):</strong> Use este campo para explicar melhor as dificuldades ou adicionar informações relevantes</li>
                         </ul>
                     </div>
                 </div>
 
-                <!-- Mais seções de instruções seriam adicionadas aqui -->
+                <!-- Seção 4: Salvamento e Exportação -->
                 <div class="section">
                     <div class="section-title">
-                        <span class="icon">📋</span>
-                        <span>Documentação Completa</span>
+                        <span class="icon">💾</span>
+                        <span>Salvamento e Exportação dos Dados</span>
                     </div>
-                    <p class="instruction-text">
-                        Para visualizar o guia completo de instruções com todos os detalhes de cada seção, 
-                        consulte o arquivo <a href="instrucoes.html" target="_blank" class="link-primary">instrucoes.html</a>.
-                    </p>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">1</span>
+                            <span>Validação Automática</span>
+                        </div>
+                        <p class="instruction-text">Ao clicar em <strong>"💾 Salvar Respostas"</strong>, o sistema irá:</p>
+                        <ul class="instruction-list">
+                            <li>✓ Verificar se todos os campos obrigatórios foram preenchidos</li>
+                            <li>✓ Mostrar um popup listando as perguntas não preenchidas (se houver)</li>
+                            <li>✓ Focar automaticamente na primeira pergunta com erro</li>
+                        </ul>
+                        <div class="highlight-box">
+                            <div class="title">⚠️ Atenção</div>
+                            <p>Se houver campos obrigatórios vazios, o sistema <strong>não permitirá salvar</strong> até que sejam preenchidos.</p>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">2</span>
+                            <span>Download Automático do Excel</span>
+                        </div>
+                        <p class="instruction-text">Quando todos os campos estiverem preenchidos corretamente:</p>
+                        <ul class="instruction-list">
+                            <li>📊 Um arquivo Excel será gerado automaticamente</li>
+                            <li>⬇️ O download iniciará automaticamente</li>
+                            <li>✅ Um popup de confirmação aparecerá com link para download</li>
+                        </ul>
+
+                        <div class="success-box">
+                            <div class="title">📁 Estrutura do Arquivo Excel</div>
+                            <p><strong>Aba 1 - "Respostas":</strong></p>
+                            <ul class="margin-top-half">
+                                <li>Cada empresa = 1 linha</li>
+                                <li>Cada pergunta (1 a 43) = 1 coluna</li>
+                            </ul>
+                            <p class="margin-top-1"><strong>Aba 2 - "Produtos Transportados":</strong></p>
+                            <ul class="margin-top-half">
+                                <li>Cada produto = 1 linha</li>
+                                <li>ID da empresa para cruzar dados</li>
+                                <li>7 colunas com informações do produto</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">3</span>
+                            <span>Visualização de Dados Salvos</span>
+                        </div>
+                        <p class="instruction-text">Para visualizar ou exportar dados salvos anteriormente:</p>
+                        <ul class="instruction-list">
+                            <li>Clique na aba <strong>"📊 Respostas"</strong> no menu superior</li>
+                            <li>Visualize todas as entrevistas realizadas</li>
+                            <li>Use os botões de exportação: Excel, CSV ou PDF</li>
+                            <li>Edite ou exclua respostas se necessário</li>
+                        </ul>
+                    </div>
+
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <span class="number">4</span>
+                            <span>Analytics e Análises</span>
+                        </div>
+                        <p class="instruction-text">Acesse a aba <strong>"📈 Analytics"</strong> para visualizar:</p>
+                        <ul class="instruction-list">
+                            <li>📊 KPIs (Indicadores-chave): Total de entrevistas, distância média, custo médio, etc.</li>
+                            <li>📈 12 gráficos interativos com análises de modalidades, produtos, fatores de decisão</li>
+                            <li>🎯 Insights sobre padrões logísticos</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Seção 5: Dicas e Boas Práticas -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">💡</span>
+                        <span>Dicas e Boas Práticas</span>
+                    </div>
+
+                    <ul class="instruction-list">
+                        <li><strong>📱 Use um computador/notebook:</strong> A interface é otimizada para telas maiores, facilitando o preenchimento da tabela de produtos</li>
+                        <li><strong>🔍 Revise antes de salvar:</strong> Confira todas as informações, especialmente valores numéricos e unidades</li>
+                        <li><strong>💾 Faça backup:</strong> O Excel gerado automaticamente serve como backup externo dos dados</li>
+                        <li><strong>📊 Dados precisos:</strong> Forneça informações o mais precisas possível. Se não souber o valor exato, forneça uma estimativa aproximada</li>
+                        <li><strong>🔄 Dados persistentes:</strong> Os dados ficam salvos no navegador. Não feche a aba antes de fazer o download do Excel</li>
+                        <li><strong>🌐 Navegador compatível:</strong> Use Chrome, Firefox, Edge ou Safari atualizados</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <div class="title"><span class="tip-icon">💡</span> Dica Pro</div>
+                        <p>Prepare uma planilha com os dados antes de começar o preenchimento. Isso agiliza o processo e reduz erros.</p>
+                    </div>
+                </div>
+
+                <!-- Seção 6: Suporte -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">❓</span>
+                        <span>Dúvidas e Suporte</span>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="title">📞 Precisa de ajuda?</div>
+                        <p>Em caso de dúvidas sobre o preenchimento ou problemas técnicos, entre em contato com a equipe do PLI 2050.</p>
+                        <p class="margin-top-1"><strong>Informações de contato:</strong></p>
+                        <ul class="margin-top-half">
+                            <li>📧 E-mail: pli2050@infraestrutura.gov.br</li>
+                            <li>🌐 Website: www.pli2050.gov.br</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -742,32 +1011,120 @@
     <div id="page-visualizador" class="page">
         <div class="container">
             <div class="page-header">
-                <h2>🔍 Visualizador de Dados do IndexedDB</h2>
-                <p>Ferramenta de diagnóstico para inspecionar os dados armazenados localmente</p>
+                <h2>�️ Visualizador de Dados IndexedDB</h2>
+                <p>Ferramenta completa para inspecionar e gerenciar os dados armazenados localmente</p>
             </div>
 
             <div class="info-box margin-bottom-2">
-                <h3>📍 Localização do Banco de Dados</h3>
-                <p><strong>Nome do Banco:</strong> PLI2050_Database</p>
-                <p><strong>Object Store:</strong> respostas</p>
-                <p><strong>Navegador:</strong> <span id="browser-name-vis"></span></p>
-                <p><strong>Caminho Provável:</strong></p>
-                <div id="storage-path-vis" class="margin-top-half"></div>
+                <h3>� Informações do Banco de Dados</h3>
+                <table class="example-table">
+                    <tr>
+                        <th>Nome do Banco</th>
+                        <td>PLI2050_Database</td>
+                    </tr>
+                    <tr>
+                        <th>Object Store</th>
+                        <td>respostas</td>
+                    </tr>
+                    <tr>
+                        <th>Tipo de Armazenamento</th>
+                        <td>IndexedDB (Browser Local Storage)</td>
+                    </tr>
+                    <tr>
+                        <th>Persistência</th>
+                        <td>Dados permanecem até serem excluídos manualmente ou ao limpar dados do navegador</td>
+                    </tr>
+                </table>
             </div>
 
-            <div class="card">
-                <h3>💾 Dados Salvos</h3>
+            <div class="highlight-box margin-bottom-2">
+                <h3>🌐 Navegador e Localização dos Dados</h3>
+                <p><strong>Navegador Detectado:</strong> <span id="browser-name-vis"></span></p>
+                <p><strong>Caminho Provável do Banco de Dados:</strong></p>
+                <div id="storage-path-vis" class="margin-top-half storage-path-display"></div>
+            </div>
+
+            <div class="card margin-bottom-2">
+                <h3>� Ferramentas de Visualização</h3>
+                
                 <div class="button-group">
-                    <button onclick="loadDataVisualizer()" class="btn-primary">🔄 Carregar Dados</button>
-                    <button onclick="showRawDataVisualizer()" class="btn-secondary">📄 Ver JSON Completo</button>
-                    <button onclick="calculateSizeVisualizer()" class="btn-secondary">📊 Calcular Tamanho</button>
+                    <button onclick="loadDataVisualizer()" class="btn-primary">
+                        � Carregar Dados
+                    </button>
+                    <button onclick="showRawDataVisualizer()" class="btn-secondary">
+                        � Ver JSON Bruto
+                    </button>
+                    <button onclick="calculateSizeVisualizer()" class="btn-secondary">
+                        � Calcular Tamanho
+                    </button>
                 </div>
-                <div id="data-container-vis"></div>
+
+                <div id="data-container-vis" class="margin-top-2">
+                    <p class="empty-state">
+                        ℹ️ Clique em "Carregar Dados" para visualizar as respostas armazenadas
+                    </p>
+                </div>
+
+                <div id="raw-data-container-vis" class="raw-data-container">
+                    <h4>📄 JSON Bruto</h4>
+                    <pre id="raw-data-display-vis" class="raw-data-display"></pre>
+                </div>
+
+                <div id="size-info-vis" class="margin-top-2"></div>
             </div>
 
-            <div class="card">
-                <h3>📊 Estatísticas</h3>
-                <div id="stats-container-vis"></div>
+            <div class="card margin-bottom-2">
+                <h3>📊 Estatísticas de Uso</h3>
+                <div id="stats-container-vis">
+                    <p class="empty-state-small">
+                        ℹ️ As estatísticas serão exibidas após carregar os dados
+                    </p>
+                </div>
+            </div>
+
+            <div class="success-box margin-bottom-2">
+                <h3>🛠️ Ferramentas de Desenvolvedor do Navegador</h3>
+                <p>Para visualizar o IndexedDB diretamente nas ferramentas de desenvolvedor:</p>
+                <ol class="instruction-list">
+                    <li>
+                        <strong>Google Chrome / Microsoft Edge:</strong>
+                        <ol class="sub-list">
+                            <li>Pressione F12 ou clique com botão direito → "Inspecionar"</li>
+                            <li>Vá para a aba "Application" (ou "Aplicativo")</li>
+                            <li>No menu lateral, expanda "Storage" → "IndexedDB"</li>
+                            <li>Clique em "PLI2050_Database" → "respostas"</li>
+                        </ol>
+                    </li>
+                    <li>
+                        <strong>Mozilla Firefox:</strong>
+                        <ol class="sub-list">
+                            <li>Pressione F12 ou clique com botão direito → "Inspecionar Elemento"</li>
+                            <li>Vá para a aba "Storage" (ou "Armazenamento")</li>
+                            <li>Expanda "IndexedDB" no menu lateral</li>
+                            <li>Clique em "PLI2050_Database" → "respostas"</li>
+                        </ol>
+                    </li>
+                    <li>
+                        <strong>Safari:</strong>
+                        <ol class="sub-list">
+                            <li>Ative o menu Desenvolvedor em Preferências → Avançado</li>
+                            <li>Menu Desenvolvedor → "Mostrar Inspetor Web"</li>
+                            <li>Vá para a aba "Storage"</li>
+                            <li>Expanda "IndexedDB" → "PLI2050_Database" → "respostas"</li>
+                        </ol>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="info-box">
+                <h3>ℹ️ Sobre o Armazenamento IndexedDB</h3>
+                <ul class="instruction-list">
+                    <li><strong>Capacidade:</strong> O IndexedDB pode armazenar grandes volumes de dados (geralmente limitado apenas pelo espaço em disco disponível)</li>
+                    <li><strong>Segurança:</strong> Os dados são armazenados localmente no computador do usuário e não são enviados para nenhum servidor</li>
+                    <li><strong>Privacidade:</strong> Cada domínio tem seu próprio banco de dados isolado, outros sites não podem acessar estes dados</li>
+                    <li><strong>Sincronização:</strong> Os dados NÃO são sincronizados entre dispositivos ou navegadores diferentes</li>
+                    <li><strong>Backup:</strong> É responsabilidade do usuário fazer backup dos dados exportando-os regularmente através da página "Respostas"</li>
+                </ul>
             </div>
         </div>
     </div>
