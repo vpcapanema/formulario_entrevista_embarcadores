@@ -710,6 +710,7 @@
                     <h3>📝 Antes de Começar</h3>
                 </div>
                 <div class="card-body">
+                    <div class="highlight-box">
                         <div class="title">⚠️ Campos Obrigatórios</div>
                         <p>Os campos marcados com asterisco (<strong class="red-text">*</strong>) são obrigatórios. O sistema não permitirá salvar o formulário sem preencher todos esses campos.</p>
                     </div>
@@ -880,7 +881,6 @@
                             <li><strong>Detalhamento (<span class="question-reference">43</span>):</strong> Use este campo para explicar melhor as dificuldades ou adicionar informações relevantes</li>
                         </ul>
                     </div>
-                    </div>
                 </div>
             </div>
 
@@ -1011,99 +1011,143 @@
     <div id="page-visualizador" class="page">
         <div class="container">
             <div class="page-header">
-                <h2>�️ Visualizador de Dados IndexedDB</h2>
+                <h2>🗄️ Visualizador de Dados IndexedDB</h2>
                 <p>Ferramenta completa para inspecionar e gerenciar os dados armazenados localmente</p>
             </div>
 
-            <div class="card">`n                <div class="card-header">`n                    <h3>📊 Informações do Banco de Dados</h3>`n                </div>`n                <div class="card-body">
-                <table class="example-table">
-                    <tr>
-                        <th>Nome do Banco</th>
-                        <td>PLI2050_Database</td>
-                    </tr>
-                    <tr>
-                        <th>Object Store</th>
-                        <td>respostas</td>
-                    </tr>
-                    <tr>
-                        <th>Tipo de Armazenamento</th>
-                        <td>IndexedDB (Browser Local Storage)</td>
-                    </tr>
-                    <tr>
-                        <th>Persistência</th>
-                        <td>Dados permanecem até serem excluídos manualmente ou ao limpar dados do navegador</td>
-                    </tr>
-                </table>`n                </div>`n            </div>`n`n            <div class="card">`n                <div class="card-header">
-                <h3>🌐 Navegador e Localização dos Dados</h3>`n                </div>`n                <div class="card-body">`n                    <p><strong>Navegador Detectado:</strong> <span id="browser-name-vis"></span></p>
-                <p><strong>Caminho Provável do Banco de Dados:</strong></p>
-                <div id="storage-path-vis" class="margin-top-half storage-path-display"></div>`n                </div>`n            </div>`n`n            <div class="card">`n                <div class="card-header">`n                    <h3>🔍 Ferramentas de Visualização</h3>`n                </div>`n                <div class="card-body">
-                
-                <div class="button-group">
-                    <button onclick="loadDataVisualizer()" class="btn-primary">
-                        � Carregar Dados
-                    </button>
-                    <button onclick="showRawDataVisualizer()" class="btn-secondary">
-                        � Ver JSON Bruto
-                    </button>
-                    <button onclick="calculateSizeVisualizer()" class="btn-secondary">
-                        � Calcular Tamanho
-                    </button>
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 Informações do Banco de Dados</h3>
                 </div>
-
-                <div id="data-container-vis" class="margin-top-2">
-                    <p class="empty-state">
-                        ℹ️ Clique em "Carregar Dados" para visualizar as respostas armazenadas
-                    </p>
+                <div class="card-body">
+                    <table class="example-table">
+                        <tr>
+                            <th>Nome do Banco</th>
+                            <td>PLI2050_Database</td>
+                        </tr>
+                        <tr>
+                            <th>Object Store</th>
+                            <td>respostas</td>
+                        </tr>
+                        <tr>
+                            <th>Tipo de Armazenamento</th>
+                            <td>IndexedDB (Browser Local Storage)</td>
+                        </tr>
+                        <tr>
+                            <th>Persistência</th>
+                            <td>Dados permanecem até serem excluídos manualmente ou ao limpar dados do navegador</td>
+                        </tr>
+                    </table>
                 </div>
+            </div>
 
-                <div id="raw-data-container-vis" class="raw-data-container">
-                    <h4>📄 JSON Bruto</h4>
-                    <pre id="raw-data-display-vis" class="raw-data-display"></pre>
+            <div class="card">
+                <div class="card-header">
+                    <h3>🌐 Navegador e Localização dos Dados</h3>
                 </div>
+                <div class="card-body">
+                    <p><strong>Navegador Detectado:</strong> <span id="browser-name-vis"></span></p>
+                    <p><strong>Caminho Provável do Banco de Dados:</strong></p>
+                    <div id="storage-path-vis" class="margin-top-half storage-path-display"></div>
+                </div>
+            </div>
 
-                <div id="size-info-vis" class="margin-top-2"></div>`n                </div>`n            </div>`n`n            <div class="card">`n                <div class="card-header">`n                    <h3>📊 Estatísticas de Uso</h3>`n                </div>`n                <div class="card-body">
-                <div id="stats-container-vis">
-                    <p class="empty-state-small">
-                        ℹ️ As estatísticas serão exibidas após carregar os dados
-                    </p>
-                </div>`n                </div>`n            </div>`n`n            <div class="card">`n                <div class="card-header">`n                    <h3>🛠️ Ferramentas de Desenvolvedor do Navegador</h3>`n                </div>`n                <div class="card-body">`n                    <p>Para visualizar o IndexedDB diretamente nas ferramentas de desenvolvedor:</p>
-                <ol class="instruction-list">
-                    <li>
-                        <strong>Google Chrome / Microsoft Edge:</strong>
-                        <ol class="sub-list">
-                            <li>Pressione F12 ou clique com botão direito → "Inspecionar"</li>
-                            <li>Vá para a aba "Application" (ou "Aplicativo")</li>
-                            <li>No menu lateral, expanda "Storage" → "IndexedDB"</li>
-                            <li>Clique em "PLI2050_Database" → "respostas"</li>
-                        </ol>
-                    </li>
-                    <li>
-                        <strong>Mozilla Firefox:</strong>
-                        <ol class="sub-list">
-                            <li>Pressione F12 ou clique com botão direito → "Inspecionar Elemento"</li>
-                            <li>Vá para a aba "Storage" (ou "Armazenamento")</li>
-                            <li>Expanda "IndexedDB" no menu lateral</li>
-                            <li>Clique em "PLI2050_Database" → "respostas"</li>
-                        </ol>
-                    </li>
-                    <li>
-                        <strong>Safari:</strong>
-                        <ol class="sub-list">
-                            <li>Ative o menu Desenvolvedor em Preferências → Avançado</li>
-                            <li>Menu Desenvolvedor → "Mostrar Inspetor Web"</li>
-                            <li>Vá para a aba "Storage"</li>
-                            <li>Expanda "IndexedDB" → "PLI2050_Database" → "respostas"</li>
-                        </ol>
-                    </li>
-                </ol>`n                </div>`n            </div>`n`n            <div class="card">`n                <div class="card-header">
-                <h3>ℹ️ Sobre o Armazenamento IndexedDB</h3>
-                <ul class="instruction-list">
-                    <li><strong>Capacidade:</strong> O IndexedDB pode armazenar grandes volumes de dados (geralmente limitado apenas pelo espaço em disco disponível)</li>
-                    <li><strong>Segurança:</strong> Os dados são armazenados localmente no computador do usuário e não são enviados para nenhum servidor</li>
-                    <li><strong>Privacidade:</strong> Cada domínio tem seu próprio banco de dados isolado, outros sites não podem acessar estes dados</li>
-                    <li><strong>Sincronização:</strong> Os dados NÃO são sincronizados entre dispositivos ou navegadores diferentes</li>
-                    <li><strong>Backup:</strong> É responsabilidade do usuário fazer backup dos dados exportando-os regularmente através da página "Respostas"</li>
-                </ul>
+            <div class="card">
+                <div class="card-header">
+                    <h3>🔍 Ferramentas de Visualização</h3>
+                </div>
+                <div class="card-body">
+                    <div class="button-group">
+                        <button onclick="loadDataVisualizer()" class="btn-primary">
+                            📂 Carregar Dados
+                        </button>
+                        <button onclick="showRawDataVisualizer()" class="btn-secondary">
+                            📝 Ver JSON Bruto
+                        </button>
+                        <button onclick="calculateSizeVisualizer()" class="btn-secondary">
+                            📏 Calcular Tamanho
+                        </button>
+                    </div>
+
+                    <div id="data-container-vis" class="margin-top-2">
+                        <p class="empty-state">
+                            ℹ️ Clique em "Carregar Dados" para visualizar as respostas armazenadas
+                        </p>
+                    </div>
+
+                    <div id="raw-data-container-vis" class="raw-data-container">
+                        <h4>📄 JSON Bruto</h4>
+                        <pre id="raw-data-display-vis" class="raw-data-display"></pre>
+                    </div>
+
+                    <div id="size-info-vis" class="margin-top-2"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 Estatísticas de Uso</h3>
+                </div>
+                <div class="card-body">
+                    <div id="stats-container-vis">
+                        <p class="empty-state-small">
+                            ℹ️ As estatísticas serão exibidas após carregar os dados
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>🛠️ Ferramentas de Desenvolvedor do Navegador</h3>
+                </div>
+                <div class="card-body">
+                    <p>Para visualizar o IndexedDB diretamente nas ferramentas de desenvolvedor:</p>
+                    <ol class="instruction-list">
+                        <li>
+                            <strong>Google Chrome / Microsoft Edge:</strong>
+                            <ol class="sub-list">
+                                <li>Pressione F12 ou clique com botão direito → "Inspecionar"</li>
+                                <li>Vá para a aba "Application" (ou "Aplicativo")</li>
+                                <li>No menu lateral, expanda "Storage" → "IndexedDB"</li>
+                                <li>Clique em "PLI2050_Database" → "respostas"</li>
+                            </ol>
+                        </li>
+                        <li>
+                            <strong>Mozilla Firefox:</strong>
+                            <ol class="sub-list">
+                                <li>Pressione F12 ou clique com botão direito → "Inspecionar Elemento"</li>
+                                <li>Vá para a aba "Storage" (ou "Armazenamento")</li>
+                                <li>Expanda "IndexedDB" no menu lateral</li>
+                                <li>Clique em "PLI2050_Database" → "respostas"</li>
+                            </ol>
+                        </li>
+                        <li>
+                            <strong>Safari:</strong>
+                            <ol class="sub-list">
+                                <li>Ative o menu Desenvolvedor em Preferências → Avançado</li>
+                                <li>Menu Desenvolvedor → "Mostrar Inspetor Web"</li>
+                                <li>Vá para a aba "Storage"</li>
+                                <li>Expanda "IndexedDB" → "PLI2050_Database" → "respostas"</li>
+                            </ol>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>ℹ️ Sobre o Armazenamento IndexedDB</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="instruction-list">
+                        <li><strong>Capacidade:</strong> O IndexedDB pode armazenar grandes volumes de dados (geralmente limitado apenas pelo espaço em disco disponível)</li>
+                        <li><strong>Segurança:</strong> Os dados são armazenados localmente no computador do usuário e não são enviados para nenhum servidor</li>
+                        <li><strong>Privacidade:</strong> Cada domínio tem seu próprio banco de dados isolado, outros sites não podem acessar estes dados</li>
+                        <li><strong>Sincronização:</strong> Os dados NÃO são sincronizados entre dispositivos ou navegadores diferentes</li>
+                        <li><strong>Backup:</strong> É responsabilidade do usuário fazer backup dos dados exportando-os regularmente através da página "Respostas"</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
