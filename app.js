@@ -1023,143 +1023,186 @@ function preencherFormularioTeste() {
     
     console.log('🧪 Preenchendo formulário com dados de teste...');
     
+    // Função auxiliar para definir valor de forma segura
+    function setVal(id, value) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.value = value;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+    
+    // Função auxiliar para marcar checkbox
+    function checkBox(id) {
+        const el = document.getElementById(id);
+        if (el && el.type === 'checkbox') {
+            el.checked = true;
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+    
+    // Função auxiliar para selecionar radio
+    function selectRadio(name, value) {
+        const radios = document.querySelectorAll(`input[name="${name}"]`);
+        radios.forEach(radio => {
+            if (radio.value === value) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    }
+    
     // Card 1: Dados do Entrevistado
-    document.getElementById('nome').value = 'João Silva Santos';
-    document.getElementById('funcao').value = 'Gerente de Logística';
-    document.getElementById('telefone').value = '(11) 98765-4321';
-    document.getElementById('email').value = 'joao.silva@exemplo.com.br';
+    setVal('nome', 'João Silva Santos');
+    setVal('funcao', 'Gerente de Logística');
+    setVal('telefone', '(11) 98765-4321');
+    setVal('email', 'joao.silva@exemplo.com.br');
     
     // Card 2: Dados da Empresa
-    document.getElementById('tipo-empresa').value = 'embarcador';
-    document.getElementById('nome-empresa').value = 'Transportes ABC Logística Ltda';
-    document.getElementById('municipio').value = 'São Paulo-SP';
+    setVal('tipo-empresa', 'embarcador');
+    setVal('nome-empresa', 'Transportes ABC Logística Ltda');
+    setVal('municipio', 'São Paulo-SP');
     
     // Card 3: Adicionar produtos
     const tbody = document.getElementById('produtos-tbody');
-    tbody.innerHTML = ''; // Limpa produtos existentes
+    if (tbody) {
+        tbody.innerHTML = ''; // Limpa produtos existentes
+    }
     
     // Produto 1
-    addProdutoRow();
-    setTimeout(() => {
-        const row1 = tbody.rows[0];
-        row1.cells[0].querySelector('input').value = 'Soja em Grãos';
-        row1.cells[1].querySelector('input').value = '50000';
-        row1.cells[2].querySelector('input').value = 'Mato Grosso-MT';
-        row1.cells[3].querySelector('input').value = 'Santos-SP';
-        row1.cells[4].querySelector('input').value = '1850';
-        row1.cells[5].querySelector('input').value = 'Rodoviário';
-        row1.cells[6].querySelector('input').value = 'Granel';
-    }, 100);
-    
-    // Produto 2
-    setTimeout(() => {
+    if (typeof addProdutoRow === 'function') {
         addProdutoRow();
         setTimeout(() => {
-            const row2 = tbody.rows[1];
-            row2.cells[0].querySelector('input').value = 'Milho';
-            row2.cells[1].querySelector('input').value = '30000';
-            row2.cells[2].querySelector('input').value = 'Goiás-GO';
-            row2.cells[3].querySelector('input').value = 'Campinas-SP';
-            row2.cells[4].querySelector('input').value = '920';
-            row2.cells[5].querySelector('input').value = 'Ferroviário';
-            row2.cells[6].querySelector('input').value = 'Container';
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length > 0) {
+                const inputs = rows[0].querySelectorAll('input, select');
+                if (inputs[0]) inputs[0].value = 'Soja em Grãos';
+                if (inputs[1]) inputs[1].value = '50000';
+                if (inputs[2]) inputs[2].value = 'Mato Grosso-MT';
+                if (inputs[3]) inputs[3].value = 'Santos-SP';
+                if (inputs[4]) inputs[4].value = '1850';
+                if (inputs[5]) inputs[5].value = 'Rodoviário';
+                if (inputs[6]) inputs[6].value = 'Granel';
+            }
         }, 100);
-    }, 300);
-    
-    // Produto 3
-    setTimeout(() => {
-        addProdutoRow();
+        
+        // Produto 2
         setTimeout(() => {
-            const row3 = tbody.rows[2];
-            row3.cells[0].querySelector('input').value = 'Fertilizantes';
-            row3.cells[1].querySelector('input').value = '15000';
-            row3.cells[2].querySelector('input').value = 'Uberaba-MG';
-            row3.cells[3].querySelector('input').value = 'Ribeirão Preto-SP';
-            row3.cells[4].querySelector('input').value = '350';
-            row3.cells[5].querySelector('input').value = 'Rodoviário';
-            row3.cells[6].querySelector('input').value = 'Ensacado';
-        }, 100);
-    }, 600);
+            addProdutoRow();
+            setTimeout(() => {
+                const rows = tbody.querySelectorAll('tr');
+                if (rows.length > 1) {
+                    const inputs = rows[1].querySelectorAll('input, select');
+                    if (inputs[0]) inputs[0].value = 'Milho';
+                    if (inputs[1]) inputs[1].value = '30000';
+                    if (inputs[2]) inputs[2].value = 'Goiás-GO';
+                    if (inputs[3]) inputs[3].value = 'Campinas-SP';
+                    if (inputs[4]) inputs[4].value = '920';
+                    if (inputs[5]) inputs[5].value = 'Ferroviário';
+                    if (inputs[6]) inputs[6].value = 'Container';
+                }
+            }, 100);
+        }, 300);
+        
+        // Produto 3
+        setTimeout(() => {
+            addProdutoRow();
+            setTimeout(() => {
+                const rows = tbody.querySelectorAll('tr');
+                if (rows.length > 2) {
+                    const inputs = rows[2].querySelectorAll('input, select');
+                    if (inputs[0]) inputs[0].value = 'Fertilizantes';
+                    if (inputs[1]) inputs[1].value = '15000';
+                    if (inputs[2]) inputs[2].value = 'Uberaba-MG';
+                    if (inputs[3]) inputs[3].value = 'Ribeirão Preto-SP';
+                    if (inputs[4]) inputs[4].value = '350';
+                    if (inputs[5]) inputs[5].value = 'Rodoviário';
+                    if (inputs[6]) inputs[6].value = 'Ensacado';
+                }
+            }, 100);
+        }, 600);
+    }
     
     // Card 4: Produto Principal
     setTimeout(() => {
-        document.getElementById('produto-principal').value = 'Soja em Grãos';
-        document.getElementById('agrupamento-produto').value = 'cereais';
+        setVal('produto-principal', 'Soja em Grãos');
+        setVal('agrupamento-produto', 'cereais');
     }, 800);
     
     // Card 5: Características do Transporte
     setTimeout(() => {
-        document.getElementById('volume-anual').value = '50000';
-        document.getElementById('unidade-volume').value = 'toneladas';
+        setVal('volume-anual', '50000');
+        setVal('unidade-volume', 'toneladas');
         
-        document.getElementById('origem-pais').value = 'Brasil';
-        document.getElementById('origem-estado').value = 'Mato Grosso';
-        document.getElementById('origem-municipio').value = 'Sorriso';
+        setVal('origem-pais', 'Brasil');
+        setVal('origem-estado', 'Mato Grosso');
+        setVal('origem-municipio', 'Sorriso');
         
-        document.getElementById('destino-pais').value = 'Brasil';
-        document.getElementById('destino-estado').value = 'São Paulo';
-        document.getElementById('destino-municipio').value = 'Santos';
+        setVal('destino-pais', 'Brasil');
+        setVal('destino-estado', 'São Paulo');
+        setVal('destino-municipio', 'Santos');
         
-        document.getElementById('distancia').value = '1850';
+        setVal('distancia', '1850');
         
-        document.getElementById('modal-rodoviario').checked = true;
-        document.getElementById('modal-ferroviario').checked = true;
+        checkBox('modal-rodoviario');
+        checkBox('modal-ferroviario');
         
-        document.getElementById('tempo-dias').value = '3';
-        document.getElementById('tempo-horas').value = '12';
-        document.getElementById('tempo-minutos').value = '0';
+        setVal('tempo-dias', '3');
+        setVal('tempo-horas', '12');
+        setVal('tempo-minutos', '0');
         
-        document.getElementById('custo-transporte').value = '125.50';
-        document.getElementById('valor-carga').value = '85000';
-        document.getElementById('tipo-frete').value = 'cif';
+        setVal('custo-transporte', '125.50');
+        setVal('valor-carga', '85000');
+        setVal('tipo-frete', 'cif');
         
-        document.querySelector('input[name="responsavel-contratacao"][value="propria"]').checked = true;
+        selectRadio('responsavel-contratacao', 'propria');
         
-        document.getElementById('acondicionamento').value = 'Granel (caminhão graneleiro)';
-        document.getElementById('embalagem').value = 'Sem embalagem - transporte a granel';
+        setVal('acondicionamento', 'Granel (caminhão graneleiro)');
+        setVal('embalagem', 'Sem embalagem - transporte a granel');
         
-        document.getElementById('frequencia-anual').value = '120';
-        document.getElementById('sazonalidade').value = 'Maior movimentação entre março e agosto (período de safra)';
+        setVal('frequencia-anual', '120');
+        setVal('sazonalidade', 'Maior movimentação entre março e agosto (período de safra)');
         
-        document.querySelector('input[name="armazenagem"][value="sim"]').checked = true;
-        document.getElementById('tempo-armazenagem').value = '15';
+        selectRadio('armazenagem', 'sim');
+        setVal('tempo-armazenagem', '15');
     }, 1000);
     
     // Card 6: Fatores de Decisão Modal
     setTimeout(() => {
-        document.getElementById('importancia-custo').value = 'muito-alta';
-        document.getElementById('variacao-custo').value = '8';
+        setVal('importancia-custo', 'muito-alta');
+        setVal('variacao-custo', '8');
         
-        document.getElementById('importancia-tempo').value = 'alta';
-        document.getElementById('variacao-tempo').value = '15';
+        setVal('importancia-tempo', 'alta');
+        setVal('variacao-tempo', '15');
         
-        document.getElementById('importancia-confiabilidade').value = 'muito-alta';
-        document.getElementById('variacao-confiabilidade').value = '5';
+        setVal('importancia-confiabilidade', 'muito-alta');
+        setVal('variacao-confiabilidade', '5');
         
-        document.getElementById('importancia-seguranca').value = 'alta';
-        document.getElementById('variacao-seguranca').value = '10';
+        setVal('importancia-seguranca', 'alta');
+        setVal('variacao-seguranca', '10');
         
-        document.getElementById('importancia-capacidade').value = 'media';
-        document.getElementById('variacao-capacidade').value = '20';
+        setVal('importancia-capacidade', 'media');
+        setVal('variacao-capacidade', '20');
     }, 1200);
     
     // Card 7: Análise Estratégica
     setTimeout(() => {
-        document.querySelector('input[name="tipo-cadeia"][value="distribuicao"]').checked = true;
+        selectRadio('tipo-cadeia', 'distribuicao');
         
-        document.getElementById('alternativo-ferroviario').checked = true;
-        document.getElementById('alternativo-hidroviario').checked = true;
+        checkBox('alternativo-ferroviario');
+        checkBox('alternativo-hidroviario');
         
-        document.getElementById('fator-adicional').value = 'Disponibilidade de infraestrutura portuária e questões ambientais relacionadas ao transporte';
+        setVal('fator-adicional', 'Disponibilidade de infraestrutura portuária e questões ambientais relacionadas ao transporte');
     }, 1400);
     
     // Card 8: Dificuldades Logísticas
     setTimeout(() => {
-        document.getElementById('dif-infraestrutura').checked = true;
-        document.getElementById('dif-custos').checked = true;
-        document.getElementById('dif-confiabilidade').checked = true;
+        checkBox('dif-infraestrutura');
+        checkBox('dif-custos');
+        checkBox('dif-confiabilidade');
         
-        document.getElementById('detalhamento-dificuldades').value = 'Principais desafios: estado precário das rodovias no trecho MT-SP, alto custo do frete rodoviário e baixa disponibilidade de vagões ferroviários. A infraestrutura portuária em Santos apresenta congestionamentos frequentes durante a safra.';
+        setVal('detalhamento-dificuldades', 'Principais desafios: estado precário das rodovias no trecho MT-SP, alto custo do frete rodoviário e baixa disponibilidade de vagões ferroviários. A infraestrutura portuária em Santos apresenta congestionamentos frequentes durante a safra.');
         
         console.log('✅ Formulário preenchido com sucesso!');
         console.log('📋 Próximo passo: Role até o final e clique em "💾 Salvar Respostas"');
