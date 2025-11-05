@@ -531,6 +531,278 @@ function parseInteger(value, defaultValue = null) {
     return isNaN(num) ? defaultValue : num;
 }
 
+// ========================
+// Form Validation
+// ========================
+
+/**
+ * Valida todos os campos do formulário, respeitando campos condicionais
+ * @returns {Array} Lista de campos inválidos com informações de erro
+ */
+function validateAllFormFields() {
+    const invalidFields = [];
+    const form = document.getElementById('formulario-pli');
+    
+    // Obter todos os campos de input, select e textarea
+    const fields = form.querySelectorAll('input[required], select[required], textarea[required]');
+    
+    fields.forEach(field => {
+        // Ignorar campos escondidos ou desabilitados (condicionais)
+        if (!isFieldVisible(field)) {
+            return;
+        }
+        
+        // Validar se o campo está vazio
+        if (isFieldEmpty(field)) {
+            const fieldInfo = getFieldInfo(field);
+            invalidFields.push({
+                element: field,
+                label: fieldInfo.label,
+                card: fieldInfo.card
+            });
+        }
+    });
+    
+    return invalidFields;
+}
+
+/**
+ * Verifica se um campo está visível e deve ser validado
+ */
+function isFieldVisible(field) {
+    // Verificar se o campo ou seus pais estão escondidos
+    let element = field;
+    while (element && element !== document.body) {
+        const style = window.getComputedStyle(element);
+        if (style.display === 'none' || style.visibility === 'hidden') {
+            return false;
+        }
+        element = element.parentElement;
+    }
+    
+    // Verificar se está desabilitado
+    if (field.disabled) {
+        return false;
+    }
+    
+    // Casos especiais de campos condicionais
+    
+    // num_paradas_exato: só validar se num_paradas for "mais-10"
+    if (field.id === 'num-paradas-exato') {
+        const numParadas = document.getElementById('num-paradas');
+        return numParadas && numParadas.value === 'mais-10';
+    }
+    
+    // estado: só validar se país for Brasil
+    if (field.id === 'estado') {
+        const pais = document.getElementById('pais');
+        return pais && pais.value === 'Brasil';
+    }
+    
+    // município: só validar se estado estiver selecionado
+    if (field.id === 'municipio') {
+        const estado = document.getElementById('estado');
+        const pais = document.getElementById('pais');
+        return pais && pais.value === 'Brasil' && estado && estado.value !== '';
+    }
+    
+    return true;
+}
+
+/**
+ * Verifica se um campo está vazio
+ */
+function isFieldEmpty(field) {
+    const value = field.value.trim();
+    
+    // Para select, verificar se não é valor padrão
+    if (field.tagName === 'SELECT') {
+        return value === '' || value === 'selecione';
+    }
+    
+    // Para checkbox/radio
+    if (field.type === 'checkbox' || field.type === 'radio') {
+        const name = field.name;
+        const checked = document.querySelector(`input[name="${name}"]:checked`);
+        return !checked;
+    }
+    
+    // Para inputs normais
+    return value === '';
+}
+
+/**
+ * Obtém informações sobre o campo (label e cartão)
+ */
+function getFieldInfo(field) {
+    let label = 'Campo sem rótulo';
+    let card = 'Seção desconhecida';
+    
+    // Buscar label associada
+    const fieldId = field.id;
+    if (fieldId) {
+        const labelElement = document.querySelector(`label[for="${fieldId}"]`);
+        if (labelElement) {
+            label = labelElement.textContent.trim();
+            // Remover asterisco de obrigatório
+            label = label.replace(/\s*\*\s*$/, '');
+        }
+    }
+    
+    // Buscar cartão (card) pai
+    const cardElement = field.closest('.card');
+    if (cardElement) {
+        const cardHeader = cardElement.querySelector('.card-header');
+        if (cardHeader) {
+            card = cardHeader.textContent.trim();
+        }
+    }
+    
+    return { label, card };
+}
+
+/**
+ * Limpa todos os erros de validação anteriores
+ */
+function clearValidationErrors() {
+    // Remover classes de erro de todos os campos
+    document.querySelectorAll('.field-error').forEach(field => {
+        field.classList.remove('field-error');
+    });
+    
+    // Remover mensagens de erro
+    document.querySelectorAll('.validation-error-text').forEach(msg => {
+        msg.remove();
+    });
+    
+    // Remover resumo de validação
+    const summary = document.querySelector('.validation-summary');
+    if (summary) {
+        summary.remove();
+    }
+}
+
+/**
+ * Destaca todos os campos inválidos
+ */
+function highlightInvalidFields(invalidFields) {
+    invalidFields.forEach(fieldInfo => {
+        const field = fieldInfo.element;
+        
+        // Adicionar classe de erro
+        field.classList.add('field-error');
+        
+        // Adicionar mensagem de erro abaixo do campo (se ainda não existir)
+        if (!field.nextElementSibling || !field.nextElementSibling.classList.contains('validation-error-text')) {
+            const errorMsg = document.createElement('small');
+            errorMsg.className = 'validation-error-text';
+            errorMsg.textContent = 'Este campo é obrigatório';
+            field.parentElement.appendChild(errorMsg);
+        }
+        
+        // Remover erro quando usuário começar a preencher
+        field.addEventListener('input', function removeError() {
+            if (!isFieldEmpty(field)) {
+                field.classList.remove('field-error');
+                const errorMsg = field.parentElement.querySelector('.validation-error-text');
+                if (errorMsg) {
+                    errorMsg.remove();
+                }
+            }
+        }, { once: true });
+        
+        // Para select, remover erro no change
+        if (field.tagName === 'SELECT') {
+            field.addEventListener('change', function removeError() {
+                if (!isFieldEmpty(field)) {
+                    field.classList.remove('field-error');
+                    const errorMsg = field.parentElement.querySelector('.validation-error-text');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                }
+            }, { once: true });
+        }
+    });
+}
+
+/**
+ * Mostra resumo de validação com contador de erros
+ */
+function showValidationSummary(errorCount) {
+    // Criar elemento de resumo
+    const summary = document.createElement('div');
+    summary.className = 'validation-summary';
+    summary.innerHTML = `
+        <div class="validation-summary-title">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+            </svg>
+            Formulário Incompleto
+        </div>
+        <div class="validation-summary-message">
+            ${errorCount} ${errorCount === 1 ? 'campo precisa' : 'campos precisam'} ser ${errorCount === 1 ? 'preenchido' : 'preenchidos'} antes de enviar.
+        </div>
+        <button class="validation-summary-close" onclick="this.parentElement.remove()">
+            Entendi
+        </button>
+    `;
+    
+    // Adicionar ao body
+    document.body.appendChild(summary);
+    
+    // Remover automaticamente após 8 segundos
+    setTimeout(() => {
+        if (summary.parentElement) {
+            summary.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => summary.remove(), 300);
+        }
+    }, 8000);
+}
+
+/**
+ * Faz scroll suave para o primeiro campo inválido, centralizando na tela
+ */
+function scrollToFirstInvalidField(fieldInfo) {
+    const field = fieldInfo.element;
+    
+    // Calcular posição para centralizar o campo
+    const fieldRect = field.getBoundingClientRect();
+    const absoluteTop = fieldRect.top + window.pageYOffset;
+    const viewportHeight = window.innerHeight;
+    const fieldHeight = fieldRect.height;
+    
+    // Posição para centralizar: top do campo - metade da viewport + metade do campo
+    const scrollToPosition = absoluteTop - (viewportHeight / 2) + (fieldHeight / 2);
+    
+    // Scroll suave
+    window.scrollTo({
+        top: scrollToPosition,
+        behavior: 'smooth'
+    });
+    
+    // Focar no campo após o scroll (com delay para animação completar)
+    setTimeout(() => {
+        field.focus();
+        
+        // Para campos select, abrir dropdown automaticamente
+        if (field.tagName === 'SELECT') {
+            // Simular click para abrir dropdown (funciona em alguns browsers)
+            const event = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            field.dispatchEvent(event);
+        }
+    }, 500);
+}
+
+// ========================
+// Form Data Collection
+// ========================
+
 // Coletar dados do formulário
 function collectFormData() {
     const formData = {};
@@ -754,15 +1026,34 @@ function generateExcelFromSingleResponse(data) {
 async function handleFormSubmit(event) {
     event.preventDefault();
     
+    // Limpar erros anteriores
+    clearValidationErrors();
+    
     try {
+        // Validar todos os campos do formulário
+        const invalidFields = validateAllFormFields();
+        
+        if (invalidFields.length > 0) {
+            // Destacar todos os campos inválidos
+            highlightInvalidFields(invalidFields);
+            
+            // Mostrar resumo de erros
+            showValidationSummary(invalidFields.length);
+            
+            // Scroll suave para o primeiro campo inválido (centralizado)
+            scrollToFirstInvalidField(invalidFields[0]);
+            
+            return; // Não salvar se houver erros
+        }
+        
         const formData = collectFormData();
         
-        // Validar campos obrigatórios
+        // Validar campos obrigatórios (validação adicional de dados)
         const validationErrors = validateRequiredFields(formData);
         
         if (validationErrors.length > 0) {
             showValidationErrorsPopup(validationErrors);
-            return; // Não salvar se houver erros
+            return;
         }
         
         // Salvar no banco de dados
