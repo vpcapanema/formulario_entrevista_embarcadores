@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         await dbManager.init();
         console.log('Banco de dados inicializado');
         
+        // Carregar lista de entrevistadores
+        await carregarEntrevistadores();
+        
         // Adicionar primeira linha de produto
         addProdutoRow();
         
@@ -24,11 +27,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Carregar lista de entrevistadores da API
+async function carregarEntrevistadores() {
+    const selectEntrevistador = document.getElementById('id-entrevistador');
+    
+    try {
+        // Tentar carregar da API (se disponível)
+        if (typeof api !== 'undefined') {
+            const entrevistadores = await api.get(API_CONFIG.ENDPOINTS.entrevistadores);
+            
+            selectEntrevistador.innerHTML = '<option value="">Selecione um entrevistador...</option>';
+            
+            entrevistadores.forEach(entrevistador => {
+                const option = document.createElement('option');
+                option.value = entrevistador.id_entrevistador;
+                option.textContent = `${entrevistador.nome_completo} - ${entrevistador.nome_instituicao || 'Sem instituição'}`;
+                selectEntrevistador.appendChild(option);
+            });
+            
+            console.log(`✅ ${entrevistadores.length} entrevistadores carregados`);
+        } else {
+            // Fallback: lista fixa se API não estiver disponível
+            selectEntrevistador.innerHTML = `
+                <option value="">Selecione um entrevistador...</option>
+                <option value="1">Entrevistador Concremat</option>
+                <option value="2">Entrevistador PLI 2050</option>
+            `;
+            console.log('⚠️ API não disponível, usando lista fixa de entrevistadores');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar entrevistadores:', error);
+        // Fallback em caso de erro
+        selectEntrevistador.innerHTML = `
+            <option value="">Selecione um entrevistador...</option>
+            <option value="1">Entrevistador Concremat</option>
+            <option value="2">Entrevistador PLI 2050</option>
+        `;
+    }
+}
+
+
 // Configurar event listeners
 function setupEventListeners() {
     // Formulário
     const form = document.getElementById('entrevista-form');
     form.addEventListener('submit', handleFormSubmit);
+    
+    // Seção 0: Responsável pelo preenchimento
+    document.querySelectorAll('input[name="tipo-responsavel"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const entrevistadorContainer = document.getElementById('selecionar-entrevistador-container');
+            const infoEntrevistadoContainer = document.getElementById('info-entrevistado-container');
+            const isEntrevistador = this.value === 'entrevistador';
+            
+            entrevistadorContainer.classList.toggle('hidden-field', !isEntrevistador);
+            infoEntrevistadoContainer.classList.toggle('hidden-field', isEntrevistador);
+            
+            // Tornar campo obrigatório/opcional
+            const selectEntrevistador = document.getElementById('id-entrevistador');
+            if (isEntrevistador) {
+                selectEntrevistador.setAttribute('required', 'required');
+            } else {
+                selectEntrevistador.removeAttribute('required');
+            }
+        });
+    });
     
     // Tipo de empresa
     document.getElementById('tipo-empresa').addEventListener('change', function() {
@@ -111,6 +174,16 @@ function removeProdutoRow(rowId) {
 // Coletar dados do formulário
 function collectFormData() {
     const formData = {};
+    
+    // Seção 0: Responsável pelo preenchimento
+    const tipoResponsavel = document.querySelector('input[name="tipo-responsavel"]:checked').value;
+    formData.tipoResponsavel = tipoResponsavel;
+    
+    if (tipoResponsavel === 'entrevistador') {
+        const idEntrevistador = document.getElementById('id-entrevistador').value;
+        formData.idResponsavel = idEntrevistador;
+    }
+    // Se for entrevistado, o idResponsavel será o id_entrevistado (será definido no backend)
     
     // Dados básicos
     formData.nome = document.getElementById('nome').value;
@@ -235,6 +308,10 @@ function collectFormData() {
 // Gerar linha Excel a partir dos dados do formulário
 function generateExcelFromSingleResponse(data) {
     const excelRow = {
+        // Card 0 - Responsável pelo Preenchimento
+        'Q0.1. Tipo de Responsável': data.tipoResponsavel || '',
+        'Q0.2. ID do Responsável': data.idResponsavel || '',
+        
         // Card 1 - Dados do Entrevistado
         'Q1. Nome': data.nome || '',
         'Q2. Função': data.funcao || '',

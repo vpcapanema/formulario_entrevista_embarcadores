@@ -47,6 +47,45 @@
             </div>
 
             <form id="entrevista-form">
+                <!-- Card 0: Responsável pelo Preenchimento -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>0. Responsável pelo Preenchimento</h3>
+                        <p class="card-intro">Quem está preenchendo este formulário?</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label><span class="question-number">0.1</span> Quem está preenchendo este formulário? *</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="tipo-responsavel" value="entrevistado" required checked>
+                                    <span>Entrevistado (Representante da empresa)</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="tipo-responsavel" value="entrevistador" required>
+                                    <span>Entrevistador (Consultor/Pesquisador)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Campo condicional: Selecionar Entrevistador -->
+                        <div class="form-group hidden-field" id="selecionar-entrevistador-container">
+                            <label for="id-entrevistador"><span class="question-number">0.2</span> Selecione o entrevistador *</label>
+                            <select id="id-entrevistador" name="id-entrevistador">
+                                <option value="">Carregando entrevistadores...</option>
+                            </select>
+                            <p class="help-text">Se você não encontrar seu nome na lista, entre em contato com o administrador do sistema.</p>
+                        </div>
+
+                        <!-- Informação para entrevistado -->
+                        <div class="form-group" id="info-entrevistado-container">
+                            <div class="info-box">
+                                <p><strong>ℹ️ Informação:</strong> Você está preenchendo o formulário como representante da empresa. Suas informações de contato serão solicitadas na próxima seção.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Card 1: Dados do Entrevistado -->
                 <div class="card">
                     <div class="card-header">
