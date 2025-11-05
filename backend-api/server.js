@@ -568,6 +568,31 @@ app.get('/api/analytics/produtos-ranking', async (req, res) => {
 });
 
 // =====================================================
+// ENDPOINT: RESPOSTAS CONSOLIDADAS (VIEW)
+// =====================================================
+
+app.get('/api/respostas-consolidadas', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT * FROM formulario_embarcadores.v_pesquisas_completa
+            ORDER BY data_entrevista DESC
+        `);
+        res.json({ 
+            success: true, 
+            data: result.rows,
+            total: result.rowCount
+        });
+    } catch (error) {
+        console.error('Erro ao buscar respostas consolidadas:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Erro ao buscar respostas consolidadas',
+            details: error.message 
+        });
+    }
+});
+
+// =====================================================
 // ROTA DE HEALTH CHECK
 // =====================================================
 

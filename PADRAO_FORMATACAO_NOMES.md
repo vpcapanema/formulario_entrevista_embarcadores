@@ -65,7 +65,7 @@ As seguintes palavras devem permanecer em **minúscula** quando no meio do nome:
 ```sql
 -- Formato: Title Case com preposições em minúscula
 'São Paulo'              -- ✅
-'Aparecida D'Oeste'      -- ✅ (D' maiúsculo)
+'Aparecida D'Oeste''      -- ✅ (D' maiúsculo)
 'Américo de Campos'      -- ✅
 'São José do Rio Preto'  -- ✅
 'Araçoiaba da Serra'     -- ✅
@@ -100,7 +100,7 @@ As seguintes palavras devem permanecer em **minúscula** quando no meio do nome:
 -- Formato: UPPERCASE completo
 'JOÃO PEDRO DA SILVA'           -- ✅
 'MARIA FERNANDA DOS SANTOS'     -- ✅
-'ANA PAULA D'ÁVILA'             -- ✅
+'ANA PAULA D'ÁVILA''             -- ✅
 'JOSÉ ANTÔNIO DE SOUZA JÚNIOR'  -- ✅
 
 -- Exemplos INCORRETOS:
@@ -115,7 +115,7 @@ As seguintes palavras devem permanecer em **minúscula** quando no meio do nome:
 -- Formato: UPPERCASE completo
 'CARLOS EDUARDO FERREIRA'       -- ✅
 'FERNANDA ALVES DE OLIVEIRA'    -- ✅
-'RICARDO HENRIQUE D'ANGELO'     -- ✅
+'RICARDO HENRIQUE D'ANGELO''     -- ✅
 
 -- Campo: cargo_entrevistado
 -- Formato: Title Case (função/cargo, não nome de pessoa)

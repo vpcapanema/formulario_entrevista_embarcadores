@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico API - PLI 2050</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .info {
+            color: #007bff;
+        }
+        
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-online {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico da API - PLI 2050</h1>
+        <p class="subtitle">Teste a conexão com o backend e verifique os endpoints</p>
+        
+        <!-- Seção 1: Status da API -->
+        <div class="test-section">
+            <h2>1. Status da API</h2>
+            <button onclick="testarHealth()">🏥 Testar Health Check</button>
+            <button onclick="verificarVariaveis()">📊 Verificar Variáveis</button>
+            <div id="result-health" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Seção 2: Endpoints de Listas -->
+        <div class="test-section">
+            <h2>2. Endpoints de Listas Auxiliares</h2>
+            <button onclick="testarEndpoint('estados')">🗺️ Estados (27)</button>
+            <button onclick="testarEndpoint('paises')">🌍 Países (61)</button>
+            <button onclick="testarEndpoint('municipios')">🏙️ Municípios (645)</button>
+            <button onclick="testarEndpoint('funcoes')">💼 Funções</button>
+            <button onclick="testarEndpoint('instituicoes')">🏢 Instituições</button>
+            <div id="result-listas" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Seção 3: Endpoint de Entrevistadores -->
+        <div class="test-section">
+            <h2>3. Entrevistadores</h2>
+            <button onclick="testarEndpoint('entrevistadores')">👥 Entrevistadores</button>
+            <div id="result-entrevistadores" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Seção 4: CNPJ -->
+        <div class="test-section">
+            <h2>4. Busca de CNPJ (Receita Federal)</h2>
+            <button onclick="testarCNPJ('33.683.111/0001-07')">🔍 Testar CNPJ Válido</button>
+            <button onclick="testarCNPJ('12.345.678/0001-00')">❌ Testar CNPJ Inválido</button>
+            <div id="result-cnpj" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Seção 5: Teste Completo -->
+        <div class="test-section">
+            <h2>5. Teste Completo</h2>
+            <button onclick="testarTudo()">🚀 Executar Todos os Testes</button>
+            <button onclick="limparResultados()">🗑️ Limpar Resultados</button>
+        </div>
+    </div>
+    
+    <script src="api-client.js"></script>
+    <script>
+        // Funções de teste
+        async function testarHealth() {
+            const resultDiv = document.getElementById('result-health');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="info">⏳ Testando health check...</div>';
+            
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/health`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ API Online!</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Erro ao conectar com a API</div>
+                    <div class="warning">⚠️ Certifique-se de que o backend está rodando</div>
+                    <div class="info">URL tentada: ${API_CONFIG.BASE_URL}/health</div>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+        
+        async function verificarVariaveis() {
+            const resultDiv = document.getElementById('result-health');
+            resultDiv.style.display = 'block';
+            
+            const info = {
+                'API_CONFIG existe': typeof API_CONFIG !== 'undefined',
+                'api existe': typeof api !== 'undefined',
+                'BASE_URL': API_CONFIG?.BASE_URL,
+                'DEVELOPMENT_URL': API_CONFIG?.DEVELOPMENT_URL,
+                'Hostname': window.location.hostname,
+                'É GitHub Pages': window.location.hostname.includes('github.io'),
+                'Endpoints disponíveis': API_CONFIG?.ENDPOINTS ? Object.keys(API_CONFIG.ENDPOINTS) : []
+            };
+            
+            resultDiv.innerHTML = `
+                <div class="info">📊 Configuração da API:</div>
+                <pre>${JSON.stringify(info, null, 2)}</pre>
+            `;
+        }
+        
+        async function testarEndpoint(nome) {
+            const resultDiv = document.getElementById('result-listas');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<div class="info">⏳ Carregando ${nome}...</div>`;
+            
+            try {
+                const data = await api.get(API_CONFIG.ENDPOINTS[nome]);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ ${nome.toUpperCase()}: ${data.length} registros carregados</div>
+                    <div class="info">Primeiros 5 registros:</div>
+                    <pre>${JSON.stringify(data.slice(0, 5), null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Erro ao carregar ${nome}</div>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+        
+        async function testarCNPJ(cnpj) {
+            const resultDiv = document.getElementById('result-cnpj');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<div class="info">⏳ Buscando CNPJ ${cnpj}...</div>`;
+            
+            try {
+                const cnpjLimpo = cnpj.replace(/[^\d]/g, '');
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/cnpj/${cnpjLimpo}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ CNPJ encontrado!</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="warning">⚠️ CNPJ não encontrado ou inválido</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">❌ Erro ao buscar CNPJ</div>
+                    <pre>${error.message}</pre>
+                `;
+            }
+        }
+        
+        async function testarTudo() {
+            console.log('🚀 Iniciando teste completo...');
+            await testarHealth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            for (const nome of ['estados', 'paises', 'municipios', 'funcoes', 'instituicoes', 'entrevistadores']) {
+                await testarEndpoint(nome);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            await testarCNPJ('33.683.111/0001-07');
+            console.log('✅ Teste completo finalizado!');
+        }
+        
+        function limparResultados() {
+            document.querySelectorAll('.result').forEach(div => {
+                div.style.display = 'none';
+                div.innerHTML = '';
+            });
+        }
+        
+        // Auto-executar verificação inicial
+        window.addEventListener('load', () => {
+            console.log('🔍 Página de diagnóstico carregada');
+            console.log('📡 URL da API:', API_CONFIG?.BASE_URL);
+        });
+    </script>
+</body>
+</html>

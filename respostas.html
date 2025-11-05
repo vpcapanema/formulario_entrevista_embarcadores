@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLI 2050 - Respostas Coletadas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .toolbar {
+            background: #f8f9fa;
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .status-badge {
+            background: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge.loading {
+            background: #ffc107;
+        }
+
+        .status-badge.error {
+            background: #dc3545;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.4);
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .column-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .column-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .column-field {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            font-weight: 400;
+            font-family: 'Courier New', monospace;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        td {
+            padding: 1rem;
+            vertical-align: top;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-state {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #f5c6cb;
+        }
+
+        .filter-bar {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-bar input,
+        .filter-bar select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .filter-bar input:focus,
+        .filter-bar select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Respostas Coletadas</h1>
+            <p>Sistema de Formulários de Entrevista - PLI 2050</p>
+        </div>
+
+        <div class="toolbar">
+            <div id="status-container">
+                <span class="status-badge loading">
+                    <span>⏳</span>
+                    <span>Conectando...</span>
+                </span>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="carregarRespostas()">
+                    🔄 Atualizar
+                </button>
+                <button class="btn btn-success" onclick="exportarExcel()">
+                    📊 Exportar Excel
+                </button>
+                <button class="btn btn-success" onclick="exportarCSV()">
+                    📄 Exportar CSV
+                </button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="filter-bar" id="filtros" style="display: none;">
+                <input type="text" id="filtro-busca" placeholder="🔍 Buscar em todas as colunas..." onkeyup="filtrarTabela()">
+                <select id="filtro-status" onchange="filtrarTabela()">
+                    <option value="">Todos os Status</option>
+                    <option value="Concluída">Concluída</option>
+                    <option value="Rascunho">Rascunho</option>
+                    <option value="Em Revisão">Em Revisão</option>
+                </select>
+            </div>
+
+            <div id="dados-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando respostas do banco de dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script>
+        // Mapeamento de aliases amigáveis para os nomes das colunas
+        const ALIAS_COLUNAS = {
+            'id_pesquisa': 'ID da Pesquisa',
+            'entrevistador_nome': 'Nome do Entrevistador',
+            'entrevistador_email': 'Email do Entrevistador',
+            'entrevistador_instituicao': 'Instituição',
+            'entrevistador_cnpj': 'CNPJ da Instituição',
+            'data_entrevista': 'Data da Entrevista',
+            'data_atualizacao': 'Última Atualização',
+            'status_pesquisa': 'Status',
+            'entrevistado_nome': 'Nome do Entrevistado',
+            'entrevistado_funcao': 'Função',
+            'entrevistado_telefone': 'Telefone',
+            'entrevistado_email': 'Email',
+            'responsavel_principal': 'Responsável Principal?',
+            'nome_empresa': 'Nome da Empresa',
+            'tipo_empresa': 'Tipo de Empresa',
+            'outro_tipo_empresa': 'Outro Tipo (se aplicável)',
+            'cnpj_empresa': 'CNPJ',
+            'municipio_empresa': 'Município',
+            'estado_empresa': 'Estado',
+            'agrupamento_produto': 'Categoria do Produto',
+            'produto_principal': 'Produto Principal',
+            'outro_produto': 'Outro Produto',
+            'tipo_transporte': 'Tipo de Transporte',
+            'origem_pais': 'País de Origem',
+            'origem_estado': 'Estado de Origem',
+            'origem_municipio': 'Município de Origem',
+            'origem_completa': 'Origem Completa',
+            'destino_pais': 'País de Destino',
+            'destino_estado': 'Estado de Destino',
+            'destino_municipio': 'Município de Destino',
+            'destino_completa': 'Destino Completo',
+            'distancia': 'Distância',
+            'num_paradas': 'Número de Paradas',
+            'num_paradas_exato': 'Paradas (Número Exato)',
+            'modais': 'Modais Utilizados',
+            'configuracao_veiculo': 'Configuração do Veículo',
+            'capacidade_utilizada': 'Capacidade Utilizada',
+            'peso_carga': 'Peso da Carga',
+            'custo_transporte': 'Custo de Transporte',
+            'valor_carga': 'Valor da Carga',
+            'custo_por_tonelada': 'Custo por Tonelada',
+            'tipo_embalagem': 'Tipo de Embalagem',
+            'carga_perigosa': 'Carga Perigosa?',
+            'tempo_viagem': 'Tempo de Viagem',
+            'tempo_total_minutos': 'Tempo Total (minutos)',
+            'frequencia': 'Frequência',
+            'frequencia_diaria': 'Frequência Diária',
+            'frequencia_outra': 'Outra Frequência',
+            'importancia_custo': 'Importância: Custo',
+            'variacao_custo': 'Variação: Custo',
+            'importancia_tempo': 'Importância: Tempo',
+            'variacao_tempo': 'Variação: Tempo',
+            'importancia_confiabilidade': 'Importância: Confiabilidade',
+            'variacao_confiabilidade': 'Variação: Confiabilidade',
+            'importancia_seguranca': 'Importância: Segurança',
+            'variacao_seguranca': 'Variação: Segurança',
+            'importancia_capacidade': 'Importância: Capacidade',
+            'variacao_capacidade': 'Variação: Capacidade',
+            'tipo_cadeia': 'Tipo de Cadeia',
+            'modais_alternativos': 'Modais Alternativos',
+            'fator_adicional': 'Fator Adicional',
+            'dificuldades': 'Dificuldades Encontradas',
+            'detalhe_dificuldade': 'Detalhe das Dificuldades',
+            'observacoes': 'Observações',
+            'qtd_produtos': 'Quantidade de Produtos'
+        };
+
+        // Colunas que NÃO devem ser exibidas
+        const COLUNAS_OCULTAS = ['id_pesquisa'];
+
+        let dadosOriginais = [];
+        let dadosFiltrados = [];
+
+        // Verificar conexão com API ao carregar
+        document.addEventListener('DOMContentLoaded', async () => {
+            await carregarRespostas();
+        });
+
+        // Carregar respostas do banco
+        async function carregarRespostas() {
+            const container = document.getElementById('dados-container');
+            const statusContainer = document.getElementById('status-container');
+            
+            try {
+                statusContainer.innerHTML = '<span class="status-badge loading"><span>⏳</span><span>Carregando...</span></span>';
+                
+                container.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Buscando respostas consolidadas da view...</p>
+                    </div>
+                `;
+
+                // Endpoint para buscar a view consolidada
+                const response = await api.get('/api/respostas-consolidadas');
+                
+                if (response.success && response.data) {
+                    dadosOriginais = response.data;
+                    dadosFiltrados = [...dadosOriginais];
+                    
+                    if (dadosOriginais.length === 0) {
+                        mostrarEstadoVazio();
+                    } else {
+                        renderizarTabela(dadosFiltrados);
+                        document.getElementById('filtros').style.display = 'flex';
+                    }
+                    
+                    statusContainer.innerHTML = `
+                        <span class="status-badge">
+                            <span>✅</span>
+                            <span>${dadosOriginais.length} resposta(s) carregada(s)</span>
+                        </span>
+                    `;
+                } else {
+                    throw new Error(response.error || 'Erro ao carregar dados');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar respostas:', error);
+                statusContainer.innerHTML = '<span class="status-badge error"><span>❌</span><span>Erro na conexão</span></span>';
+                container.innerHTML = `
+                    <div class="error-state">
+                        <h3>❌ Erro ao Carregar Dados</h3>
+                        <p><strong>Detalhes:</strong> ${error.message}</p>
+                        <p>Verifique se o backend está rodando e se a view foi criada corretamente.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Renderizar tabela
+        function renderizarTabela(dados) {
+            if (dados.length === 0) {
+                mostrarEstadoVazio();
+                return;
+            }
+
+            const colunas = Object.keys(dados[0]).filter(col => !COLUNAS_OCULTAS.includes(col));
+            
+            let html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+            `;
+            
+            // Cabeçalhos
+            colunas.forEach(col => {
+                const alias = ALIAS_COLUNAS[col] || col;
+                html += `
+                    <th>
+                        <div class="column-header">
+                            <span class="column-name">${alias}</span>
+                            <span class="column-field">${col}</span>
+                        </div>
+                    </th>
+                `;
+            });
+            
+            html += `
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // Linhas
+            dados.forEach(row => {
+                html += '<tr>';
+                colunas.forEach(col => {
+                    let valor = row[col];
+                    
+                    // Formatar valor
+                    if (valor === null || valor === undefined || valor === '') {
+                        valor = '<span style="color: #999;">—</span>';
+                    } else if (Array.isArray(valor)) {
+                        valor = valor.join(', ');
+                    }
+                    
+                    html += `<td>${valor}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('dados-container').innerHTML = html;
+        }
+
+        // Mostrar estado vazio
+        function mostrarEstadoVazio() {
+            document.getElementById('dados-container').innerHTML = `
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+                    </svg>
+                    <h2>Nenhuma resposta coletada ainda</h2>
+                    <p>As respostas dos formulários aparecerão aqui quando forem salvas no banco de dados PostgreSQL.</p>
+                </div>
+            `;
+        }
+
+        // Filtrar tabela
+        function filtrarTabela() {
+            const busca = document.getElementById('filtro-busca').value.toLowerCase();
+            const status = document.getElementById('filtro-status').value;
+            
+            dadosFiltrados = dadosOriginais.filter(row => {
+                // Filtro de status
+                if (status && row.status_pesquisa !== status) {
+                    return false;
+                }
+                
+                // Filtro de busca geral
+                if (busca) {
+                    const textoCompleto = Object.values(row).join(' ').toLowerCase();
+                    if (!textoCompleto.includes(busca)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            renderizarTabela(dadosFiltrados);
+        }
+
+        // Exportar para Excel (usando HTML table)
+        function exportarExcel() {
+            if (dadosFiltrados.length === 0) {
+                alert('Não há dados para exportar!');
+                return;
+            }
+
+            const colunas = Object.keys(dadosFiltrados[0]).filter(col => !COLUNAS_OCULTAS.includes(col));
+            
+            let html = '<table><thead><tr>';
+            colunas.forEach(col => {
+                const alias = ALIAS_COLUNAS[col] || col;
+                html += `<th>${alias}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            dadosFiltrados.forEach(row => {
+                html += '<tr>';
+                colunas.forEach(col => {
+                    let valor = row[col];
+                    if (Array.isArray(valor)) valor = valor.join(', ');
+                    if (valor === null || valor === undefined) valor = '';
+                    html += `<td>${valor}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PLI2050_Respostas_${new Date().toISOString().split('T')[0]}.xls`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Exportar para CSV
+        function exportarCSV() {
+            if (dadosFiltrados.length === 0) {
+                alert('Não há dados para exportar!');
+                return;
+            }
+
+            const colunas = Object.keys(dadosFiltrados[0]).filter(col => !COLUNAS_OCULTAS.includes(col));
+            
+            // Cabeçalho
+            let csv = colunas.map(col => {
+                const alias = ALIAS_COLUNAS[col] || col;
+                return `"${alias}"`;
+            }).join(',') + '\n';
+            
+            // Dados
+            dadosFiltrados.forEach(row => {
+                csv += colunas.map(col => {
+                    let valor = row[col];
+                    if (Array.isArray(valor)) valor = valor.join('; ');
+                    if (valor === null || valor === undefined) valor = '';
+                    return `"${String(valor).replace(/"/g, '""')}"`;
+                }).join(',') + '\n';
+            });
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PLI2050_Respostas_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
