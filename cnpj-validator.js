@@ -122,39 +122,40 @@ class CNPJValidator {
         this.nomeInput.value = 'Aguarde...';
         
         try {
-            // API da ReceitaWS (gratuita)
-            const response = await fetch(`https://www.receitaws.com.br/v1/cnpj/${cnpj}`);
+            // Usar nosso backend como proxy para evitar CORS
+            const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? 'http://localhost:3000'
+                : 'https://sua-api-aqui.herokuapp.com'; // Atualizar com URL do Render depois
+            
+            const response = await fetch(`${API_URL}/api/cnpj/${cnpj}`);
             
             if (!response.ok) {
-                throw new Error('Erro na consulta à Receita Federal');
+                const error = await response.json();
+                throw new Error(error.error || 'Erro na consulta à Receita Federal');
             }
             
             const dados = await response.json();
             
-            if (dados.status === 'ERROR') {
-                throw new Error(dados.message || 'CNPJ não encontrado');
-            }
-            
             // Preencher nome da empresa
-            this.nomeInput.value = dados.nome || '';
+            this.nomeInput.value = dados.razaoSocial || '';
             
             // Mostrar informações adicionais
             const situacao = dados.situacao === 'ATIVA' ? '✅' : '⚠️';
             this.mostrarStatus(
-                `${situacao} ${dados.situacao} | ${dados.atividade_principal[0]?.text || 'N/A'}`,
+                `${situacao} ${dados.situacao} | ${dados.atividadePrincipal?.text || 'N/A'}`,
                 'sucesso'
             );
             
             // Log para debug
             console.log('Dados da Receita Federal:', {
                 cnpj: dados.cnpj,
-                razaoSocial: dados.nome,
-                fantasia: dados.fantasia,
+                razaoSocial: dados.razaoSocial,
+                fantasia: dados.nomeFantasia,
                 situacao: dados.situacao,
                 tipo: dados.tipo,
-                atividade: dados.atividade_principal[0]?.text,
-                municipio: dados.municipio,
-                uf: dados.uf
+                atividade: dados.atividadePrincipal?.text,
+                municipio: dados.endereco?.municipio,
+                uf: dados.endereco?.uf
             });
             
         } catch (error) {

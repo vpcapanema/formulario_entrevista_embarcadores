@@ -182,6 +182,72 @@ app.post('/api/entrevistadores', async (req, res) => {
 });
 
 // =====================================================
+// ROTAS - CNPJ (RECEITA FEDERAL)
+// =====================================================
+
+// GET /api/cnpj/:cnpj
+app.get('/api/cnpj/:cnpj', async (req, res) => {
+    const { cnpj } = req.params;
+    
+    // Remove formatação do CNPJ (mantém apenas números)
+    const cnpjLimpo = cnpj.replace(/\D/g, '');
+    
+    if (cnpjLimpo.length !== 14) {
+        return res.status(400).json({ error: 'CNPJ deve ter 14 dígitos' });
+    }
+    
+    try {
+        // Fazer requisição para a API da Receita Federal
+        const fetch = (await import('node-fetch')).default;
+        const response = await fetch(`https://www.receitaws.com.br/v1/cnpj/${cnpjLimpo}`);
+        
+        if (!response.ok) {
+            throw new Error('Erro na consulta à Receita Federal');
+        }
+        
+        const dados = await response.json();
+        
+        if (dados.status === 'ERROR') {
+            return res.status(404).json({ 
+                error: dados.message || 'CNPJ não encontrado' 
+            });
+        }
+        
+        // Retornar dados formatados
+        res.json({
+            cnpj: dados.cnpj,
+            razaoSocial: dados.nome,
+            nomeFantasia: dados.fantasia,
+            situacao: dados.situacao,
+            tipo: dados.tipo,
+            porte: dados.porte,
+            naturezaJuridica: dados.natureza_juridica,
+            atividadePrincipal: dados.atividade_principal?.[0] || null,
+            endereco: {
+                logradouro: dados.logradouro,
+                numero: dados.numero,
+                complemento: dados.complemento,
+                bairro: dados.bairro,
+                municipio: dados.municipio,
+                uf: dados.uf,
+                cep: dados.cep
+            },
+            email: dados.email,
+            telefone: dados.telefone,
+            abertura: dados.abertura,
+            dataSituacao: dados.data_situacao
+        });
+        
+    } catch (error) {
+        console.error('Erro ao consultar CNPJ:', error);
+        res.status(500).json({ 
+            error: 'Erro ao consultar CNPJ na Receita Federal',
+            message: error.message 
+        });
+    }
+});
+
+// =====================================================
 // ROTAS - EMPRESAS
 // =====================================================
 
