@@ -24,17 +24,19 @@ SET search_path TO formulario_embarcadores, public;
 CREATE TABLE formulario_embarcadores.instituicoes (
     id_instituicao SERIAL PRIMARY KEY,
     nome_instituicao VARCHAR(255) NOT NULL UNIQUE,
-    tipo_instituicao VARCHAR(50)
+    tipo_instituicao VARCHAR(50),
+    cnpj VARCHAR(18)
 );
 
 COMMENT ON TABLE formulario_embarcadores.instituicoes IS 'Instituições/empresas dos entrevistadores';
 COMMENT ON COLUMN formulario_embarcadores.instituicoes.tipo_instituicao IS 'consultoria, governo, universidade, etc.';
+COMMENT ON COLUMN formulario_embarcadores.instituicoes.cnpj IS 'CNPJ da instituição no formato XX.XXX.XXX/XXXX-XX';
 
 -- Dados iniciais
-INSERT INTO formulario_embarcadores.instituicoes (nome_instituicao, tipo_instituicao) VALUES
-('Concremat', 'consultoria'),
-('PLI 2050 - SEMIL', 'governo'),
-('Autopreenchimento', 'sistema');
+INSERT INTO formulario_embarcadores.instituicoes (nome_instituicao, tipo_instituicao, cnpj) VALUES
+('Concremat', 'consultoria', '00.000.000/0001-91'),
+('PLI 2050 - SEMIL', 'governo', '00.394.460/0058-87'),
+('Autopreenchimento', 'sistema', NULL);
 
 -- 2.2. Estados do Brasil
 CREATE TABLE formulario_embarcadores.estados_brasil (
