@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Conexão API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .endpoint {
+            background-color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .endpoint h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .result {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.backend-control {
+            background-color: #28a745;
+        }
+        button.backend-control:hover {
+            background-color: #218838;
+        }
+        button.backend-control:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .backend-status {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .backend-running {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .backend-stopped {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .backend-starting {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Teste de Conexão com API - PLI 2050</h1>
+    
+    <div id="connectionStatus" class="status info">
+        <p>🔄 Verificando conexão com o backend...</p>
+    </div>
+
+    <div style="margin: 20px 0; padding: 15px; background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0;">🖥️ Controle do Backend</h3>
+        <p style="color: #666; font-size: 14px;">
+            O backend precisa estar rodando na porta 3000 para os testes funcionarem.
+        </p>
+        <button class="backend-control" onclick="iniciarBackend()" id="btnIniciarBackend">
+            🚀 Iniciar/Reiniciar Backend
+        </button>
+        <span id="backendStatus" class="backend-status backend-stopped">⚫ Offline</span>
+        <div id="backendOutput" style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 12px; max-height: 150px; overflow-y: auto; display: none;"></div>
+    </div>
+
+    <button onclick="testarTodosEndpoints()">🔄 Testar Todos os Endpoints</button>
+    <button onclick="limparResultados()">🗑️ Limpar Resultados</button>
+
+    <div id="endpoints"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+
+        const endpoints = [
+            { nome: 'Health Check', url: '/health', descricao: 'Verifica se o servidor está respondendo' },
+            { nome: 'Instituições', url: '/api/instituicoes', descricao: 'Lista todas as instituições' },
+            { nome: 'Estados', url: '/api/estados', descricao: 'Lista os 27 estados brasileiros' },
+            { nome: 'Países', url: '/api/paises', descricao: 'Lista os 45 países ordenados por relevância' },
+            { nome: 'Municípios SP', url: '/api/municipios', descricao: 'Lista os 645 municípios de São Paulo' },
+            { nome: 'Funções', url: '/api/funcoes', descricao: 'Lista as funções dos entrevistados' },
+            { nome: 'Entrevistadores', url: '/api/entrevistadores', descricao: 'Lista os entrevistadores cadastrados' }
+        ];
+
+        async function testarEndpoint(endpoint) {
+            const elementId = `endpoint-${endpoint.url.replace(/\//g, '-')}`;
+            const resultId = `result-${endpoint.url.replace(/\//g, '-')}`;
+            
+            document.getElementById(resultId).innerHTML = '<span class="loading">⏳ Carregando...</span>';
+            
+            try {
+                const inicio = Date.now();
+                const response = await fetch(API_BASE_URL + endpoint.url);
+                const tempo = Date.now() - inicio;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                let resultado = `<strong>✅ Status:</strong> ${response.status} ${response.statusText}<br>`;
+                resultado += `<strong>⏱️ Tempo:</strong> ${tempo}ms<br>`;
+                
+                if (Array.isArray(data)) {
+                    resultado += `<strong>📊 Total de registros:</strong> ${data.length}<br>`;
+                    resultado += `<strong>📝 Primeiros 5 registros:</strong><br>`;
+                    resultado += '<pre>' + JSON.stringify(data.slice(0, 5), null, 2) + '</pre>';
+                } else {
+                    resultado += `<strong>📝 Resposta:</strong><br>`;
+                    resultado += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                }
+                
+                document.getElementById(resultId).innerHTML = resultado;
+                
+            } catch (error) {
+                document.getElementById(resultId).innerHTML = 
+                    `<strong style="color: #721c24;">❌ Erro:</strong> ${error.message}`;
+            }
+        }
+
+        async function testarTodosEndpoints() {
+            console.log('🧪 Iniciando testes de todos os endpoints...');
+            
+            for (const endpoint of endpoints) {
+                await testarEndpoint(endpoint);
+                await new Promise(resolve => setTimeout(resolve, 200)); // Pequeno delay entre requisições
+            }
+            
+            console.log('✅ Testes concluídos!');
+        }
+
+        async function iniciarBackend() {
+            const btn = document.getElementById('btnIniciarBackend');
+            const statusEl = document.getElementById('backendStatus');
+            const outputEl = document.getElementById('backendOutput');
+            
+            btn.disabled = true;
+            statusEl.className = 'backend-status backend-starting';
+            statusEl.textContent = '🟡 Iniciando...';
+            outputEl.style.display = 'block';
+            outputEl.innerHTML = '🔄 Executando comando: cd backend-api && npm start<br><br>';
+            
+            try {
+                // Nota: Esta é uma demonstração. Em uma aplicação real web,
+                // você não pode executar comandos do sistema diretamente do navegador.
+                // Isso requer uma API backend ou extensão do navegador.
+                
+                outputEl.innerHTML += '⚠️ <strong>ATENÇÃO:</strong><br>';
+                outputEl.innerHTML += 'O navegador não pode executar comandos do sistema diretamente.<br><br>';
+                outputEl.innerHTML += '<strong>Para iniciar o backend manualmente:</strong><br>';
+                outputEl.innerHTML += '1. Abra um terminal (PowerShell ou CMD)<br>';
+                outputEl.innerHTML += '2. Navegue até a pasta do projeto:<br>';
+                outputEl.innerHTML += '   <code>cd D:\\SISTEMA_FORMULARIOS_ENTREVISTA</code><br>';
+                outputEl.innerHTML += '3. Execute o comando:<br>';
+                outputEl.innerHTML += '   <code>cd backend-api && npm start</code><br><br>';
+                outputEl.innerHTML += '<strong>Ou use o terminal integrado do VS Code:</strong><br>';
+                outputEl.innerHTML += '1. Pressione Ctrl+` para abrir o terminal<br>';
+                outputEl.innerHTML += '2. Execute: <code>cd backend-api && npm start</code><br><br>';
+                outputEl.innerHTML += '✅ Após iniciar, clique em "Verificar Conexão" abaixo.<br>';
+                
+                // Adicionar botão de verificação rápida
+                outputEl.innerHTML += '<br><button onclick="verificarConexao()" style="margin-top: 10px;">🔍 Verificar Conexão</button>';
+                
+                btn.disabled = false;
+                statusEl.className = 'backend-status backend-stopped';
+                statusEl.textContent = '⚫ Aguardando inicialização manual';
+                
+            } catch (error) {
+                outputEl.innerHTML += `<br><strong style="color: #721c24;">❌ Erro:</strong> ${error.message}`;
+                btn.disabled = false;
+                statusEl.className = 'backend-status backend-stopped';
+                statusEl.textContent = '❌ Erro';
+            }
+        }
+
+        function limparResultados() {
+            endpoints.forEach(endpoint => {
+                const resultId = `result-${endpoint.url.replace(/\//g, '-')}`;
+                document.getElementById(resultId).innerHTML = '<span class="loading">Clique em "Testar" para verificar</span>';
+            });
+        }
+
+        function criarInterfaceEndpoints() {
+            const container = document.getElementById('endpoints');
+            container.innerHTML = '';
+            
+            endpoints.forEach(endpoint => {
+                const elementId = `endpoint-${endpoint.url.replace(/\//g, '-')}`;
+                const resultId = `result-${endpoint.url.replace(/\//g, '-')}`;
+                
+                const div = document.createElement('div');
+                div.className = 'endpoint';
+                div.id = elementId;
+                div.innerHTML = `
+                    <h3>${endpoint.nome}</h3>
+                    <p><strong>URL:</strong> ${API_BASE_URL}${endpoint.url}</p>
+                    <p><strong>Descrição:</strong> ${endpoint.descricao}</p>
+                    <button onclick="testarEndpoint(${JSON.stringify(endpoint).replace(/"/g, '&quot;')})">🧪 Testar</button>
+                    <div class="result" id="${resultId}">
+                        <span class="loading">Clique em "Testar" para verificar</span>
+                    </div>
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+
+        // Verificar se o backend está rodando
+        async function verificarConexao() {
+            const statusEl = document.getElementById('backendStatus');
+            const connectionStatusEl = document.getElementById('connectionStatus');
+            
+            statusEl.className = 'backend-status backend-starting';
+            statusEl.textContent = '🟡 Verificando...';
+            
+            try {
+                const response = await fetch(API_BASE_URL + '/health', { 
+                    signal: AbortSignal.timeout(3000) 
+                });
+                
+                if (response.ok) {
+                    // Backend está rodando
+                    statusEl.className = 'backend-status backend-running';
+                    statusEl.textContent = '🟢 Online';
+                    
+                    connectionStatusEl.className = 'status success';
+                    connectionStatusEl.innerHTML = 
+                        `<p>✅ Backend conectado: ${API_BASE_URL}</p>`;
+                    
+                    console.log('✅ Backend está online e respondendo');
+                } else {
+                    throw new Error('Backend respondeu com erro');
+                }
+            } catch (error) {
+                // Backend não está respondendo
+                statusEl.className = 'backend-status backend-stopped';
+                statusEl.textContent = '⚫ Offline';
+                
+                connectionStatusEl.className = 'status error';
+                connectionStatusEl.innerHTML = 
+                    `<p>❌ Backend não está respondendo em ${API_BASE_URL}</p>
+                     <p>Clique no botão "🚀 Iniciar/Reiniciar Backend" acima para ver as instruções.</p>`;
+                
+                console.error('❌ Backend offline:', error.message);
+            }
+        }
+
+        // Inicializar
+        window.addEventListener('DOMContentLoaded', () => {
+            criarInterfaceEndpoints();
+            verificarConexao();
+        });
+    </script>
+</body>
+</html>
