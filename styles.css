@@ -155,6 +155,10 @@ body {
     padding: 1.5rem 2rem;
 }
 
+.card-header.centered {
+    text-align: center;
+}
+
 .card-header h3 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
