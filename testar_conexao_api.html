@@ -114,8 +114,13 @@
         <p style="color: #666; font-size: 14px;">
             O backend precisa estar rodando na porta 3000 para os testes funcionarem.
         </p>
+        <p style="background-color: #fff3cd; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107;">
+            <strong>💡 Dica Rápida:</strong> Clique duas vezes no arquivo 
+            <code style="background: #000; color: #0f0; padding: 2px 6px; border-radius: 3px;">iniciar_backend.bat</code> 
+            na raiz do projeto para iniciar o backend automaticamente!
+        </p>
         <button class="backend-control" onclick="iniciarBackend()" id="btnIniciarBackend">
-            🚀 Iniciar/Reiniciar Backend
+            � Ver Instruções para Iniciar
         </button>
         <span id="backendStatus" class="backend-status backend-stopped">⚫ Offline</span>
         <div id="backendOutput" style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 12px; max-height: 150px; overflow-y: auto; display: none;"></div>
@@ -193,41 +198,70 @@
             const outputEl = document.getElementById('backendOutput');
             
             btn.disabled = true;
-            statusEl.className = 'backend-status backend-starting';
-            statusEl.textContent = '🟡 Iniciando...';
             outputEl.style.display = 'block';
-            outputEl.innerHTML = '🔄 Executando comando: cd backend-api && npm start<br><br>';
+            outputEl.innerHTML = '� <strong>3 Formas de Iniciar o Backend:</strong><br><br>';
             
-            try {
-                // Nota: Esta é uma demonstração. Em uma aplicação real web,
-                // você não pode executar comandos do sistema diretamente do navegador.
-                // Isso requer uma API backend ou extensão do navegador.
+            outputEl.innerHTML += '<strong>✨ FORMA 1 - MAIS FÁCIL (Recomendado):</strong><br>';
+            outputEl.innerHTML += '1. Localize o arquivo <code style="background: #000; color: #0f0; padding: 2px 6px;">iniciar_backend.bat</code> na raiz do projeto<br>';
+            outputEl.innerHTML += '2. Clique 2x nele para executar<br>';
+            outputEl.innerHTML += '3. Uma janela do terminal vai abrir e iniciar o backend<br>';
+            outputEl.innerHTML += '4. Aguarde ver "PostgreSQL conectado" e clique em "Verificar Conexão" abaixo<br><br>';
+            
+            outputEl.innerHTML += '<strong>🔷 FORMA 2 - Terminal do VS Code:</strong><br>';
+            outputEl.innerHTML += '1. No VS Code, pressione <code>Ctrl+`</code> (abre o terminal)<br>';
+            outputEl.innerHTML += '2. Cole e execute:<br>';
+            outputEl.innerHTML += '   <code style="background: #000; color: #0f0; padding: 5px; display: block; margin: 5px 0;">cd backend-api && npm start</code><br>';
+            outputEl.innerHTML += '3. Aguarde a mensagem "PostgreSQL conectado"<br><br>';
+            
+            outputEl.innerHTML += '<strong>🔶 FORMA 3 - PowerShell/CMD:</strong><br>';
+            outputEl.innerHTML += '1. Abra o PowerShell ou CMD<br>';
+            outputEl.innerHTML += '2. Navegue até: <code>cd D:\\SISTEMA_FORMULARIOS_ENTREVISTA</code><br>';
+            outputEl.innerHTML += '3. Execute: <code>cd backend-api && npm start</code><br><br>';
+            
+            outputEl.innerHTML += '<div style="background: #d1ecf1; padding: 10px; border-radius: 4px; margin-top: 10px;">';
+            outputEl.innerHTML += '✅ <strong>Após iniciar por qualquer forma:</strong><br>';
+            outputEl.innerHTML += 'Clique no botão abaixo para verificar se o backend conectou!';
+            outputEl.innerHTML += '</div>';
+            
+            outputEl.innerHTML += '<br><button onclick="verificarConexaoComDelay()" style="margin-top: 10px; padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">🔍 Verificar Conexão (aguarda 3s)</button>';
+            outputEl.innerHTML += ' <button onclick="outputEl.style.display=\'none\'; btn.disabled=false;" style="margin-top: 10px; padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">❌ Fechar</button>';
+            
+            btn.disabled = false;
+        }
+        
+        async function verificarConexaoComDelay() {
+            const outputEl = document.getElementById('backendOutput');
+            const originalContent = outputEl.innerHTML;
+            
+            outputEl.innerHTML = '<div style="text-align: center; padding: 20px;">';
+            outputEl.innerHTML += '<strong>⏳ Aguardando backend iniciar...</strong><br><br>';
+            
+            for (let i = 3; i > 0; i--) {
+                outputEl.innerHTML += `<span style="font-size: 24px; color: #007bff;">${i}</span> `;
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            outputEl.innerHTML += '<br><br>🔍 Verificando conexão...<br></div>';
+            
+            await verificarConexao();
+            
+            // Se conectou, mostrar mensagem de sucesso
+            const statusEl = document.getElementById('backendStatus');
+            if (statusEl.textContent.includes('Online')) {
+                outputEl.innerHTML = '<div style="background: #d4edda; padding: 15px; border-radius: 4px; text-align: center;">';
+                outputEl.innerHTML += '✅ <strong style="color: #155724; font-size: 18px;">Backend Conectado com Sucesso!</strong><br><br>';
+                outputEl.innerHTML += '<span style="color: #155724;">Agora você pode testar todos os endpoints abaixo.</span>';
+                outputEl.innerHTML += '</div>';
                 
-                outputEl.innerHTML += '⚠️ <strong>ATENÇÃO:</strong><br>';
-                outputEl.innerHTML += 'O navegador não pode executar comandos do sistema diretamente.<br><br>';
-                outputEl.innerHTML += '<strong>Para iniciar o backend manualmente:</strong><br>';
-                outputEl.innerHTML += '1. Abra um terminal (PowerShell ou CMD)<br>';
-                outputEl.innerHTML += '2. Navegue até a pasta do projeto:<br>';
-                outputEl.innerHTML += '   <code>cd D:\\SISTEMA_FORMULARIOS_ENTREVISTA</code><br>';
-                outputEl.innerHTML += '3. Execute o comando:<br>';
-                outputEl.innerHTML += '   <code>cd backend-api && npm start</code><br><br>';
-                outputEl.innerHTML += '<strong>Ou use o terminal integrado do VS Code:</strong><br>';
-                outputEl.innerHTML += '1. Pressione Ctrl+` para abrir o terminal<br>';
-                outputEl.innerHTML += '2. Execute: <code>cd backend-api && npm start</code><br><br>';
-                outputEl.innerHTML += '✅ Após iniciar, clique em "Verificar Conexão" abaixo.<br>';
-                
-                // Adicionar botão de verificação rápida
-                outputEl.innerHTML += '<br><button onclick="verificarConexao()" style="margin-top: 10px;">🔍 Verificar Conexão</button>';
-                
-                btn.disabled = false;
-                statusEl.className = 'backend-status backend-stopped';
-                statusEl.textContent = '⚫ Aguardando inicialização manual';
-                
-            } catch (error) {
-                outputEl.innerHTML += `<br><strong style="color: #721c24;">❌ Erro:</strong> ${error.message}`;
-                btn.disabled = false;
-                statusEl.className = 'backend-status backend-stopped';
-                statusEl.textContent = '❌ Erro';
+                setTimeout(() => {
+                    outputEl.style.display = 'none';
+                }, 3000);
+            } else {
+                outputEl.innerHTML = '<div style="background: #f8d7da; padding: 15px; border-radius: 4px;">';
+                outputEl.innerHTML += '❌ <strong style="color: #721c24;">Backend ainda não está respondendo</strong><br><br>';
+                outputEl.innerHTML += '<span style="color: #721c24;">Verifique se você executou o arquivo <code>iniciar_backend.bat</code> ou o comando no terminal.</span><br>';
+                outputEl.innerHTML += '<button onclick="verificarConexaoComDelay()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">🔄 Tentar Novamente</button>';
+                outputEl.innerHTML += '</div>';
             }
         }
 
