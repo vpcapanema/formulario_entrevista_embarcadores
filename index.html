@@ -321,7 +321,7 @@
                                 <select id="origem-municipio" name="origem-municipio">
                                     <option value="">Primeiro selecione o estado</option>
                                 </select>
-                                <small class="field-hint">Visível apenas se Estado = São Paulo</small>
+                                <small class="field-hint">Disponível após selecionar qualquer estado</small>
                             </div>
                         </div>
                         <div class="form-row">
@@ -343,7 +343,7 @@
                                 <select id="destino-municipio" name="destino-municipio">
                                     <option value="">Primeiro selecione o estado</option>
                                 </select>
-                                <small class="field-hint">Visível apenas se Estado = São Paulo</small>
+                                <small class="field-hint">Disponível após selecionar qualquer estado</small>
                             </div>
                         </div>
                         <div class="form-row">
@@ -361,7 +361,7 @@
                             </div>
                             <div class="form-group hidden-field" id="num-paradas-container">
                                 <label for="num-paradas"><span class="question-number">16.</span> Número de paradas</label>
-                                <select id="num-paradas" name="num-paradas">
+                                <select id="num-paradas" name="num-paradas" onchange="toggleParadasExato()">
                                     <option value="">Selecione...</option>
                                     <option value="1">1 parada</option>
                                     <option value="2">2 paradas</option>
@@ -371,6 +371,11 @@
                                     <option value="mais-10">Mais de 10 paradas</option>
                                     <option value="nao-sei">Não sei</option>
                                 </select>
+                            </div>
+                            <div class="form-group hidden-field" id="num-paradas-exato-container">
+                                <label for="num-paradas-exato">Número exato de paradas *</label>
+                                <input type="number" id="num-paradas-exato" name="num-paradas-exato" min="11" placeholder="Mínimo 11 paradas">
+                                <small class="field-hint">Digite o número exato de paradas (mínimo 11)</small>
                             </div>
                         </div>
                         <div class="form-group">

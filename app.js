@@ -316,24 +316,20 @@ function setupEventListeners() {
     
     if (origemEstado) {
         origemEstado.addEventListener('change', function() {
-            const estadoSelecionado = this.options[this.selectedIndex].text;
-            const isSaoPaulo = estadoSelecionado.toLowerCase().includes('são paulo') || 
-                              estadoSelecionado.toLowerCase().includes('sp');
-            
-            // Resetar e habilitar/desabilitar Município
+            // Habilitar município independente do estado selecionado
             origemMunicipio.innerHTML = '<option value="">Selecione o município...</option>';
-            origemMunicipio.disabled = !isSaoPaulo;
+            origemMunicipio.disabled = false;
             origemMunicipio.removeAttribute('required');
             
-            if (isSaoPaulo && window.listasPLI && window.listasPLI.municipios) {
-                // Popular municípios de SP
+            if (window.listasPLI && window.listasPLI.municipios) {
+                // Popular municípios de SP (todos disponíveis)
                 window.listasPLI.municipios.forEach(municipio => {
                     const option = document.createElement('option');
                     option.value = municipio.id_municipio;
                     option.textContent = municipio.nome_municipio;
                     origemMunicipio.appendChild(option);
                 });
-                origemMunicipio.setAttribute('required', 'required');
+                // Município não é obrigatório, usuário pode deixar em branco se quiser apenas estado
             }
         });
     }
@@ -373,24 +369,20 @@ function setupEventListeners() {
     
     if (destinoEstado) {
         destinoEstado.addEventListener('change', function() {
-            const estadoSelecionado = this.options[this.selectedIndex].text;
-            const isSaoPaulo = estadoSelecionado.toLowerCase().includes('são paulo') || 
-                              estadoSelecionado.toLowerCase().includes('sp');
-            
-            // Resetar e habilitar/desabilitar Município
+            // Habilitar município independente do estado selecionado
             destinoMunicipio.innerHTML = '<option value="">Selecione o município...</option>';
-            destinoMunicipio.disabled = !isSaoPaulo;
+            destinoMunicipio.disabled = false;
             destinoMunicipio.removeAttribute('required');
             
-            if (isSaoPaulo && window.listasPLI && window.listasPLI.municipios) {
-                // Popular municípios de SP
+            if (window.listasPLI && window.listasPLI.municipios) {
+                // Popular municípios de SP (todos disponíveis)
                 window.listasPLI.municipios.forEach(municipio => {
                     const option = document.createElement('option');
                     option.value = municipio.id_municipio;
                     option.textContent = municipio.nome_municipio;
                     destinoMunicipio.appendChild(option);
                 });
-                destinoMunicipio.setAttribute('required', 'required');
+                // Município não é obrigatório, usuário pode deixar em branco se quiser apenas estado
             }
         });
     }
@@ -416,6 +408,22 @@ function toggleParadas() {
     const temParadas = document.getElementById('tem-paradas').value;
     const numParadasContainer = document.getElementById('num-paradas-container');
     numParadasContainer.classList.toggle('hidden-field', temParadas !== 'sim');
+}
+
+// Alternar campo exato de paradas
+function toggleParadasExato() {
+    const numParadas = document.getElementById('num-paradas').value;
+    const numParadasExatoContainer = document.getElementById('num-paradas-exato-container');
+    const numParadasExatoInput = document.getElementById('num-paradas-exato');
+    
+    if (numParadas === 'mais-10') {
+        numParadasExatoContainer.classList.remove('hidden-field');
+        numParadasExatoInput.required = true;
+    } else {
+        numParadasExatoContainer.classList.add('hidden-field');
+        numParadasExatoInput.required = false;
+        numParadasExatoInput.value = '';
+    }
 }
 
 // Alternar frequência diária
