@@ -1,5 +1,4 @@
-# Python
-*.py
+# Python (manter extract_pdf.py)
 __pycache__/
 *.pyc
 *.pyo
@@ -9,6 +8,16 @@ env/
 venv/
 ENV/
 .venv
+
+# Node.js / Backend
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Arquivos de Ambiente - SENSÍVEL (NÃO COMMITAR)
+.env
+backend-api/.env
+credencias_bd.txt
 
 # Sistema operacional
 .DS_Store
@@ -24,7 +33,13 @@ desktop.ini
 
 # Logs
 *.log
+logs/
 
 # Arquivos temporários
 *.tmp
 *.temp
+.cache/
+
+# Build
+dist/
+build/
