@@ -98,8 +98,11 @@
                             <input type="text" id="nome" name="nome" required>
                         </div>
                         <div class="form-group">
-                            <label for="funcao"><span class="question-number">2.</span> Função *</label>
-                            <input type="text" id="funcao" name="funcao" required>
+                            <label for="funcao-entrevistado"><span class="question-number">2.</span> Função *</label>
+                            <select id="funcao-entrevistado" name="funcao-entrevistado" required>
+                                <option value="">Carregando funções...</option>
+                            </select>
+                            <small class="field-hint">Selecione a função/cargo do entrevistado na empresa</small>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -140,8 +143,11 @@
                             <input type="text" id="nome-empresa" name="nome-empresa" required>
                         </div>
                         <div class="form-group">
-                            <label for="municipio"><span class="question-number">7.</span> Município da(s) unidade(s) de produção *</label>
-                            <input type="text" id="municipio" name="municipio" required>
+                            <label for="municipio-empresa"><span class="question-number">7.</span> Município da(s) unidade(s) de produção *</label>
+                            <select id="municipio-empresa" name="municipio-empresa" required>
+                                <option value="">Carregando municípios...</option>
+                            </select>
+                            <small class="field-hint">Selecione o município onde a empresa está localizada (São Paulo)</small>
                         </div>
                     </div>
                 </div>
@@ -286,29 +292,45 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="origem-pais"><span class="question-number">12.</span> País de Origem *</label>
-                                <input type="text" id="origem-pais" name="origem-pais" required>
+                                <select id="origem-pais" name="origem-pais" required>
+                                    <option value="">Carregando países...</option>
+                                </select>
                             </div>
                             <div class="form-group">
-                                <label for="origem-estado">Estado de Origem *</label>
-                                <input type="text" id="origem-estado" name="origem-estado" required>
+                                <label for="origem-estado">Estado de Origem</label>
+                                <select id="origem-estado" name="origem-estado">
+                                    <option value="">Primeiro selecione o país</option>
+                                </select>
+                                <small class="field-hint">Visível apenas se País = Brasil</small>
                             </div>
                             <div class="form-group">
-                                <label for="origem-municipio">Município de Origem *</label>
-                                <input type="text" id="origem-municipio" name="origem-municipio" required>
+                                <label for="origem-municipio">Município de Origem</label>
+                                <select id="origem-municipio" name="origem-municipio">
+                                    <option value="">Primeiro selecione o estado</option>
+                                </select>
+                                <small class="field-hint">Visível apenas se Estado = São Paulo</small>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="destino-pais"><span class="question-number">13.</span> País de Destino *</label>
-                                <input type="text" id="destino-pais" name="destino-pais" required>
+                                <select id="destino-pais" name="destino-pais" required>
+                                    <option value="">Carregando países...</option>
+                                </select>
                             </div>
                             <div class="form-group">
-                                <label for="destino-estado">Estado de Destino *</label>
-                                <input type="text" id="destino-estado" name="destino-estado" required>
+                                <label for="destino-estado">Estado de Destino</label>
+                                <select id="destino-estado" name="destino-estado">
+                                    <option value="">Primeiro selecione o país</option>
+                                </select>
+                                <small class="field-hint">Visível apenas se País = Brasil</small>
                             </div>
                             <div class="form-group">
-                                <label for="destino-municipio">Município de Destino *</label>
-                                <input type="text" id="destino-municipio" name="destino-municipio" required>
+                                <label for="destino-municipio">Município de Destino</label>
+                                <select id="destino-municipio" name="destino-municipio">
+                                    <option value="">Primeiro selecione o estado</option>
+                                </select>
+                                <small class="field-hint">Visível apenas se Estado = São Paulo</small>
                             </div>
                         </div>
                         <div class="form-row">
@@ -326,7 +348,16 @@
                             </div>
                             <div class="form-group hidden-field" id="num-paradas-container">
                                 <label for="num-paradas"><span class="question-number">16.</span> Número de paradas</label>
-                                <input type="number" id="num-paradas" name="num-paradas" min="0">
+                                <select id="num-paradas" name="num-paradas">
+                                    <option value="">Selecione...</option>
+                                    <option value="1">1 parada</option>
+                                    <option value="2">2 paradas</option>
+                                    <option value="3">3 paradas</option>
+                                    <option value="4-5">4 a 5 paradas</option>
+                                    <option value="6-10">6 a 10 paradas</option>
+                                    <option value="mais-10">Mais de 10 paradas</option>
+                                    <option value="nao-sei">Não sei</option>
+                                </select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -353,7 +384,15 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="capacidade-utilizada"><span class="question-number">19.</span> Capacidade do veículo utilizada (%) *</label>
-                                <input type="number" id="capacidade-utilizada" name="capacidade-utilizada" min="0" max="100" required>
+                                <select id="capacidade-utilizada" name="capacidade-utilizada" required>
+                                    <option value="">Selecione a faixa...</option>
+                                    <option value="0-25">0 a 25%</option>
+                                    <option value="26-50">26 a 50%</option>
+                                    <option value="51-75">51 a 75%</option>
+                                    <option value="76-90">76 a 90%</option>
+                                    <option value="91-100">91 a 100%</option>
+                                    <option value="nao-sei">Não sei</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="peso-carga"><span class="question-number">20.</span> Peso da carga *</label>
@@ -425,7 +464,15 @@
                         </div>
                         <div class="form-group hidden-field" id="frequencia-diaria-container">
                             <label for="frequencia-diaria"><span class="question-number">28.</span> Quantas vezes no dia?</label>
-                            <input type="number" id="frequencia-diaria" name="frequencia-diaria" min="1">
+                            <select id="frequencia-diaria" name="frequencia-diaria">
+                                <option value="">Selecione...</option>
+                                <option value="1">1 vez ao dia</option>
+                                <option value="2-3">2 a 3 vezes ao dia</option>
+                                <option value="4-5">4 a 5 vezes ao dia</option>
+                                <option value="6-10">6 a 10 vezes ao dia</option>
+                                <option value="mais-10">Mais de 10 vezes ao dia</option>
+                                <option value="nao-sei">Não sei</option>
+                            </select>
                         </div>
                         <div class="form-group hidden-field" id="frequencia-outra-container">
                             <label for="frequencia-outra">Especifique a frequência:</label>

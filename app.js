@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Carregar lista de entrevistadores
         await carregarEntrevistadores();
         
+        // Carregar todas as listas auxiliares (instituições, funções, municípios, países, estados)
+        await carregarListasAuxiliares();
+        
         // Adicionar primeira linha de produto
         addProdutoRow();
         
@@ -66,6 +69,185 @@ async function carregarEntrevistadores() {
     }
 }
 
+/**
+ * Carregar todas as listas auxiliares (dropdowns) da API
+ * Popula: instituições, estados, países, municípios e funções
+ */
+async function carregarListasAuxiliares() {
+    console.log('🔄 Carregando listas auxiliares da API...');
+    
+    try {
+        // Verificar se API está disponível
+        if (typeof api === 'undefined') {
+            console.warn('⚠️ API não disponível, usando fallbacks');
+            carregarListasFallback();
+            return;
+        }
+        
+        // Carregar todas as listas em paralelo para melhor performance
+        const [instituicoes, estados, paises, municipios, funcoes] = await Promise.all([
+            api.get(API_CONFIG.ENDPOINTS.instituicoes).catch(() => []),
+            api.get(API_CONFIG.ENDPOINTS.estados).catch(() => []),
+            api.get(API_CONFIG.ENDPOINTS.paises).catch(() => []),
+            api.get(API_CONFIG.ENDPOINTS.municipios).catch(() => []),
+            api.get(API_CONFIG.ENDPOINTS.funcoes).catch(() => [])
+        ]);
+        
+        // Popular select de Instituição (Q1)
+        const selectInstituicao = document.getElementById('id-instituicao');
+        if (selectInstituicao && instituicoes.length > 0) {
+            selectInstituicao.innerHTML = '<option value="">Selecione a instituição...</option>';
+            instituicoes.forEach(inst => {
+                const option = document.createElement('option');
+                option.value = inst.id_instituicao;
+                option.textContent = inst.nome_instituicao;
+                selectInstituicao.appendChild(option);
+            });
+            console.log(`✅ ${instituicoes.length} instituições carregadas`);
+        }
+        
+        // Popular select de Função (Q2) - será criado em breve
+        const selectFuncao = document.getElementById('funcao-entrevistado');
+        if (selectFuncao && funcoes.length > 0) {
+            selectFuncao.innerHTML = '<option value="">Selecione a função...</option>';
+            funcoes.forEach(func => {
+                const option = document.createElement('option');
+                option.value = func.id_funcao;
+                option.textContent = func.nome_funcao;
+                selectFuncao.appendChild(option);
+            });
+            console.log(`✅ ${funcoes.length} funções carregadas`);
+        }
+        
+        // Popular select de Município Empresa (Q7) - será criado em breve
+        const selectMunicipio = document.getElementById('municipio-empresa');
+        if (selectMunicipio && municipios.length > 0) {
+            selectMunicipio.innerHTML = '<option value="">Selecione o município...</option>';
+            municipios.forEach(mun => {
+                const option = document.createElement('option');
+                option.value = mun.id_municipio;
+                option.textContent = `${mun.nome_municipio} - ${mun.regiao}`;
+                selectMunicipio.appendChild(option);
+            });
+            console.log(`✅ ${municipios.length} municípios carregados`);
+        }
+        
+        // Armazenar listas globalmente para uso em cascatas (Q12 e Q13 Origem/Destino)
+        window.listasPLI = {
+            paises: paises,
+            estados: estados,
+            municipios: municipios,
+            funcoes: funcoes,
+            instituicoes: instituicoes
+        };
+        
+        // Popular selects de País para Origem e Destino (Q12 e Q13)
+        const selectOrigemPais = document.getElementById('origem-pais');
+        const selectDestinoPais = document.getElementById('destino-pais');
+        
+        if (paises.length > 0) {
+            const optionsPais = '<option value="">Selecione o país...</option>' + 
+                paises.map(p => `<option value="${p.id_pais}">${p.nome_pais}</option>`).join('');
+            
+            if (selectOrigemPais) {
+                selectOrigemPais.innerHTML = optionsPais;
+                console.log(`✅ ${paises.length} países carregados para Origem`);
+            }
+            if (selectDestinoPais) {
+                selectDestinoPais.innerHTML = optionsPais;
+                console.log(`✅ ${paises.length} países carregados para Destino`);
+            }
+        }
+        
+        // Popular selects de Estado (inicialmente vazios, serão preenchidos quando Brasil for selecionado)
+        const selectOrigemEstado = document.getElementById('origem-estado');
+        const selectDestinoEstado = document.getElementById('destino-estado');
+        
+        if (selectOrigemEstado) {
+            selectOrigemEstado.innerHTML = '<option value="">Primeiro selecione o país...</option>';
+            selectOrigemEstado.disabled = true;
+        }
+        if (selectDestinoEstado) {
+            selectDestinoEstado.innerHTML = '<option value="">Primeiro selecione o país...</option>';
+            selectDestinoEstado.disabled = true;
+        }
+        
+        // Popular selects de Município (inicialmente vazios, serão preenchidos quando SP for selecionado)
+        const selectOrigemMunicipio = document.getElementById('origem-municipio');
+        const selectDestinoMunicipio = document.getElementById('destino-municipio');
+        
+        if (selectOrigemMunicipio) {
+            selectOrigemMunicipio.innerHTML = '<option value="">Primeiro selecione estado...</option>';
+            selectOrigemMunicipio.disabled = true;
+        }
+        if (selectDestinoMunicipio) {
+            selectDestinoMunicipio.innerHTML = '<option value="">Primeiro selecione estado...</option>';
+            selectDestinoMunicipio.disabled = true;
+        }
+        
+        console.log('✅ Todas as listas auxiliares carregadas com sucesso!');
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar listas auxiliares:', error);
+        carregarListasFallback();
+    }
+}
+
+/**
+ * Carregar listas com dados fixos (fallback quando API não está disponível)
+ */
+function carregarListasFallback() {
+    console.log('⚠️ Usando listas fallback (dados fixos)');
+    
+    // Instituições fallback
+    const selectInstituicao = document.getElementById('id-instituicao');
+    if (selectInstituicao) {
+        selectInstituicao.innerHTML = `
+            <option value="">Selecione a instituição...</option>
+            <option value="1">Concremat Engenharia</option>
+            <option value="2">FIPE - Fundação Instituto de Pesquisas Econômicas</option>
+            <option value="3">Governo do Estado de São Paulo</option>
+        `;
+    }
+    
+    // Funções fallback (Q2)
+    const selectFuncao = document.getElementById('funcao-entrevistado');
+    if (selectFuncao) {
+        selectFuncao.innerHTML = `
+            <option value="">Selecione a função...</option>
+            <option value="1">Presidente / CEO</option>
+            <option value="2">Diretor(a)</option>
+            <option value="3">Gerente</option>
+            <option value="4">Coordenador(a)</option>
+            <option value="5">Analista</option>
+            <option value="6">Assistente</option>
+            <option value="7">Motorista</option>
+            <option value="8">Operador Logístico</option>
+            <option value="9">Consultor(a)</option>
+            <option value="10">Outros</option>
+        `;
+    }
+    
+    // Países fallback
+    const paisesHTML = `
+        <option value="">Selecione o país...</option>
+        <option value="1">Brasil</option>
+        <option value="2">Argentina</option>
+        <option value="3">Uruguai</option>
+        <option value="4">Paraguai</option>
+        <option value="5">Chile</option>
+        <option value="6">Outros</option>
+    `;
+    
+    const selectOrigemPais = document.getElementById('origem-pais');
+    const selectDestinoPais = document.getElementById('destino-pais');
+    
+    if (selectOrigemPais) selectOrigemPais.innerHTML = paisesHTML;
+    if (selectDestinoPais) selectDestinoPais.innerHTML = paisesHTML;
+    
+    console.log('✅ Listas fallback carregadas');
+}
+
 
 // Configurar event listeners
 function setupEventListeners() {
@@ -98,6 +280,120 @@ function setupEventListeners() {
         const outroContainer = document.getElementById('outro-tipo-container');
         outroContainer.classList.toggle('hidden-field', this.value !== 'outro');
     });
+    
+    // Cascata Origem: País → Estado → Município
+    const origemPais = document.getElementById('origem-pais');
+    const origemEstado = document.getElementById('origem-estado');
+    const origemMunicipio = document.getElementById('origem-municipio');
+    
+    if (origemPais) {
+        origemPais.addEventListener('change', function() {
+            const paisSelecionado = this.options[this.selectedIndex].text;
+            const isBrasil = paisSelecionado.toLowerCase().includes('brasil');
+            
+            // Resetar e habilitar/desabilitar Estado
+            origemEstado.innerHTML = '<option value="">Selecione o estado...</option>';
+            origemEstado.disabled = !isBrasil;
+            origemEstado.removeAttribute('required');
+            
+            // Resetar Município
+            origemMunicipio.innerHTML = '<option value="">Primeiro selecione o estado</option>';
+            origemMunicipio.disabled = true;
+            origemMunicipio.removeAttribute('required');
+            
+            if (isBrasil && window.listasPLI && window.listasPLI.estados) {
+                // Popular estados brasileiros
+                window.listasPLI.estados.forEach(estado => {
+                    const option = document.createElement('option');
+                    option.value = estado.id_estado;
+                    option.textContent = `${estado.nome_estado} (${estado.uf})`;
+                    origemEstado.appendChild(option);
+                });
+                origemEstado.setAttribute('required', 'required');
+            }
+        });
+    }
+    
+    if (origemEstado) {
+        origemEstado.addEventListener('change', function() {
+            const estadoSelecionado = this.options[this.selectedIndex].text;
+            const isSaoPaulo = estadoSelecionado.toLowerCase().includes('são paulo') || 
+                              estadoSelecionado.toLowerCase().includes('sp');
+            
+            // Resetar e habilitar/desabilitar Município
+            origemMunicipio.innerHTML = '<option value="">Selecione o município...</option>';
+            origemMunicipio.disabled = !isSaoPaulo;
+            origemMunicipio.removeAttribute('required');
+            
+            if (isSaoPaulo && window.listasPLI && window.listasPLI.municipios) {
+                // Popular municípios de SP
+                window.listasPLI.municipios.forEach(municipio => {
+                    const option = document.createElement('option');
+                    option.value = municipio.id_municipio;
+                    option.textContent = `${municipio.nome_municipio} - ${municipio.regiao}`;
+                    origemMunicipio.appendChild(option);
+                });
+                origemMunicipio.setAttribute('required', 'required');
+            }
+        });
+    }
+    
+    // Cascata Destino: País → Estado → Município (mesma lógica)
+    const destinoPais = document.getElementById('destino-pais');
+    const destinoEstado = document.getElementById('destino-estado');
+    const destinoMunicipio = document.getElementById('destino-municipio');
+    
+    if (destinoPais) {
+        destinoPais.addEventListener('change', function() {
+            const paisSelecionado = this.options[this.selectedIndex].text;
+            const isBrasil = paisSelecionado.toLowerCase().includes('brasil');
+            
+            // Resetar e habilitar/desabilitar Estado
+            destinoEstado.innerHTML = '<option value="">Selecione o estado...</option>';
+            destinoEstado.disabled = !isBrasil;
+            destinoEstado.removeAttribute('required');
+            
+            // Resetar Município
+            destinoMunicipio.innerHTML = '<option value="">Primeiro selecione o estado</option>';
+            destinoMunicipio.disabled = true;
+            destinoMunicipio.removeAttribute('required');
+            
+            if (isBrasil && window.listasPLI && window.listasPLI.estados) {
+                // Popular estados brasileiros
+                window.listasPLI.estados.forEach(estado => {
+                    const option = document.createElement('option');
+                    option.value = estado.id_estado;
+                    option.textContent = `${estado.nome_estado} (${estado.uf})`;
+                    destinoEstado.appendChild(option);
+                });
+                destinoEstado.setAttribute('required', 'required');
+            }
+        });
+    }
+    
+    if (destinoEstado) {
+        destinoEstado.addEventListener('change', function() {
+            const estadoSelecionado = this.options[this.selectedIndex].text;
+            const isSaoPaulo = estadoSelecionado.toLowerCase().includes('são paulo') || 
+                              estadoSelecionado.toLowerCase().includes('sp');
+            
+            // Resetar e habilitar/desabilitar Município
+            destinoMunicipio.innerHTML = '<option value="">Selecione o município...</option>';
+            destinoMunicipio.disabled = !isSaoPaulo;
+            destinoMunicipio.removeAttribute('required');
+            
+            if (isSaoPaulo && window.listasPLI && window.listasPLI.municipios) {
+                // Popular municípios de SP
+                window.listasPLI.municipios.forEach(municipio => {
+                    const option = document.createElement('option');
+                    option.value = municipio.id_municipio;
+                    option.textContent = `${municipio.nome_municipio} - ${municipio.regiao}`;
+                    destinoMunicipio.appendChild(option);
+                });
+                destinoMunicipio.setAttribute('required', 'required');
+            }
+        });
+    }
     
     // Agrupamento de produto
     document.getElementById('agrupamento-produto').addEventListener('change', function() {
@@ -156,7 +452,19 @@ function addProdutoRow() {
                 <option value="aeroviario">Aeroviário</option>
             </select>
         </td>
-        <td><input type="text" name="produto-acondicionamento-${produtoRowCounter}" class="table-input" placeholder="Tipo"></td>
+        <td>
+            <select name="produto-acondicionamento-${produtoRowCounter}" class="table-input">
+                <option value="">Selecione...</option>
+                <option value="granel-solido">Granel sólido</option>
+                <option value="granel-liquido">Granel líquido</option>
+                <option value="paletizado">Paletizado</option>
+                <option value="container">Container</option>
+                <option value="big-bag">Big bag</option>
+                <option value="caixas">Caixas</option>
+                <option value="sacaria">Sacaria</option>
+                <option value="outro">Outro</option>
+            </select>
+        </td>
         <td><button type="button" class="btn-remove" onclick="removeProdutoRow('${rowId}')">🗑️</button></td>
     `;
     
@@ -187,7 +495,7 @@ function collectFormData() {
     
     // Dados básicos
     formData.nome = document.getElementById('nome').value;
-    formData.funcao = document.getElementById('funcao').value;
+    formData.funcao = document.getElementById('funcao-entrevistado').value;
     formData.telefone = document.getElementById('telefone').value;
     formData.email = document.getElementById('email').value;
     
@@ -197,7 +505,7 @@ function collectFormData() {
         formData.outroTipo = document.getElementById('outro-tipo').value;
     }
     formData.nomeEmpresa = document.getElementById('nome-empresa').value;
-    formData.municipio = document.getElementById('municipio').value;
+    formData.municipio = document.getElementById('municipio-empresa').value;
     
     // Produtos transportados (tabela)
     formData.produtos = [];
