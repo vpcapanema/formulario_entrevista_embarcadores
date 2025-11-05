@@ -131,6 +131,10 @@
             background: #f8d7da;
             color: #721c24;
         }
+        
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -138,38 +142,38 @@
         <h1>🔍 Diagnóstico da API - PLI 2050</h1>
         <p class="subtitle">Teste a conexão com o backend e verifique os endpoints</p>
         
-        <!-- Seção 1: Status da API -->
+        <!-- Seção 1: Health Check -->
         <div class="test-section">
-            <h2>1. Status da API</h2>
+            <h2>1. Health Check e Configuração</h2>
             <button onclick="testarHealth()">🏥 Testar Health Check</button>
             <button onclick="verificarVariaveis()">📊 Verificar Variáveis</button>
-            <div id="result-health" class="result" style="display: none;"></div>
+            <div id="result-health" class="result hidden"></div>
         </div>
         
         <!-- Seção 2: Endpoints de Listas -->
         <div class="test-section">
-            <h2>2. Endpoints de Listas Auxiliares</h2>
-            <button onclick="testarEndpoint('estados')">🗺️ Estados (27)</button>
-            <button onclick="testarEndpoint('paises')">🌍 Países (61)</button>
-            <button onclick="testarEndpoint('municipios')">🏙️ Municípios (645)</button>
+            <h2>2. Listas Auxiliares</h2>
+            <button onclick="testarEndpoint('estados')">�️ Estados</button>
+            <button onclick="testarEndpoint('paises')">� Países</button>
+            <button onclick="testarEndpoint('municipios')">🏘️ Municípios</button>
             <button onclick="testarEndpoint('funcoes')">💼 Funções</button>
             <button onclick="testarEndpoint('instituicoes')">🏢 Instituições</button>
-            <div id="result-listas" class="result" style="display: none;"></div>
+            <div id="result-listas" class="result hidden"></div>
         </div>
         
-        <!-- Seção 3: Endpoint de Entrevistadores -->
+        <!-- Seção 3: Entrevistadores -->
         <div class="test-section">
             <h2>3. Entrevistadores</h2>
             <button onclick="testarEndpoint('entrevistadores')">👥 Entrevistadores</button>
-            <div id="result-entrevistadores" class="result" style="display: none;"></div>
+            <div id="result-entrevistadores" class="result hidden"></div>
         </div>
         
         <!-- Seção 4: CNPJ -->
         <div class="test-section">
-            <h2>4. Busca de CNPJ (Receita Federal)</h2>
+            <h2>4. Consulta CNPJ</h2>
             <button onclick="testarCNPJ('33.683.111/0001-07')">🔍 Testar CNPJ Válido</button>
             <button onclick="testarCNPJ('12.345.678/0001-00')">❌ Testar CNPJ Inválido</button>
-            <div id="result-cnpj" class="result" style="display: none;"></div>
+            <div id="result-cnpj" class="result hidden"></div>
         </div>
         
         <!-- Seção 5: Teste Completo -->
@@ -185,7 +189,7 @@
         // Funções de teste
         async function testarHealth() {
             const resultDiv = document.getElementById('result-health');
-            resultDiv.style.display = 'block';
+            resultDiv.classList.remove('hidden');
             resultDiv.innerHTML = '<div class="info">⏳ Testando health check...</div>';
             
             try {
@@ -208,7 +212,7 @@
         
         async function verificarVariaveis() {
             const resultDiv = document.getElementById('result-health');
-            resultDiv.style.display = 'block';
+            resultDiv.classList.remove('hidden');
             
             const info = {
                 'API_CONFIG existe': typeof API_CONFIG !== 'undefined',
@@ -227,8 +231,14 @@
         }
         
         async function testarEndpoint(nome) {
-            const resultDiv = document.getElementById('result-listas');
-            resultDiv.style.display = 'block';
+            let resultDiv;
+            if (nome === 'entrevistadores') {
+                resultDiv = document.getElementById('result-entrevistadores');
+            } else {
+                resultDiv = document.getElementById('result-listas');
+            }
+            
+            resultDiv.classList.remove('hidden');
             resultDiv.innerHTML = `<div class="info">⏳ Carregando ${nome}...</div>`;
             
             try {
@@ -249,7 +259,7 @@
         
         async function testarCNPJ(cnpj) {
             const resultDiv = document.getElementById('result-cnpj');
-            resultDiv.style.display = 'block';
+            resultDiv.classList.remove('hidden');
             resultDiv.innerHTML = `<div class="info">⏳ Buscando CNPJ ${cnpj}...</div>`;
             
             try {
@@ -292,7 +302,7 @@
         
         function limparResultados() {
             document.querySelectorAll('.result').forEach(div => {
-                div.style.display = 'none';
+                div.classList.add('hidden');
                 div.innerHTML = '';
             });
         }

@@ -298,7 +298,7 @@
         </div>
 
         <div class="content">
-            <div class="filter-bar" id="filtros" style="display: none;">
+            <div class="filter-bar hidden" id="filtros">
                 <input type="text" id="filtro-busca" placeholder="🔍 Buscar em todas as colunas..." onkeyup="filtrarTabela()">
                 <select id="filtro-status" onchange="filtrarTabela()">
                     <option value="">Todos os Status</option>
@@ -425,7 +425,7 @@
                         mostrarEstadoVazio();
                     } else {
                         renderizarTabela(dadosFiltrados);
-                        document.getElementById('filtros').style.display = 'flex';
+                        document.getElementById('filtros').classList.remove('hidden');
                     }
                     
                     statusContainer.innerHTML = `
