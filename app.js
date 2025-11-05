@@ -126,7 +126,7 @@ async function carregarListasAuxiliares() {
             municipios.forEach(mun => {
                 const option = document.createElement('option');
                 option.value = mun.id_municipio;
-                option.textContent = `${mun.nome_municipio} - ${mun.regiao}`;
+                option.textContent = mun.nome_municipio;
                 selectMunicipio.appendChild(option);
             });
             console.log(`✅ ${municipios.length} municípios carregados`);
@@ -330,7 +330,7 @@ function setupEventListeners() {
                 window.listasPLI.municipios.forEach(municipio => {
                     const option = document.createElement('option');
                     option.value = municipio.id_municipio;
-                    option.textContent = `${municipio.nome_municipio} - ${municipio.regiao}`;
+                    option.textContent = municipio.nome_municipio;
                     origemMunicipio.appendChild(option);
                 });
                 origemMunicipio.setAttribute('required', 'required');
@@ -387,7 +387,7 @@ function setupEventListeners() {
                 window.listasPLI.municipios.forEach(municipio => {
                     const option = document.createElement('option');
                     option.value = municipio.id_municipio;
-                    option.textContent = `${municipio.nome_municipio} - ${municipio.regiao}`;
+                    option.textContent = municipio.nome_municipio;
                     destinoMunicipio.appendChild(option);
                 });
                 destinoMunicipio.setAttribute('required', 'required');
