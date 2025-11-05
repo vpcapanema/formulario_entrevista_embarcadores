@@ -487,6 +487,50 @@ function removeProdutoRow(rowId) {
     }
 }
 
+// =====================================================
+// FUNÇÕES DE CONVERSÃO NUMÉRICA
+// =====================================================
+
+// Converter número de paradas para valor numérico
+function converterNumParadas(valor) {
+    if (!valor || valor === 'nao-sei') return null;
+    
+    // Valores exatos
+    if (valor === '1') return 1;
+    if (valor === '2') return 2;
+    if (valor === '3') return 3;
+    
+    // Ranges: usar ponto médio
+    if (valor === '4-5') return 4.5;
+    if (valor === '6-10') return 8;
+    
+    // Mais de 10: usar valor exato do campo num-paradas-exato
+    if (valor === 'mais-10') {
+        const exatoInput = document.getElementById('num-paradas-exato');
+        if (exatoInput && exatoInput.value) {
+            const exato = parseInt(exatoInput.value);
+            return (exato >= 11) ? exato : null;
+        }
+        return null;
+    }
+    
+    return null;
+}
+
+// Converter para número decimal seguro
+function parseNumeric(value, defaultValue = null) {
+    if (value === '' || value === null || value === undefined) return defaultValue;
+    const num = parseFloat(value);
+    return isNaN(num) ? defaultValue : num;
+}
+
+// Converter para inteiro seguro
+function parseInteger(value, defaultValue = null) {
+    if (value === '' || value === null || value === undefined) return defaultValue;
+    const num = parseInt(value);
+    return isNaN(num) ? defaultValue : num;
+}
+
 // Coletar dados do formulário
 function collectFormData() {
     const formData = {};
@@ -551,10 +595,11 @@ function collectFormData() {
     formData.destinoPais = document.getElementById('destino-pais').value;
     formData.destinoEstado = document.getElementById('destino-estado').value;
     formData.destinoMunicipio = document.getElementById('destino-municipio').value;
-    formData.distancia = document.getElementById('distancia').value;
+    formData.distancia = parseNumeric(document.getElementById('distancia').value);
     formData.temParadas = document.getElementById('tem-paradas').value;
     if (formData.temParadas === 'sim') {
-        formData.numParadas = document.getElementById('num-paradas').value;
+        const numParadasRaw = document.getElementById('num-paradas').value;
+        formData.numParadas = converterNumParadas(numParadasRaw);
     }
     
     // Modos de transporte
@@ -567,38 +612,40 @@ function collectFormData() {
         formData.configVeiculo = document.getElementById('config-veiculo').value;
     }
     
-    formData.capacidadeUtilizada = document.getElementById('capacidade-utilizada').value;
-    formData.pesoCarga = document.getElementById('peso-carga').value;
+    // CONVERSÃO NUMÉRICA: Capacidade Utilizada
+    formData.capacidadeUtilizada = parseNumeric(document.getElementById('capacidade-utilizada').value);
+    formData.pesoCarga = parseNumeric(document.getElementById('peso-carga').value);
     formData.unidadePeso = document.getElementById('unidade-peso').value;
-    formData.custoTransporte = document.getElementById('custo-transporte').value;
-    formData.valorCarga = document.getElementById('valor-carga').value;
+    formData.custoTransporte = parseNumeric(document.getElementById('custo-transporte').value);
+    formData.valorCarga = parseNumeric(document.getElementById('valor-carga').value);
     formData.tipoEmbalagem = document.getElementById('tipo-embalagem').value;
     formData.cargaPerigosa = document.getElementById('carga-perigosa').value;
     
-    // Tempo de deslocamento
-    formData.tempoDias = document.getElementById('tempo-dias').value;
-    formData.tempoHoras = document.getElementById('tempo-horas').value;
-    formData.tempoMinutos = document.getElementById('tempo-minutos').value;
+    // Tempo de deslocamento (converter para inteiros)
+    formData.tempoDias = parseInteger(document.getElementById('tempo-dias').value, 0);
+    formData.tempoHoras = parseInteger(document.getElementById('tempo-horas').value, 0);
+    formData.tempoMinutos = parseInteger(document.getElementById('tempo-minutos').value, 0);
     
     formData.frequencia = document.getElementById('frequencia').value;
     if (formData.frequencia === 'diaria') {
-        formData.frequenciaDiaria = document.getElementById('frequencia-diaria').value;
+        // CONVERSÃO NUMÉRICA: Frequência Diária
+        formData.frequenciaDiaria = parseNumeric(document.getElementById('frequencia-diaria').value);
     }
     if (formData.frequencia === 'outra') {
         formData.frequenciaOutra = document.getElementById('frequencia-outra').value;
     }
     
-    // Fatores de decisão
+    // Fatores de decisão (variações já são numéricas)
     formData.importanciaCusto = document.getElementById('importancia-custo').value;
-    formData.variacaoCusto = document.getElementById('variacao-custo').value;
+    formData.variacaoCusto = parseNumeric(document.getElementById('variacao-custo').value);
     formData.importanciaTempo = document.getElementById('importancia-tempo').value;
-    formData.variacaoTempo = document.getElementById('variacao-tempo').value;
+    formData.variacaoTempo = parseNumeric(document.getElementById('variacao-tempo').value);
     formData.importanciaConfiabilidade = document.getElementById('importancia-confiabilidade').value;
-    formData.variacaoConfiabilidade = document.getElementById('variacao-confiabilidade').value;
+    formData.variacaoConfiabilidade = parseNumeric(document.getElementById('variacao-confiabilidade').value);
     formData.importanciaSeguranca = document.getElementById('importancia-seguranca').value;
-    formData.variacaoSeguranca = document.getElementById('variacao-seguranca').value;
+    formData.variacaoSeguranca = parseNumeric(document.getElementById('variacao-seguranca').value);
     formData.importanciaCapacidade = document.getElementById('importancia-capacidade').value;
-    formData.variacaoCapacidade = document.getElementById('variacao-capacidade').value;
+    formData.variacaoCapacidade = parseNumeric(document.getElementById('variacao-capacidade').value);
     
     // Análise estratégica
     formData.tipoCadeia = document.getElementById('tipo-cadeia').value;
