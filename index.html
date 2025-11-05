@@ -138,9 +138,22 @@
                             <label for="outro-tipo">Especifique:</label>
                             <input type="text" id="outro-tipo" name="outro-tipo">
                         </div>
-                        <div class="form-group">
-                            <label for="nome-empresa"><span class="question-number">6.</span> Nome da empresa *</label>
-                            <input type="text" id="nome-empresa" name="nome-empresa" required>
+                        <div class="form-group" style="display: grid; grid-template-columns: 200px 1fr; gap: 15px; align-items: start;">
+                            <div>
+                                <label for="cnpj-empresa"><span class="question-number">6a.</span> CNPJ *</label>
+                                <input type="text" id="cnpj-empresa" name="cnpj-empresa" required 
+                                       placeholder="00.000.000/0000-00" 
+                                       maxlength="18"
+                                       style="width: 100%;">
+                                <small class="field-hint" id="cnpj-status" style="display: block; margin-top: 5px;"></small>
+                            </div>
+                            <div>
+                                <label for="nome-empresa"><span class="question-number">6b.</span> Nome da empresa *</label>
+                                <input type="text" id="nome-empresa" name="nome-empresa" required readonly
+                                       placeholder="Será preenchido automaticamente ao digitar o CNPJ"
+                                       style="background-color: #f5f5f5;">
+                                <small class="field-hint">Razão social obtida da Receita Federal</small>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="municipio-empresa"><span class="question-number">7.</span> Município da(s) unidade(s) de produção *</label>
@@ -1248,6 +1261,7 @@
     <script src="database.js"></script>
     <script src="validation.js"></script>
     <script src="analytics.js"></script>
+    <script src="cnpj-validator.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
