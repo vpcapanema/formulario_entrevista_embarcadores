@@ -1,0 +1,21 @@
+{
+  "id_empresa": 4,
+  "nome_empresa": "PETROBRAS - Teste",
+  "tipo_empresa": "embarcador",
+  "outro_tipo": null,
+  "municipio": "Rio de Janeiro",
+  "estado": "Rio de Janeiro",
+  "cnpj": "33.000.167/0001-01",
+  "data_cadastro": "2025-11-05T19:00:02.487Z",
+  "data_atualizacao": null,
+  "razao_social": "PETRÓLEO BRASILEIRO S.A.",
+  "nome_fantasia": "PETROBRAS",
+  "telefone": "2125341000",
+  "email": "contato@petrobras.com.br",
+  "id_municipio": 3304557,
+  "logradouro": "Avenida República do Chile",
+  "numero": "65",
+  "complemento": "Torre Executiva",
+  "bairro": "Centro",
+  "cep": "20031912"
+}

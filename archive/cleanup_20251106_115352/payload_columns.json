@@ -1,0 +1,1031 @@
+{
+  "success": true,
+  "tables": {
+    "empresas": [
+      {
+        "column": "id_empresa",
+        "data_type": "integer"
+      },
+      {
+        "column": "nome_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "tipo_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "outro_tipo",
+        "data_type": "character varying"
+      },
+      {
+        "column": "municipio",
+        "data_type": "character varying"
+      },
+      {
+        "column": "estado",
+        "data_type": "character varying"
+      },
+      {
+        "column": "cnpj",
+        "data_type": "character varying"
+      },
+      {
+        "column": "data_cadastro",
+        "data_type": "timestamp with time zone"
+      },
+      {
+        "column": "data_atualizacao",
+        "data_type": "timestamp with time zone"
+      },
+      {
+        "column": "razao_social",
+        "data_type": "character varying"
+      },
+      {
+        "column": "nome_fantasia",
+        "data_type": "character varying"
+      },
+      {
+        "column": "telefone",
+        "data_type": "character varying"
+      },
+      {
+        "column": "email",
+        "data_type": "character varying"
+      },
+      {
+        "column": "id_municipio",
+        "data_type": "integer"
+      },
+      {
+        "column": "logradouro",
+        "data_type": "character varying"
+      },
+      {
+        "column": "numero",
+        "data_type": "character varying"
+      },
+      {
+        "column": "complemento",
+        "data_type": "character varying"
+      },
+      {
+        "column": "bairro",
+        "data_type": "character varying"
+      },
+      {
+        "column": "cep",
+        "data_type": "character varying"
+      }
+    ],
+    "entrevistadores": [
+      {
+        "column": "id_entrevistador",
+        "data_type": "integer"
+      },
+      {
+        "column": "nome_completo",
+        "data_type": "character varying"
+      },
+      {
+        "column": "email",
+        "data_type": "character varying"
+      },
+      {
+        "column": "id_instituicao",
+        "data_type": "integer"
+      }
+    ],
+    "entrevistados": [
+      {
+        "column": "id_entrevistado",
+        "data_type": "integer"
+      },
+      {
+        "column": "id_empresa",
+        "data_type": "integer"
+      },
+      {
+        "column": "nome",
+        "data_type": "character varying"
+      },
+      {
+        "column": "funcao",
+        "data_type": "character varying"
+      },
+      {
+        "column": "telefone",
+        "data_type": "character varying"
+      },
+      {
+        "column": "email",
+        "data_type": "character varying"
+      },
+      {
+        "column": "principal",
+        "data_type": "boolean"
+      },
+      {
+        "column": "data_cadastro",
+        "data_type": "timestamp with time zone"
+      },
+      {
+        "column": "data_atualizacao",
+        "data_type": "timestamp with time zone"
+      }
+    ],
+    "estados_brasil": [
+      {
+        "column": "id_estado",
+        "data_type": "integer"
+      },
+      {
+        "column": "uf",
+        "data_type": "character"
+      },
+      {
+        "column": "nome_estado",
+        "data_type": "character varying"
+      },
+      {
+        "column": "regiao",
+        "data_type": "character varying"
+      }
+    ],
+    "funcoes_entrevistado": [
+      {
+        "column": "id_funcao",
+        "data_type": "integer"
+      },
+      {
+        "column": "nome_funcao",
+        "data_type": "character varying"
+      }
+    ],
+    "instituicoes": [
+      {
+        "column": "id_instituicao",
+        "data_type": "integer"
+      },
+      {
+        "column": "nome_instituicao",
+        "data_type": "character varying"
+      },
+      {
+        "column": "tipo_instituicao",
+        "data_type": "character varying"
+      },
+      {
+        "column": "cnpj",
+        "data_type": "character varying"
+      }
+    ],
+    "municipios_sp": [
+      {
+        "column": "id_municipio",
+        "data_type": "integer"
+      },
+      {
+        "column": "nome_municipio",
+        "data_type": "character varying"
+      },
+      {
+        "column": "codigo_ibge",
+        "data_type": "character varying"
+      },
+      {
+        "column": "regiao",
+        "data_type": "character varying"
+      }
+    ],
+    "paises": [
+      {
+        "column": "id_pais",
+        "data_type": "integer"
+      },
+      {
+        "column": "nome_pais",
+        "data_type": "character varying"
+      },
+      {
+        "column": "codigo_iso2",
+        "data_type": "character"
+      },
+      {
+        "column": "codigo_iso3",
+        "data_type": "character"
+      },
+      {
+        "column": "relevancia",
+        "data_type": "integer"
+      }
+    ],
+    "pesquisas": [
+      {
+        "column": "id_pesquisa",
+        "data_type": "integer"
+      },
+      {
+        "column": "id_empresa",
+        "data_type": "integer"
+      },
+      {
+        "column": "id_entrevistado",
+        "data_type": "integer"
+      },
+      {
+        "column": "tipo_responsavel",
+        "data_type": "character varying"
+      },
+      {
+        "column": "id_responsavel",
+        "data_type": "integer"
+      },
+      {
+        "column": "data_entrevista",
+        "data_type": "timestamp with time zone"
+      },
+      {
+        "column": "data_atualizacao",
+        "data_type": "timestamp with time zone"
+      },
+      {
+        "column": "status",
+        "data_type": "character varying"
+      },
+      {
+        "column": "produto_principal",
+        "data_type": "character varying"
+      },
+      {
+        "column": "agrupamento_produto",
+        "data_type": "character varying"
+      },
+      {
+        "column": "outro_produto",
+        "data_type": "character varying"
+      },
+      {
+        "column": "tipo_transporte",
+        "data_type": "character varying"
+      },
+      {
+        "column": "origem_pais",
+        "data_type": "character varying"
+      },
+      {
+        "column": "origem_estado",
+        "data_type": "character varying"
+      },
+      {
+        "column": "origem_municipio",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino_pais",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino_estado",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino_municipio",
+        "data_type": "character varying"
+      },
+      {
+        "column": "distancia",
+        "data_type": "numeric"
+      },
+      {
+        "column": "tem_paradas",
+        "data_type": "character varying"
+      },
+      {
+        "column": "modos",
+        "data_type": "ARRAY"
+      },
+      {
+        "column": "config_veiculo",
+        "data_type": "character varying"
+      },
+      {
+        "column": "peso_carga",
+        "data_type": "numeric"
+      },
+      {
+        "column": "unidade_peso",
+        "data_type": "character varying"
+      },
+      {
+        "column": "custo_transporte",
+        "data_type": "numeric"
+      },
+      {
+        "column": "valor_carga",
+        "data_type": "numeric"
+      },
+      {
+        "column": "tipo_embalagem",
+        "data_type": "character varying"
+      },
+      {
+        "column": "carga_perigosa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "tempo_dias",
+        "data_type": "integer"
+      },
+      {
+        "column": "tempo_horas",
+        "data_type": "integer"
+      },
+      {
+        "column": "tempo_minutos",
+        "data_type": "integer"
+      },
+      {
+        "column": "frequencia",
+        "data_type": "character varying"
+      },
+      {
+        "column": "frequencia_outra",
+        "data_type": "character varying"
+      },
+      {
+        "column": "importancia_custo",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_custo",
+        "data_type": "numeric"
+      },
+      {
+        "column": "importancia_tempo",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_tempo",
+        "data_type": "numeric"
+      },
+      {
+        "column": "importancia_confiabilidade",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_confiabilidade",
+        "data_type": "numeric"
+      },
+      {
+        "column": "importancia_seguranca",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_seguranca",
+        "data_type": "numeric"
+      },
+      {
+        "column": "importancia_capacidade",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_capacidade",
+        "data_type": "numeric"
+      },
+      {
+        "column": "tipo_cadeia",
+        "data_type": "character varying"
+      },
+      {
+        "column": "modais_alternativos",
+        "data_type": "ARRAY"
+      },
+      {
+        "column": "fator_adicional",
+        "data_type": "text"
+      },
+      {
+        "column": "dificuldades",
+        "data_type": "ARRAY"
+      },
+      {
+        "column": "detalhe_dificuldade",
+        "data_type": "text"
+      },
+      {
+        "column": "observacoes",
+        "data_type": "text"
+      },
+      {
+        "column": "capacidade_utilizada",
+        "data_type": "numeric"
+      },
+      {
+        "column": "num_paradas",
+        "data_type": "integer"
+      },
+      {
+        "column": "frequencia_diaria",
+        "data_type": "numeric"
+      },
+      {
+        "column": "consentimento",
+        "data_type": "boolean"
+      },
+      {
+        "column": "transporta_carga",
+        "data_type": "boolean"
+      },
+      {
+        "column": "origem_instalacao",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino_instalacao",
+        "data_type": "character varying"
+      },
+      {
+        "column": "volume_anual_toneladas",
+        "data_type": "numeric"
+      },
+      {
+        "column": "tipo_produto",
+        "data_type": "character varying"
+      },
+      {
+        "column": "classe_produto",
+        "data_type": "character varying"
+      },
+      {
+        "column": "produtos_especificos",
+        "data_type": "text"
+      },
+      {
+        "column": "modal_predominante",
+        "data_type": "character varying"
+      },
+      {
+        "column": "modal_secundario",
+        "data_type": "character varying"
+      },
+      {
+        "column": "modal_terciario",
+        "data_type": "character varying"
+      },
+      {
+        "column": "proprio_terceirizado",
+        "data_type": "character varying"
+      },
+      {
+        "column": "qtd_caminhoes_proprios",
+        "data_type": "integer"
+      },
+      {
+        "column": "qtd_caminhoes_terceirizados",
+        "data_type": "integer"
+      },
+      {
+        "column": "tempo_transporte",
+        "data_type": "character varying"
+      },
+      {
+        "column": "custo_medio_tonelada",
+        "data_type": "numeric"
+      },
+      {
+        "column": "pedagio_custo",
+        "data_type": "numeric"
+      },
+      {
+        "column": "frete_custo",
+        "data_type": "numeric"
+      },
+      {
+        "column": "manutencao_custo",
+        "data_type": "numeric"
+      },
+      {
+        "column": "outros_custos",
+        "data_type": "numeric"
+      },
+      {
+        "column": "principais_desafios",
+        "data_type": "text"
+      },
+      {
+        "column": "investimento_sustentavel",
+        "data_type": "character varying"
+      },
+      {
+        "column": "reducao_emissoes",
+        "data_type": "text"
+      },
+      {
+        "column": "tecnologias_interesse",
+        "data_type": "text"
+      },
+      {
+        "column": "uso_tecnologia",
+        "data_type": "character varying"
+      },
+      {
+        "column": "grau_automacao",
+        "data_type": "character varying"
+      },
+      {
+        "column": "rastreamento_carga",
+        "data_type": "boolean"
+      },
+      {
+        "column": "uso_dados",
+        "data_type": "text"
+      },
+      {
+        "column": "conhecimento_hidrovias",
+        "data_type": "character varying"
+      },
+      {
+        "column": "viabilidade_hidrovia",
+        "data_type": "character varying"
+      },
+      {
+        "column": "pontos_melhoria",
+        "data_type": "text"
+      },
+      {
+        "column": "interesse_parcerias",
+        "data_type": "boolean"
+      },
+      {
+        "column": "feedback_formulario",
+        "data_type": "text"
+      },
+      {
+        "column": "id_instalacao_origem",
+        "data_type": "integer"
+      }
+    ],
+    "produtos_transportados": [
+      {
+        "column": "id_produto",
+        "data_type": "integer"
+      },
+      {
+        "column": "id_pesquisa",
+        "data_type": "integer"
+      },
+      {
+        "column": "id_empresa",
+        "data_type": "integer"
+      },
+      {
+        "column": "carga",
+        "data_type": "character varying"
+      },
+      {
+        "column": "movimentacao",
+        "data_type": "numeric"
+      },
+      {
+        "column": "origem",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino",
+        "data_type": "character varying"
+      },
+      {
+        "column": "distancia",
+        "data_type": "numeric"
+      },
+      {
+        "column": "modalidade",
+        "data_type": "character varying"
+      },
+      {
+        "column": "acondicionamento",
+        "data_type": "character varying"
+      },
+      {
+        "column": "ordem",
+        "data_type": "integer"
+      }
+    ],
+    "v_distribuicao_modal": [
+      {
+        "column": "modalidade",
+        "data_type": "text"
+      },
+      {
+        "column": "quantidade_pesquisas",
+        "data_type": "bigint"
+      },
+      {
+        "column": "percentual",
+        "data_type": "numeric"
+      },
+      {
+        "column": "distancia_media_km",
+        "data_type": "numeric"
+      },
+      {
+        "column": "custo_medio_reais",
+        "data_type": "numeric"
+      },
+      {
+        "column": "peso_medio_toneladas",
+        "data_type": "numeric"
+      }
+    ],
+    "v_kpis_gerais": [
+      {
+        "column": "total_empresas",
+        "data_type": "bigint"
+      },
+      {
+        "column": "total_pesquisas",
+        "data_type": "bigint"
+      },
+      {
+        "column": "total_entrevistados",
+        "data_type": "bigint"
+      },
+      {
+        "column": "total_entrevistadores_ativos",
+        "data_type": "bigint"
+      },
+      {
+        "column": "volume_total_toneladas",
+        "data_type": "numeric"
+      },
+      {
+        "column": "valor_total_movimentado",
+        "data_type": "numeric"
+      },
+      {
+        "column": "distancia_media_km",
+        "data_type": "numeric"
+      },
+      {
+        "column": "taxa_multimodal_percentual",
+        "data_type": "numeric"
+      },
+      {
+        "column": "pesquisas_finalizadas",
+        "data_type": "bigint"
+      },
+      {
+        "column": "pesquisas_validadas",
+        "data_type": "bigint"
+      },
+      {
+        "column": "pesquisas_rascunho",
+        "data_type": "bigint"
+      }
+    ],
+    "v_pesquisas_completa": [
+      {
+        "column": "id_pesquisa",
+        "data_type": "integer"
+      },
+      {
+        "column": "entrevistador_nome",
+        "data_type": "character varying"
+      },
+      {
+        "column": "entrevistador_email",
+        "data_type": "character varying"
+      },
+      {
+        "column": "entrevistador_instituicao",
+        "data_type": "character varying"
+      },
+      {
+        "column": "entrevistador_cnpj",
+        "data_type": "character varying"
+      },
+      {
+        "column": "data_entrevista",
+        "data_type": "text"
+      },
+      {
+        "column": "data_atualizacao",
+        "data_type": "text"
+      },
+      {
+        "column": "status_pesquisa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "entrevistado_nome",
+        "data_type": "character varying"
+      },
+      {
+        "column": "entrevistado_funcao",
+        "data_type": "character varying"
+      },
+      {
+        "column": "entrevistado_telefone",
+        "data_type": "character varying"
+      },
+      {
+        "column": "entrevistado_email",
+        "data_type": "character varying"
+      },
+      {
+        "column": "responsavel_principal",
+        "data_type": "text"
+      },
+      {
+        "column": "nome_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "tipo_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "outro_tipo_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "cnpj_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "municipio_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "estado_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "agrupamento_produto",
+        "data_type": "character varying"
+      },
+      {
+        "column": "produto_principal",
+        "data_type": "character varying"
+      },
+      {
+        "column": "outro_produto",
+        "data_type": "character varying"
+      },
+      {
+        "column": "tipo_transporte",
+        "data_type": "character varying"
+      },
+      {
+        "column": "origem_pais",
+        "data_type": "character varying"
+      },
+      {
+        "column": "origem_estado",
+        "data_type": "character varying"
+      },
+      {
+        "column": "origem_municipio",
+        "data_type": "character varying"
+      },
+      {
+        "column": "origem_completa",
+        "data_type": "text"
+      },
+      {
+        "column": "destino_pais",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino_estado",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino_municipio",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino_completa",
+        "data_type": "text"
+      },
+      {
+        "column": "distancia",
+        "data_type": "text"
+      },
+      {
+        "column": "num_paradas",
+        "data_type": "character varying"
+      },
+      {
+        "column": "num_paradas_exato",
+        "data_type": "integer"
+      },
+      {
+        "column": "modais",
+        "data_type": "ARRAY"
+      },
+      {
+        "column": "configuracao_veiculo",
+        "data_type": "character varying"
+      },
+      {
+        "column": "capacidade_utilizada",
+        "data_type": "text"
+      },
+      {
+        "column": "peso_carga",
+        "data_type": "text"
+      },
+      {
+        "column": "custo_transporte",
+        "data_type": "text"
+      },
+      {
+        "column": "valor_carga",
+        "data_type": "text"
+      },
+      {
+        "column": "custo_por_tonelada",
+        "data_type": "text"
+      },
+      {
+        "column": "tipo_embalagem",
+        "data_type": "character varying"
+      },
+      {
+        "column": "carga_perigosa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "tempo_viagem",
+        "data_type": "text"
+      },
+      {
+        "column": "tempo_total_minutos",
+        "data_type": "integer"
+      },
+      {
+        "column": "frequencia",
+        "data_type": "character varying"
+      },
+      {
+        "column": "frequencia_diaria",
+        "data_type": "text"
+      },
+      {
+        "column": "frequencia_outra",
+        "data_type": "character varying"
+      },
+      {
+        "column": "importancia_custo",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_custo",
+        "data_type": "text"
+      },
+      {
+        "column": "importancia_tempo",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_tempo",
+        "data_type": "text"
+      },
+      {
+        "column": "importancia_confiabilidade",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_confiabilidade",
+        "data_type": "text"
+      },
+      {
+        "column": "importancia_seguranca",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_seguranca",
+        "data_type": "text"
+      },
+      {
+        "column": "importancia_capacidade",
+        "data_type": "character varying"
+      },
+      {
+        "column": "variacao_capacidade",
+        "data_type": "text"
+      },
+      {
+        "column": "tipo_cadeia",
+        "data_type": "character varying"
+      },
+      {
+        "column": "modais_alternativos",
+        "data_type": "ARRAY"
+      },
+      {
+        "column": "fator_adicional",
+        "data_type": "text"
+      },
+      {
+        "column": "dificuldades",
+        "data_type": "text"
+      },
+      {
+        "column": "detalhe_dificuldade",
+        "data_type": "text"
+      },
+      {
+        "column": "observacoes",
+        "data_type": "text"
+      },
+      {
+        "column": "qtd_produtos",
+        "data_type": "bigint"
+      }
+    ],
+    "v_produtos_detalhados": [
+      {
+        "column": "id_produto",
+        "data_type": "integer"
+      },
+      {
+        "column": "id_pesquisa",
+        "data_type": "integer"
+      },
+      {
+        "column": "id_empresa",
+        "data_type": "integer"
+      },
+      {
+        "column": "nome_empresa",
+        "data_type": "character varying"
+      },
+      {
+        "column": "data_entrevista",
+        "data_type": "timestamp with time zone"
+      },
+      {
+        "column": "carga",
+        "data_type": "character varying"
+      },
+      {
+        "column": "movimentacao_ton_ano",
+        "data_type": "numeric"
+      },
+      {
+        "column": "origem",
+        "data_type": "character varying"
+      },
+      {
+        "column": "destino",
+        "data_type": "character varying"
+      },
+      {
+        "column": "distancia_km",
+        "data_type": "numeric"
+      },
+      {
+        "column": "modalidade",
+        "data_type": "character varying"
+      },
+      {
+        "column": "acondicionamento",
+        "data_type": "character varying"
+      },
+      {
+        "column": "ordem",
+        "data_type": "integer"
+      }
+    ],
+    "v_produtos_ranking": [
+      {
+        "column": "agrupamento_produto",
+        "data_type": "character varying"
+      },
+      {
+        "column": "qtd_empresas",
+        "data_type": "bigint"
+      },
+      {
+        "column": "qtd_pesquisas",
+        "data_type": "bigint"
+      },
+      {
+        "column": "volume_total_toneladas",
+        "data_type": "numeric"
+      },
+      {
+        "column": "distancia_media_km",
+        "data_type": "numeric"
+      },
+      {
+        "column": "custo_medio_reais",
+        "data_type": "numeric"
+      }
+    ]
+  }
+}

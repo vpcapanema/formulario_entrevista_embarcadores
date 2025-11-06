@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Limpeza de Cache - PLI 2050</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .status {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .status h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+        }
+        
+        .status-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        
+        .status-text {
+            flex: 1;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        
+        .status-detail {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-clean {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-clean:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-home {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-home:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.4);
+        }
+        
+        .success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpeza de Cache</h1>
+        <p class="subtitle">Sistema de Formulários - PLI 2050</p>
+        
+        <div class="status">
+            <h3>📊 Status Atual</h3>
+            <div class="status-item">
+                <div class="status-icon">🗄️</div>
+                <div class="status-text">
+                    <div class="status-label">IndexedDB (Respostas)</div>
+                    <div class="status-detail" id="indexeddb-status">Verificando...</div>
+                </div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon">💾</div>
+                <div class="status-text">
+                    <div class="status-label">LocalStorage</div>
+                    <div class="status-detail" id="localstorage-status">Verificando...</div>
+                </div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon">🍪</div>
+                <div class="status-text">
+                    <div class="status-label">Cookies</div>
+                    <div class="status-detail" id="cookies-status">Verificando...</div>
+                </div>
+            </div>
+            <div class="status-item">
+                <div class="status-icon">⚙️</div>
+                <div class="status-text">
+                    <div class="status-label">Service Workers</div>
+                    <div class="status-detail" id="sw-status">Verificando...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Limpando caches...</p>
+        </div>
+        
+        <div class="success" id="success">
+            ✅ Todos os caches foram limpos com sucesso!
+        </div>
+        
+        <div class="btn-container">
+            <button class="btn-clean" onclick="limparTudo()">🧹 Limpar Tudo</button>
+            <button class="btn-home" onclick="irParaHome()">🏠 Ir para Formulário</button>
+        </div>
+    </div>
+    
+    <script>
+        // Verificar status inicial
+        async function verificarStatus() {
+            // IndexedDB
+            try {
+                const dbs = await indexedDB.databases();
+                const pliDb = dbs.find(db => db.name === 'PLI2050_Database');
+                if (pliDb) {
+                    document.getElementById('indexeddb-status').textContent = '⚠️ Banco de dados encontrado';
+                    document.getElementById('indexeddb-status').style.color = '#dc3545';
+                } else {
+                    document.getElementById('indexeddb-status').textContent = '✅ Limpo';
+                    document.getElementById('indexeddb-status').style.color = '#28a745';
+                }
+            } catch (e) {
+                document.getElementById('indexeddb-status').textContent = '❓ Não verificável';
+            }
+            
+            // LocalStorage
+            const lsKeys = Object.keys(localStorage);
+            if (lsKeys.length > 0) {
+                document.getElementById('localstorage-status').textContent = `⚠️ ${lsKeys.length} itens armazenados`;
+                document.getElementById('localstorage-status').style.color = '#dc3545';
+            } else {
+                document.getElementById('localstorage-status').textContent = '✅ Limpo';
+                document.getElementById('localstorage-status').style.color = '#28a745';
+            }
+            
+            // Cookies
+            const cookieCount = document.cookie.split(';').filter(c => c.trim()).length;
+            if (cookieCount > 0) {
+                document.getElementById('cookies-status').textContent = `⚠️ ${cookieCount} cookies encontrados`;
+                document.getElementById('cookies-status').style.color = '#dc3545';
+            } else {
+                document.getElementById('cookies-status').textContent = '✅ Limpo';
+                document.getElementById('cookies-status').style.color = '#28a745';
+            }
+            
+            // Service Workers
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                if (registrations.length > 0) {
+                    document.getElementById('sw-status').textContent = `⚠️ ${registrations.length} service workers ativos`;
+                    document.getElementById('sw-status').style.color = '#dc3545';
+                } else {
+                    document.getElementById('sw-status').textContent = '✅ Nenhum ativo';
+                    document.getElementById('sw-status').style.color = '#28a745';
+                }
+            } else {
+                document.getElementById('sw-status').textContent = '✅ Não suportado';
+                document.getElementById('sw-status').style.color = '#28a745';
+            }
+        }
+        
+        async function limparTudo() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('success').style.display = 'none';
+            
+            try {
+                // 1. Limpar IndexedDB
+                const dbs = await indexedDB.databases();
+                for (const db of dbs) {
+                    console.log('Deletando banco:', db.name);
+                    await indexedDB.deleteDatabase(db.name);
+                }
+                
+                // 2. Limpar LocalStorage
+                localStorage.clear();
+                
+                // 3. Limpar SessionStorage
+                sessionStorage.clear();
+                
+                // 4. Limpar Cookies
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                
+                // 5. Desregistrar Service Workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const registration of registrations) {
+                        console.log('Desregistrando service worker:', registration.scope);
+                        await registration.unregister();
+                    }
+                }
+                
+                // 6. Limpar Cache API
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (const cacheName of cacheNames) {
+                        console.log('Deletando cache:', cacheName);
+                        await caches.delete(cacheName);
+                    }
+                }
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('success').style.display = 'block';
+                
+                // Atualizar status
+                setTimeout(verificarStatus, 500);
+                
+                console.log('✅ Todos os caches foram limpos!');
+            } catch (error) {
+                console.error('❌ Erro ao limpar caches:', error);
+                alert('Erro ao limpar caches: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function irParaHome() {
+            // Forçar reload sem cache
+            window.location.href = '/?_=' + Date.now();
+        }
+        
+        // Verificar status ao carregar
+        verificarStatus();
+    </script>
+</body>
+</html>
