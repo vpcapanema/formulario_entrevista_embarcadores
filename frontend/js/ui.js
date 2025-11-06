@@ -312,18 +312,18 @@ const UI = {
                 API.getEntrevistadores()
             ]);
             
-            // Popular dropdowns fixos
-            this.populateDropdown('origem-estado', estados, 'uf', 'nome_estado');
-            this.populateDropdown('destino-estado', estados, 'uf', 'nome_estado');
-            this.populateDropdown('origem-pais', paises, 'nome_pais', 'nome_pais');
-            this.populateDropdown('destino-pais', paises, 'nome_pais', 'nome_pais');
-            this.populateDropdown('funcao-entrevistado', funcoes, 'nome_funcao', 'nome_funcao');
+            // Popular dropdowns de origem e destino (Q12 e Q13)
+            this.populateDropdown('origem-pais', paises, 'id_pais', 'nm_pais', 31); // Brasil pré-selecionado
+            this.populateDropdown('destino-pais', paises, 'id_pais', 'nm_pais', 31); // Brasil pré-selecionado
+            
+            // Popular dropdown de função
+            this.populateDropdown('funcao-entrevistado', funcoes, 'id_funcao', 'nome_funcao');
             this.populateDropdown('id-entrevistador', entrevistadores, 'id_entrevistador', 'nome_completo');
             
-            // Configurar listeners para carregar municípios quando UF for selecionada
-            this.setupMunicipioFilters();
+            // Configurar listeners para Q12 e Q13 (origem/destino)
+            this.setupOrigemDestinoFilters();
             
-            console.log('✅ Todas as listas auxiliares carregadas (municípios serão carregados sob demanda)');
+            console.log('✅ Todas as listas auxiliares carregadas');
         } catch (error) {
             console.error('❌ Erro ao carregar listas:', error);
             this.mostrarErroConexao(error.message);
@@ -331,67 +331,132 @@ const UI = {
     },
     
     /**
-     * Configura filtros dinâmicos de municípios por UF
-     * Municípios são carregados APENAS quando usuário seleciona um estado
+     * Configura filtros dinâmicos para Q12 (Origem) e Q13 (Destino)
+     * REGRAS:
+     * - País: OBRIGATÓRIO
+     * - Se Brasil: Estado OBRIGATÓRIO, Município OPCIONAL
+     * - Se outro país: Ocultar Estado e Município
      */
-    setupMunicipioFilters() {
-        // Origem: Estado → Municípios
-        const origemEstado = document.getElementById('origem-estado');
-        const origemMunicipio = document.getElementById('origem-municipio');
+    setupOrigemDestinoFilters() {
+        // ===== Q12: ORIGEM =====
+        const origemPaisSelect = document.getElementById('origem-pais');
+        const origemEstadoGroup = document.getElementById('origem-estado')?.closest('.form-group');
+        const origemEstadoSelect = document.getElementById('origem-estado');
+        const origemMunicipioGroup = document.getElementById('origem-municipio')?.closest('.form-group');
+        const origemMunicipioSelect = document.getElementById('origem-municipio');
         
-        if (origemEstado && origemMunicipio) {
-            origemEstado.addEventListener('change', async (e) => {
+        if (origemPaisSelect) {
+            origemPaisSelect.addEventListener('change', async (e) => {
+                const idPais = parseInt(e.target.value);
+                
+                if (idPais === 31) { // Brasil
+                    // Mostrar estado (obrigatório) e município (opcional)
+                    if (origemEstadoGroup) origemEstadoGroup.style.display = 'block';
+                    if (origemEstadoSelect) {
+                        origemEstadoSelect.setAttribute('required', 'required');
+                        // Carregar estados
+                        const estados = await API.getEstados();
+                        this.populateDropdown('origem-estado', estados, 'sigla_uf', 'nm_uf');
+                    }
+                    if (origemMunicipioGroup) origemMunicipioGroup.style.display = 'block';
+                } else {
+                    // Outro país: ocultar estado e município
+                    if (origemEstadoGroup) origemEstadoGroup.style.display = 'none';
+                    if (origemEstadoSelect) {
+                        origemEstadoSelect.removeAttribute('required');
+                        origemEstadoSelect.value = '';
+                    }
+                    if (origemMunicipioGroup) origemMunicipioGroup.style.display = 'none';
+                    if (origemMunicipioSelect) origemMunicipioSelect.value = '';
+                }
+            });
+            
+            // Executar na inicialização (Brasil pré-selecionado)
+            origemPaisSelect.dispatchEvent(new Event('change'));
+        }
+        
+        // Estado → Municípios (Origem)
+        if (origemEstadoSelect && origemMunicipioSelect) {
+            origemEstadoSelect.addEventListener('change', async (e) => {
                 const uf = e.target.value;
                 if (uf) {
                     console.log(`🔍 Carregando municípios de ${uf} (origem)...`);
-                    this.mostrarLoading('Carregando municípios...');
-                    
                     try {
                         const municipios = await API.getMunicipiosByUF(uf);
-                        // ATENÇÃO: Colunas reais da tabela dim_municipio
                         this.populateDropdown('origem-municipio', municipios, 'cd_mun', 'nm_mun');
                         console.log(`✅ ${municipios.length} municípios de ${uf} carregados (origem)`);
                     } catch (error) {
                         console.error('❌ Erro ao carregar municípios:', error);
-                    } finally {
-                        this.esconderLoading();
                     }
                 } else {
-                    // Limpar dropdown se nenhum estado selecionado
-                    origemMunicipio.innerHTML = '<option value="">Selecione o estado primeiro</option>';
+                    origemMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
                 }
             });
         }
         
-        // Destino: Estado → Municípios
-        const destinoEstado = document.getElementById('destino-estado');
-        const destinoMunicipio = document.getElementById('destino-municipio');
+        // ===== Q13: DESTINO =====
+        const destinoPaisSelect = document.getElementById('destino-pais');
+        const destinoEstadoGroup = document.getElementById('destino-estado')?.closest('.form-group');
+        const destinoEstadoSelect = document.getElementById('destino-estado');
+        const destinoMunicipioGroup = document.getElementById('destino-municipio')?.closest('.form-group');
+        const destinoMunicipioSelect = document.getElementById('destino-municipio');
         
-        if (destinoEstado && destinoMunicipio) {
-            destinoEstado.addEventListener('change', async (e) => {
+        if (destinoPaisSelect) {
+            destinoPaisSelect.addEventListener('change', async (e) => {
+                const idPais = parseInt(e.target.value);
+                
+                if (idPais === 31) { // Brasil
+                    // Mostrar estado (obrigatório) e município (opcional)
+                    if (destinoEstadoGroup) destinoEstadoGroup.style.display = 'block';
+                    if (destinoEstadoSelect) {
+                        destinoEstadoSelect.setAttribute('required', 'required');
+                        // Carregar estados
+                        const estados = await API.getEstados();
+                        this.populateDropdown('destino-estado', estados, 'sigla_uf', 'nm_uf');
+                    }
+                    if (destinoMunicipioGroup) destinoMunicipioGroup.style.display = 'block';
+                } else {
+                    // Outro país: ocultar estado e município
+                    if (destinoEstadoGroup) destinoEstadoGroup.style.display = 'none';
+                    if (destinoEstadoSelect) {
+                        destinoEstadoSelect.removeAttribute('required');
+                        destinoEstadoSelect.value = '';
+                    }
+                    if (destinoMunicipioGroup) destinoMunicipioGroup.style.display = 'none';
+                    if (destinoMunicipioSelect) destinoMunicipioSelect.value = '';
+                }
+            });
+            
+            // Executar na inicialização (Brasil pré-selecionado)
+            destinoPaisSelect.dispatchEvent(new Event('change'));
+        }
+        
+        // Estado → Municípios (Destino)
+        if (destinoEstadoSelect && destinoMunicipioSelect) {
+            destinoEstadoSelect.addEventListener('change', async (e) => {
                 const uf = e.target.value;
                 if (uf) {
                     console.log(`🔍 Carregando municípios de ${uf} (destino)...`);
-                    this.mostrarLoading('Carregando municípios...');
-                    
                     try {
                         const municipios = await API.getMunicipiosByUF(uf);
-                        // ATENÇÃO: Colunas reais da tabela dim_municipio
                         this.populateDropdown('destino-municipio', municipios, 'cd_mun', 'nm_mun');
                         console.log(`✅ ${municipios.length} municípios de ${uf} carregados (destino)`);
                     } catch (error) {
                         console.error('❌ Erro ao carregar municípios:', error);
-                    } finally {
-                        this.esconderLoading();
                     }
                 } else {
-                    destinoMunicipio.innerHTML = '<option value="">Selecione o estado primeiro</option>';
+                    destinoMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
                 }
             });
         }
-        
-        // TODO: Adicionar listener para municipio-empresa se necessário
-        // (depende se Card 2 tem select de estado primeiro)
+    },
+    
+    /**
+     * Configura filtros dinâmicos de municípios por UF (DEPRECATED - usar setupOrigemDestinoFilters)
+     */
+    setupMunicipioFilters() {
+        // Mantido para compatibilidade, mas não é mais usado
+        console.warn('⚠️ setupMunicipioFilters() está deprecated. Use setupOrigemDestinoFilters()');
     },
     
     // ============================================================
