@@ -1,0 +1,35 @@
+/**
+ * ============================================================
+ * VALIDAÇÃO VISUAL: FIELD SUCCESS
+ * ============================================================
+ * Estilos para campos validados com sucesso
+ * - Borda verde
+ * - Background verde claro
+ * - Animação pulse-success
+ * - Estado de focus
+ */
+
+.field-success {
+    border: 3px solid var(--success-border) !important;
+    background-color: var(--success-bg) !important;
+    animation: pulse-success 0.3s ease-in-out;
+    outline: none !important;
+}
+
+.field-success:focus {
+    border-color: #218838 !important;
+    box-shadow: 0 0 0 0.3rem rgba(40, 167, 69, 0.4) !important;
+}
+
+/* Animação pulse para campos com sucesso */
+@keyframes pulse-success {
+    0% { 
+        transform: scale(1); 
+    }
+    50% { 
+        transform: scale(1.02); 
+    }
+    100% { 
+        transform: scale(1); 
+    }
+}
