@@ -1,0 +1,84 @@
+/**
+ * ============================================================
+ * MAIN CSS - PLI 2050 (VERSÃO MODULAR)
+ * ============================================================
+ * 
+ * Este é o arquivo principal que importa todos os módulos CSS
+ * em ordem de cascata e especificidade.
+ * 
+ * INSTRUÇÕES DE USO:
+ * 1. No HTML, substitua:
+ *    <link rel="stylesheet" href="css/styles.css">
+ *    
+ *    Por:
+ *    <link rel="stylesheet" href="css/main.css">
+ * 
+ * 2. Para desenvolvimento, use arquivos individuais
+ * 3. Para produção, minifique com PostCSS ou similar
+ * 
+ * ORDEM DE IMPORTAÇÃO:
+ * - Reset/Base primeiro
+ * - Variáveis antes de tudo
+ * - Layout e Grid
+ * - Componentes (sem dependências)
+ * - Páginas (usa componentes)
+ * - Utilitários (sobrescreve tudo)
+ * - Responsive por último
+ */
+
+/* === 1. FUNDAÇÃO === */
+@import url('00-reset.css');         /* Reset CSS básico */
+@import url('01-variables.css');     /* Variáveis de design system */
+@import url('02-base.css');          /* Estilos base (body, tipografia) */
+@import url('03-layout.css');        /* Grid, containers, estrutura */
+
+/* === 2. COMPONENTES === */
+@import url('04-components/navbar.css');       /* Navegação */
+@import url('04-components/cards.css');        /* Sistema de cards */
+@import url('04-components/forms.css');        /* Inputs, selects, labels */
+@import url('04-components/buttons.css');      /* Todos os botões */
+@import url('04-components/tables.css');       /* Tabelas */
+@import url('04-components/modals.css');       /* Sistema de feedback modal */
+@import url('04-components/validation.css');   /* Estilos de validação */
+
+/* === 3. PÁGINAS ESPECÍFICAS === */
+@import url('05-pages/instructions.css');      /* Página de instruções */
+@import url('05-pages/analytics.css');         /* Página de analytics */
+@import url('05-pages/responses.css');         /* Página de respostas */
+
+/* === 4. UTILITÁRIOS === */
+@import url('06-utilities.css');     /* Classes helper (u-*, is-*, has-*) */
+@import url('07-animations.css');    /* Todas as animações */
+
+/* === 5. RESPONSIVE === */
+@import url('08-responsive.css');    /* Media queries centralizadas */
+
+/* === 6. PRINT === */
+@import url('09-print.css');         /* Estilos para impressão */
+
+/**
+ * ============================================================
+ * NOTAS DE MIGRAÇÃO
+ * ============================================================
+ * 
+ * Este arquivo substitui completamente o styles.css antigo.
+ * 
+ * BENEFÍCIOS:
+ * - Manutenção mais fácil (cada módulo tem responsabilidade única)
+ * - Performance melhor (lazy load de páginas não usadas)
+ * - Colaboração facilitada (múltiplos devs em módulos diferentes)
+ * - Menos duplicação de código
+ * - Mais fácil encontrar estilos específicos
+ * 
+ * COMO TESTAR:
+ * 1. Abrir index.html com Five Server
+ * 2. Verificar se todos os estilos carregam
+ * 3. Inspecionar elementos e ver qual CSS está aplicado
+ * 4. Comparar com versão antiga (styles.css)
+ * 
+ * FALLBACK (se algo quebrar):
+ * - Voltar para <link rel="stylesheet" href="css/styles.css">
+ * - Reportar issue no GitHub
+ * 
+ * ============================================================
+ */

@@ -1,0 +1,219 @@
+/**
+ * ============================================================
+ * COMPONENTE: BOTÕES - PLI 2050
+ * ============================================================
+ * Todos os estilos relacionados a botões
+ * Variantes: primary, secondary, success, danger
+ * Estados: hover, active, disabled
+ */
+
+/* === BASE BUTTON === */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family);
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* === VARIANTES DE COR === */
+
+/* Primary Button */
+.btn-primary {
+    background: var(--secondary-color);
+    color: var(--text-white);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--secondary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Secondary Button */
+.btn-secondary {
+    background: var(--text-secondary);
+    color: var(--text-white);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #6c7a7b;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Success Button (Add) */
+.btn-success,
+.btn-add {
+    background: var(--success-color);
+    color: var(--text-white);
+}
+
+.btn-success:hover:not(:disabled),
+.btn-add:hover:not(:disabled) {
+    background: var(--success-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Danger Button (Remove/Delete) */
+.btn-danger,
+.btn-remove,
+.btn-delete {
+    background: var(--accent-color);
+    color: var(--text-white);
+}
+
+.btn-danger:hover:not(:disabled),
+.btn-remove:hover:not(:disabled),
+.btn-delete:hover:not(:disabled) {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* === VARIANTES DE TAMANHO === */
+
+.btn-sm {
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-sm);
+}
+
+.btn-lg {
+    padding: var(--space-lg) var(--space-2xl);
+    font-size: var(--font-size-lg);
+}
+
+/* === VARIANTES DE ESTILO === */
+
+/* Outline Button */
+.btn-outline {
+    background: transparent;
+    border: 2px solid currentColor;
+}
+
+.btn-outline-primary {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+    background: var(--secondary-color);
+    color: var(--text-white);
+}
+
+/* Ghost Button (transparente) */
+.btn-ghost {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: var(--text-white);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* === GRUPOS DE BOTÕES === */
+
+.btn-group {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.btn-group-vertical {
+    flex-direction: column;
+}
+
+/* === BOTÕES DE NAVEGAÇÃO === */
+
+.nav-btn {
+    background: transparent;
+    color: var(--text-white);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 0.7rem 1.5rem;
+    border-radius: var(--radius-md);
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.nav-btn.is-active {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+/* === BOTÕES ESPECÍFICOS (legado - manter compatibilidade) === */
+
+.btn-add {
+    margin-bottom: var(--space-md);
+}
+
+.btn-remove {
+    padding: var(--space-sm) var(--space-md);
+}
+
+/* === ESTADOS === */
+
+.btn.is-loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.btn.is-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid var(--text-white);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* === RESPONSIVE === */
+
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+    }
+}
