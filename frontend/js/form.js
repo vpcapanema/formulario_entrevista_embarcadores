@@ -89,7 +89,113 @@ const FORM = {
             radio.addEventListener('change', updateResponsavelVisibility);
         });
         
-        console.log('✅ Campos condicionais configurados (tipo-responsavel)');
+        // ===== TIPO DE EMPRESA: "Outro" =====
+        const tipoEmpresaSelect = document.getElementById('tipo-empresa');
+        const outroTipoContainer = document.getElementById('outro-tipo-container');
+        
+        const updateTipoEmpresaVisibility = () => {
+            if (tipoEmpresaSelect?.value === 'outro') {
+                outroTipoContainer?.classList.remove('hidden-field');
+            } else {
+                outroTipoContainer?.classList.add('hidden-field');
+                // Limpar valor quando oculto
+                const outroTipoInput = document.getElementById('outro-tipo');
+                if (outroTipoInput) outroTipoInput.value = '';
+            }
+        };
+        
+        tipoEmpresaSelect?.addEventListener('change', updateTipoEmpresaVisibility);
+        updateTipoEmpresaVisibility(); // Executar na inicialização
+        
+        // ===== AGRUPAMENTO DE PRODUTO: "Outro" =====
+        const agrupamentoProdutoSelect = document.getElementById('agrupamento-produto');
+        const outroProdutoContainer = document.getElementById('outro-produto-container');
+        
+        const updateAgrupamentoProdutoVisibility = () => {
+            if (agrupamentoProdutoSelect?.value === 'outro-produto') {
+                outroProdutoContainer?.classList.remove('hidden-field');
+            } else {
+                outroProdutoContainer?.classList.add('hidden-field');
+                // Limpar valor quando oculto
+                const outroProdutoInput = document.getElementById('outro-produto');
+                if (outroProdutoInput) outroProdutoInput.value = '';
+            }
+        };
+        
+        agrupamentoProdutoSelect?.addEventListener('change', updateAgrupamentoProdutoVisibility);
+        updateAgrupamentoProdutoVisibility(); // Executar na inicialização
+        
+        // ===== NÚMERO DE PARADAS: Mostrar campo de paradas exatas =====
+        const numParadasSelect = document.getElementById('num-paradas');
+        const numParadasExatoContainer = document.getElementById('num-paradas-exato-container');
+        
+        const updateNumParadasVisibility = () => {
+            const value = numParadasSelect?.value;
+            if (value === '6-ou-mais') {
+                numParadasExatoContainer?.classList.remove('hidden-field');
+            } else {
+                numParadasExatoContainer?.classList.add('hidden-field');
+                // Limpar valor quando oculto
+                const numParadasExatoInput = document.getElementById('num-paradas-exato');
+                if (numParadasExatoInput) numParadasExatoInput.value = '';
+            }
+        };
+        
+        numParadasSelect?.addEventListener('change', updateNumParadasVisibility);
+        updateNumParadasVisibility(); // Executar na inicialização
+        
+        // ===== MODO RODOVIÁRIO: Mostrar configuração de veículo =====
+        const checkboxes = document.querySelectorAll('input[name="modo-transporte"]');
+        const configVeiculoContainer = document.getElementById('config-veiculo-container');
+        
+        const updateConfigVeiculoVisibility = () => {
+            const rodoviarioChecked = document.querySelector('input[name="modo-transporte"][value="rodoviario"]')?.checked;
+            if (rodoviarioChecked) {
+                configVeiculoContainer?.classList.remove('hidden-field');
+            } else {
+                configVeiculoContainer?.classList.add('hidden-field');
+                // Limpar valor quando oculto
+                const configVeiculoSelect = document.getElementById('config-veiculo');
+                if (configVeiculoSelect) configVeiculoSelect.value = '';
+            }
+        };
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateConfigVeiculoVisibility);
+        });
+        updateConfigVeiculoVisibility(); // Executar na inicialização
+        
+        // ===== FREQUÊNCIA: "Diária" ou "Outra" =====
+        const frequenciaSelect = document.getElementById('frequencia');
+        const frequenciaDiariaContainer = document.getElementById('frequencia-diaria-container');
+        const frequenciaOutraContainer = document.getElementById('frequencia-outra-container');
+        
+        const updateFrequenciaVisibility = () => {
+            const value = frequenciaSelect?.value;
+            
+            // Frequência Diária
+            if (value === 'diaria') {
+                frequenciaDiariaContainer?.classList.remove('hidden-field');
+            } else {
+                frequenciaDiariaContainer?.classList.add('hidden-field');
+                const frequenciaDiariaInput = document.getElementById('frequencia-diaria');
+                if (frequenciaDiariaInput) frequenciaDiariaInput.value = '';
+            }
+            
+            // Frequência Outra
+            if (value === 'outra') {
+                frequenciaOutraContainer?.classList.remove('hidden-field');
+            } else {
+                frequenciaOutraContainer?.classList.add('hidden-field');
+                const frequenciaOutraInput = document.getElementById('frequencia-outra');
+                if (frequenciaOutraInput) frequenciaOutraInput.value = '';
+            }
+        };
+        
+        frequenciaSelect?.addEventListener('change', updateFrequenciaVisibility);
+        updateFrequenciaVisibility(); // Executar na inicialização
+        
+        console.log('✅ Campos condicionais configurados: tipo-responsavel, tipo-empresa (outro), agrupamento-produto (outro), num-paradas, modo-rodoviario, frequencia');
     },
     
     // ============================================================
