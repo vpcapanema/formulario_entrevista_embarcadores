@@ -333,16 +333,14 @@ const UI = {
     /**
      * Configura filtros dinâmicos para Q12 (Origem) e Q13 (Destino)
      * REGRAS:
-     * - País: OBRIGATÓRIO
-     * - Se Brasil: Estado OBRIGATÓRIO, Município OPCIONAL
-     * - Se outro país: Ocultar Estado e Município
+     * - País: OBRIGATÓRIO (sempre visível e habilitado)
+     * - Estado: SEMPRE VISÍVEL, mas DESABILITADO se País ≠ Brasil
+     * - Município: SEMPRE VISÍVEL, mas DESABILITADO se Estado não selecionado
      */
     setupOrigemDestinoFilters() {
         // ===== Q12: ORIGEM =====
         const origemPaisSelect = document.getElementById('origem-pais');
-        const origemEstadoGroup = document.getElementById('origem-estado')?.closest('.form-group');
         const origemEstadoSelect = document.getElementById('origem-estado');
-        const origemMunicipioGroup = document.getElementById('origem-municipio')?.closest('.form-group');
         const origemMunicipioSelect = document.getElementById('origem-municipio');
         
         if (origemPaisSelect) {
@@ -350,24 +348,46 @@ const UI = {
                 const idPais = parseInt(e.target.value);
                 
                 if (idPais === 31) { // Brasil
-                    // Mostrar estado (obrigatório) e município (opcional)
-                    if (origemEstadoGroup) origemEstadoGroup.style.display = 'block';
+                    // Habilitar estado (obrigatório) e município (opcional)
                     if (origemEstadoSelect) {
+                        origemEstadoSelect.disabled = false;
                         origemEstadoSelect.setAttribute('required', 'required');
                         // Carregar estados
                         const estados = await API.getEstados();
                         this.populateDropdown('origem-estado', estados, 'sigla_uf', 'nm_uf');
                     }
-                    if (origemMunicipioGroup) origemMunicipioGroup.style.display = 'block';
-                } else {
-                    // Outro país: ocultar estado e município
-                    if (origemEstadoGroup) origemEstadoGroup.style.display = 'none';
+                    // Município continua desabilitado até selecionar estado
+                    if (origemMunicipioSelect) {
+                        origemMunicipioSelect.disabled = true;
+                        origemMunicipioSelect.value = '';
+                        origemMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
+                    }
+                } else if (idPais) {
+                    // Outro país: desabilitar estado e município
                     if (origemEstadoSelect) {
+                        origemEstadoSelect.disabled = true;
                         origemEstadoSelect.removeAttribute('required');
                         origemEstadoSelect.value = '';
+                        origemEstadoSelect.innerHTML = '<option value="">País não é Brasil</option>';
                     }
-                    if (origemMunicipioGroup) origemMunicipioGroup.style.display = 'none';
-                    if (origemMunicipioSelect) origemMunicipioSelect.value = '';
+                    if (origemMunicipioSelect) {
+                        origemMunicipioSelect.disabled = true;
+                        origemMunicipioSelect.value = '';
+                        origemMunicipioSelect.innerHTML = '<option value="">País não é Brasil</option>';
+                    }
+                } else {
+                    // Nenhum país selecionado: desabilitar estado e município
+                    if (origemEstadoSelect) {
+                        origemEstadoSelect.disabled = true;
+                        origemEstadoSelect.removeAttribute('required');
+                        origemEstadoSelect.value = '';
+                        origemEstadoSelect.innerHTML = '<option value="">Primeiro selecione o país</option>';
+                    }
+                    if (origemMunicipioSelect) {
+                        origemMunicipioSelect.disabled = true;
+                        origemMunicipioSelect.value = '';
+                        origemMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o país</option>';
+                    }
                 }
             });
             
@@ -382,6 +402,8 @@ const UI = {
                 if (uf) {
                     console.log(`🔍 Carregando municípios de ${uf} (origem)...`);
                     try {
+                        // Habilitar dropdown de município
+                        origemMunicipioSelect.disabled = false;
                         const municipios = await API.getMunicipiosByUF(uf);
                         this.populateDropdown('origem-municipio', municipios, 'cd_mun', 'nm_mun');
                         console.log(`✅ ${municipios.length} municípios de ${uf} carregados (origem)`);
@@ -389,6 +411,9 @@ const UI = {
                         console.error('❌ Erro ao carregar municípios:', error);
                     }
                 } else {
+                    // Desabilitar município se estado não selecionado
+                    origemMunicipioSelect.disabled = true;
+                    origemMunicipioSelect.value = '';
                     origemMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
                 }
             });
@@ -396,9 +421,7 @@ const UI = {
         
         // ===== Q13: DESTINO =====
         const destinoPaisSelect = document.getElementById('destino-pais');
-        const destinoEstadoGroup = document.getElementById('destino-estado')?.closest('.form-group');
         const destinoEstadoSelect = document.getElementById('destino-estado');
-        const destinoMunicipioGroup = document.getElementById('destino-municipio')?.closest('.form-group');
         const destinoMunicipioSelect = document.getElementById('destino-municipio');
         
         if (destinoPaisSelect) {
@@ -406,24 +429,46 @@ const UI = {
                 const idPais = parseInt(e.target.value);
                 
                 if (idPais === 31) { // Brasil
-                    // Mostrar estado (obrigatório) e município (opcional)
-                    if (destinoEstadoGroup) destinoEstadoGroup.style.display = 'block';
+                    // Habilitar estado (obrigatório) e município (opcional)
                     if (destinoEstadoSelect) {
+                        destinoEstadoSelect.disabled = false;
                         destinoEstadoSelect.setAttribute('required', 'required');
                         // Carregar estados
                         const estados = await API.getEstados();
                         this.populateDropdown('destino-estado', estados, 'sigla_uf', 'nm_uf');
                     }
-                    if (destinoMunicipioGroup) destinoMunicipioGroup.style.display = 'block';
-                } else {
-                    // Outro país: ocultar estado e município
-                    if (destinoEstadoGroup) destinoEstadoGroup.style.display = 'none';
+                    // Município continua desabilitado até selecionar estado
+                    if (destinoMunicipioSelect) {
+                        destinoMunicipioSelect.disabled = true;
+                        destinoMunicipioSelect.value = '';
+                        destinoMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
+                    }
+                } else if (idPais) {
+                    // Outro país: desabilitar estado e município
                     if (destinoEstadoSelect) {
+                        destinoEstadoSelect.disabled = true;
                         destinoEstadoSelect.removeAttribute('required');
                         destinoEstadoSelect.value = '';
+                        destinoEstadoSelect.innerHTML = '<option value="">País não é Brasil</option>';
                     }
-                    if (destinoMunicipioGroup) destinoMunicipioGroup.style.display = 'none';
-                    if (destinoMunicipioSelect) destinoMunicipioSelect.value = '';
+                    if (destinoMunicipioSelect) {
+                        destinoMunicipioSelect.disabled = true;
+                        destinoMunicipioSelect.value = '';
+                        destinoMunicipioSelect.innerHTML = '<option value="">País não é Brasil</option>';
+                    }
+                } else {
+                    // Nenhum país selecionado: desabilitar estado e município
+                    if (destinoEstadoSelect) {
+                        destinoEstadoSelect.disabled = true;
+                        destinoEstadoSelect.removeAttribute('required');
+                        destinoEstadoSelect.value = '';
+                        destinoEstadoSelect.innerHTML = '<option value="">Primeiro selecione o país</option>';
+                    }
+                    if (destinoMunicipioSelect) {
+                        destinoMunicipioSelect.disabled = true;
+                        destinoMunicipioSelect.value = '';
+                        destinoMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o país</option>';
+                    }
                 }
             });
             
@@ -438,6 +483,8 @@ const UI = {
                 if (uf) {
                     console.log(`🔍 Carregando municípios de ${uf} (destino)...`);
                     try {
+                        // Habilitar dropdown de município
+                        destinoMunicipioSelect.disabled = false;
                         const municipios = await API.getMunicipiosByUF(uf);
                         this.populateDropdown('destino-municipio', municipios, 'cd_mun', 'nm_mun');
                         console.log(`✅ ${municipios.length} municípios de ${uf} carregados (destino)`);
@@ -445,6 +492,9 @@ const UI = {
                         console.error('❌ Erro ao carregar municípios:', error);
                     }
                 } else {
+                    // Desabilitar município se estado não selecionado
+                    destinoMunicipioSelect.disabled = true;
+                    destinoMunicipioSelect.value = '';
                     destinoMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
                 }
             });
