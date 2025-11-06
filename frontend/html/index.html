@@ -116,6 +116,11 @@
                                     <option value="">Carregando funções...</option>
                                 </select>
                                 <small class="field-hint">Selecione a função/cargo do entrevistado na empresa</small>
+                                <!-- Campo condicional para "Outro" -->
+                                <div class="hidden-field hidden-field-spaced" id="outra-funcao-container">
+                                    <label for="outra-funcao">Especifique a função:</label>
+                                    <input type="text" id="outra-funcao" name="outra-funcao">
+                                </div>
                             </div>
                         </div>
                         <div class="form-row">
@@ -508,7 +513,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="frequencia"><span class="question-number">27.</span> Frequência aproximada de deslocamento dessa carga *</label>
-                                <select id="frequencia" name="frequencia" required onchange="toggleFrequenciaDiaria()">
+                                <select id="frequencia" name="frequencia" required>
                                     <option value="">Selecione...</option>
                                     <option value="diaria">Diária</option>
                                     <option value="mais-1x-semana">Mais de 1x por semana</option>

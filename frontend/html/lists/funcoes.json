@@ -28,14 +28,6 @@
     "nome_funcao": "Gerente Geral"
   },
   {
-    "id_funcao": 12,
-    "nome_funcao": "Não sei / Não se aplica"
-  },
-  {
-    "id_funcao": 11,
-    "nome_funcao": "Outro"
-  },
-  {
     "id_funcao": 7,
     "nome_funcao": "Proprietário"
   },
@@ -46,5 +38,13 @@
   {
     "id_funcao": 5,
     "nome_funcao": "Supervisor de Transporte"
+  },
+  {
+    "id_funcao": 12,
+    "nome_funcao": "Não sei / Não se aplica"
+  },
+  {
+    "id_funcao": 11,
+    "nome_funcao": "Outro"
   }
 ]

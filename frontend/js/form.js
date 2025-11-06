@@ -89,6 +89,29 @@ const FORM = {
             radio.addEventListener('change', updateResponsavelVisibility);
         });
         
+        // ===== Q2 - FUNÇÃO: "Outro" =====
+        const funcaoSelect = document.getElementById('funcao-entrevistado');
+        const outraFuncaoContainer = document.getElementById('outra-funcao-container');
+        
+        const updateFuncaoVisibility = () => {
+            const selectedOption = funcaoSelect?.selectedOptions[0];
+            const selectedText = selectedOption?.text || '';
+            
+            // Verifica se o texto da opção selecionada contém "Outro"
+            if (selectedText.includes('Outro')) {
+                outraFuncaoContainer?.classList.remove('hidden-field');
+            } else {
+                outraFuncaoContainer?.classList.add('hidden-field');
+                // Limpar valor quando oculto
+                const outraFuncaoInput = document.getElementById('outra-funcao');
+                if (outraFuncaoInput) outraFuncaoInput.value = '';
+            }
+        };
+        
+        funcaoSelect?.addEventListener('change', updateFuncaoVisibility);
+        // Executar após listas carregadas (setTimeout para aguardar)
+        setTimeout(updateFuncaoVisibility, 500);
+        
         // ===== TIPO DE EMPRESA: "Outro" =====
         const tipoEmpresaSelect = document.getElementById('tipo-empresa');
         const outroTipoContainer = document.getElementById('outro-tipo-container');
@@ -195,7 +218,7 @@ const FORM = {
         frequenciaSelect?.addEventListener('change', updateFrequenciaVisibility);
         updateFrequenciaVisibility(); // Executar na inicialização
         
-        console.log('✅ Campos condicionais configurados: tipo-responsavel, tipo-empresa (outro), agrupamento-produto (outro), num-paradas, modo-rodoviario, frequencia');
+        console.log('✅ Campos condicionais configurados: tipo-responsavel, funcao (outro), tipo-empresa (outro), agrupamento-produto (outro), num-paradas, modo-rodoviario, frequencia (diaria/outra)');
     },
     
     // ============================================================
