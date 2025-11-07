@@ -419,3 +419,331 @@ async def get_dificuldades(db: Session = Depends(get_db)):
             "success": False,
             "message": f"Erro: {str(e)}"
         }
+
+# ============================================================
+# NOVOS ENDPOINTS - ANÁLISES CIENTÍFICAS DE LOGÍSTICA
+# ============================================================
+
+# ============================================================
+# ANÁLISE DE CUSTO POR DISTÂNCIA (SCATTER PLOT)
+# ============================================================
+
+@router.get("/custo-distancia")
+async def get_custo_distancia(db: Session = Depends(get_db)):
+    """
+    Retorna relação entre custo e distância para análise de correlação
+    Tipo de gráfico: Scatter plot (dispersão)
+    Variáveis: custo_transporte (R$) vs distancia (km)
+    """
+    try:
+        query = text("""
+            SELECT
+                CAST(REGEXP_REPLACE(distancia, '[^0-9.]', '', 'g') AS FLOAT) as dist_numerica,
+                CAST(REGEXP_REPLACE(custo_transporte, '[^0-9.]', '', 'g') AS FLOAT) as custo_numerico,
+                produto_principal,
+                nome_empresa
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE status_pesquisa = 'finalizada' 
+                AND distancia IS NOT NULL 
+                AND custo_transporte IS NOT NULL
+            ORDER BY dist_numerica
+        """)
+        
+        results = db.execute(query).fetchall()
+        
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "distancias": [],
+                    "custos": [],
+                    "produtos": [],
+                    "empresas": []
+                }
+            }
+        
+        return {
+            "success": True,
+            "data": {
+                "distancias": [float(row[0]) for row in results],
+                "custos": [float(row[1]) for row in results],
+                "produtos": [row[2] for row in results],
+                "empresas": [row[3] for row in results]
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro ao calcular custo vs distância: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erro: {str(e)}"
+        }
+
+# ============================================================
+# ANÁLISE DE CAPACIDADE UTILIZADA (HISTOGRAMA)
+# ============================================================
+
+@router.get("/capacidade-utilizada")
+async def get_capacidade_utilizada(db: Session = Depends(get_db)):
+    """
+    Retorna distribuição de capacidade utilizada dos veículos
+    Tipo de gráfico: Histograma/Bar chart
+    Variável: capacidade_utilizada (%)
+    """
+    try:
+        query = text("""
+            SELECT
+                CASE
+                    WHEN capacidade_utilizada < 50 THEN '0-50%'
+                    WHEN capacidade_utilizada < 70 THEN '50-70%'
+                    WHEN capacidade_utilizada < 85 THEN '70-85%'
+                    WHEN capacidade_utilizada < 95 THEN '85-95%'
+                    ELSE '95-100%'
+                END as faixa,
+                COUNT(*) as quantidade,
+                AVG(capacidade_utilizada) as media,
+                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE status_pesquisa = 'finalizada' AND capacidade_utilizada IS NOT NULL
+            GROUP BY faixa
+            ORDER BY faixa
+        """)
+        
+        results = db.execute(query).fetchall()
+        
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "values": [],
+                    "medias": [],
+                    "percentuais": []
+                }
+            }
+        
+        return {
+            "success": True,
+            "data": {
+                "labels": [row[0] for row in results],
+                "values": [row[1] for row in results],
+                "medias": [round(float(row[2]), 1) for row in results],
+                "percentuais": [float(row[3]) for row in results]
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro ao calcular capacidade utilizada: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erro: {str(e)}"
+        }
+
+# ============================================================
+# ANÁLISE DE PESO POR PRODUTO (BAR CHART HORIZONTAL)
+# ============================================================
+
+@router.get("/peso-por-produto")
+async def get_peso_por_produto(db: Session = Depends(get_db)):
+    """
+    Retorna volume total transportado por produto
+    Tipo de gráfico: Bar chart horizontal
+    Variável: peso_carga (toneladas) agregado por produto_principal
+    """
+    try:
+        query = text("""
+            SELECT
+                produto_principal,
+                SUM(peso_carga) as peso_total,
+                COUNT(*) as num_embarques,
+                AVG(peso_carga) as peso_medio
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE status_pesquisa = 'finalizada' AND produto_principal IS NOT NULL
+            GROUP BY produto_principal
+            ORDER BY peso_total DESC
+        """)
+        
+        results = db.execute(query).fetchall()
+        
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "totais": [],
+                    "embarques": [],
+                    "medias": []
+                }
+            }
+        
+        return {
+            "success": True,
+            "data": {
+                "labels": [row[0] for row in results],
+                "totais": [float(row[1]) for row in results],
+                "embarques": [row[2] for row in results],
+                "medias": [round(float(row[3]), 1) for row in results]
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro ao calcular peso por produto: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erro: {str(e)}"
+        }
+
+# ============================================================
+# ANÁLISE DE TIPO DE CADEIA (PIE CHART)
+# ============================================================
+
+@router.get("/tipo-cadeia")
+async def get_tipo_cadeia(db: Session = Depends(get_db)):
+    """
+    Retorna distribuição por tipo de cadeia logística
+    Tipo de gráfico: Pie chart (pizza)
+    Variável: tipo_cadeia (simples, complexa, integrada)
+    """
+    try:
+        query = text("""
+            SELECT
+                tipo_cadeia,
+                COUNT(*) as quantidade,
+                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE status_pesquisa = 'finalizada' AND tipo_cadeia IS NOT NULL
+            GROUP BY tipo_cadeia
+            ORDER BY quantidade DESC
+        """)
+        
+        results = db.execute(query).fetchall()
+        
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "values": [],
+                    "percentuais": []
+                }
+            }
+        
+        return {
+            "success": True,
+            "data": {
+                "labels": [row[0] for row in results],
+                "values": [row[1] for row in results],
+                "percentuais": [float(row[2]) for row in results]
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro ao calcular tipo de cadeia: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erro: {str(e)}"
+        }
+
+# ============================================================
+# ANÁLISE DE TEMPO VS DISTÂNCIA (LINE CHART)
+# ============================================================
+
+@router.get("/tempo-distancia")
+async def get_tempo_distancia(db: Session = Depends(get_db)):
+    """
+    Retorna relação entre tempo de viagem e distância
+    Tipo de gráfico: Line chart (linha com tendência)
+    Variáveis: tempo_total_minutos vs distancia (km)
+    """
+    try:
+        query = text("""
+            SELECT
+                distancia,
+                tempo_total_minutos,
+                ROUND(tempo_total_minutos::numeric / NULLIF(distancia, 0), 2) as minutos_por_km,
+                produto_principal
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE status_pesquisa = 'finalizada' 
+                AND distancia IS NOT NULL 
+                AND tempo_total_minutos IS NOT NULL
+            ORDER BY distancia
+        """)
+        
+        results = db.execute(query).fetchall()
+        
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "distancias": [],
+                    "tempos": [],
+                    "velocidades": [],
+                    "produtos": []
+                }
+            }
+        
+        return {
+            "success": True,
+            "data": {
+                "distancias": [float(row[0]) for row in results],
+                "tempos": [float(row[1]) for row in results],
+                "velocidades": [float(row[2] or 0) for row in results],
+                "produtos": [row[3] for row in results]
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro ao calcular tempo vs distância: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erro: {str(e)}"
+        }
+
+# ============================================================
+# ANÁLISE DE CARGA PERIGOSA (DOUGHNUT CHART)
+# ============================================================
+
+@router.get("/carga-perigosa")
+async def get_carga_perigosa(db: Session = Depends(get_db)):
+    """
+    Retorna proporção de cargas perigosas
+    Tipo de gráfico: Doughnut chart (rosca)
+    Variável: carga_perigosa (sim/não)
+    """
+    try:
+        query = text("""
+            SELECT
+                CASE 
+                    WHEN carga_perigosa = true THEN 'Sim - Carga Perigosa'
+                    ELSE 'Não - Carga Normal'
+                END as tipo,
+                COUNT(*) as quantidade,
+                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE status_pesquisa = 'finalizada'
+            GROUP BY carga_perigosa
+            ORDER BY carga_perigosa DESC
+        """)
+        
+        results = db.execute(query).fetchall()
+        
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "values": [],
+                    "percentuais": []
+                }
+            }
+        
+        return {
+            "success": True,
+            "data": {
+                "labels": [row[0] for row in results],
+                "values": [row[1] for row in results],
+                "percentuais": [float(row[2]) for row in results]
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro ao calcular carga perigosa: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Erro: {str(e)}"
+        }
+
