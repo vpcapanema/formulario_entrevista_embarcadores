@@ -423,7 +423,7 @@
                             <p>Tente ajustar os filtros</p>
                         </div>
                     `;
-                    kpisContainer.style.display = 'none';
+                    kpisContainer.classList.add('hidden');
                     return;
                 }
 
@@ -444,7 +444,7 @@
                         <p>Verifique se o backend está rodando (porta 8000)</p>
                     </div>
                 `;
-                kpisContainer.style.display = 'none';
+                kpisContainer.classList.add('hidden');
             }
         }
 
@@ -461,7 +461,7 @@
                 ? (distancias.reduce((a, b) => a + b, 0) / distancias.length).toFixed(1)
                 : '0';
 
-            container.style.display = 'grid';
+            container.classList.remove('hidden');
             container.innerHTML = `
                 <div class="kpi-mini-card">
                     <div class="number">${total}</div>
@@ -548,7 +548,7 @@
                 </div>
             `;
 
-            document.getElementById('kpis-container').style.display = 'none';
+            document.getElementById('kpis-container').classList.add('hidden');
         }
     </script>
 </body>

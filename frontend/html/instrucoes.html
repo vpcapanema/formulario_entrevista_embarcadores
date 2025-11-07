@@ -281,13 +281,14 @@
 
             <div class="info-box">
                 <div class="title">💾 Salvamento no Banco de Dados PostgreSQL</div>
-                <p>Ao clicar em "Salvar Respostas":</p>
+                <p>Ao clicar em "💾 Salvar Respostas":</p>
                 <ul class="margin-top-half">
-                    <li>✓ Os dados são enviados para o banco PostgreSQL 17 (AWS RDS)</li>
-                    <li>✓ Um arquivo Excel é gerado automaticamente</li>
+                    <li>✓ Os dados são validados automaticamente</li>
+                    <li>✓ Dados enviados para o banco PostgreSQL 17 (AWS RDS)</li>
+                    <li>✓ Um arquivo Excel é gerado automaticamente com 2 abas</li>
                     <li>✓ O download do Excel inicia automaticamente</li>
                     <li>✓ Um popup de confirmação aparecerá</li>
-                    <li>✓ Os dados ficam disponíveis em "Respostas" e "Analytics"</li>
+                    <li>✓ Os dados ficam disponíveis em tempo real nas páginas "Respostas", "Analytics" e "Visualizador"</li>
                 </ul>
             </div>
 
@@ -635,9 +636,33 @@
                     </ul>
                 </div>
             </div>
+
+            <div class="subsection">
+                <div class="subsection-title">
+                    <span class="number">5</span>
+                    <span>Visualizador de Dados Interativo</span>
+                </div>
+                <p class="instruction-text">Acesse a aba <strong>"🔍 Visualizador"</strong> para consultas personalizadas:</p>
+                <ul class="instruction-list">
+                    <li>🎯 <strong>Filtros dinâmicos:</strong> Empresa, Produto, Estado de Origem e Tipo de Transporte</li>
+                    <li>📊 <strong>KPIs instantâneos:</strong> Pesquisas filtradas, Empresas, Produtos e Distância média</li>
+                    <li>📋 <strong>Tabela completa:</strong> Visualize 9 colunas principais (ID, Empresa, Produto, Origem, Destino, Distância, Modais, Tipo, Status)</li>
+                    <li>🔄 <strong>Consulta em tempo real:</strong> Conecta diretamente ao PostgreSQL (porta 8000)</li>
+                    <li>💡 <strong>Modo interativo:</strong> Aplique e limpe filtros para diferentes análises</li>
+                </ul>
+                <div class="success-box">
+                    <div class="title">✅ Como Usar o Visualizador</div>
+                    <ol class="list-tight list-indent">
+                        <li>Selecione os filtros desejados (ou deixe em branco para ver tudo)</li>
+                        <li>Clique em "🔍 Visualizar Dados"</li>
+                        <li>Analise os KPIs e a tabela de resultados</li>
+                        <li>Use "🔄 Limpar Filtros" para resetar a consulta</li>
+                    </ol>
+                </div>
+            </div>
         </div>
 
-        <!-- Seção 5: Dicas e Boas Práticas -->
+        <!-- Seção 6: Dicas e Boas Práticas -->
         <div class="section">
             <div class="section-title">
                 <span class="icon">💡</span>
@@ -649,8 +674,9 @@
                 <li><strong>🔍 Revise antes de salvar:</strong> Confira todas as informações, especialmente valores numéricos e unidades</li>
                 <li><strong>💾 Faça backup:</strong> O Excel gerado automaticamente serve como backup externo dos dados</li>
                 <li><strong>📊 Dados precisos:</strong> Forneça informações o mais precisas possível. Se não souber o valor exato, forneça uma estimativa aproximada</li>
-                <li><strong>🔄 Dados persistentes:</strong> Os dados ficam salvos no navegador. Não feche a aba antes de fazer o download do Excel</li>
-                <li><strong>🌐 Navegador compatível:</strong> Use Chrome, Firefox, Edge ou Safari atualizados</li>
+                <li><strong>🌐 Navegador compatível:</strong> Use Chrome, Firefox, Edge ou Safari atualizados para melhor experiência</li>
+                <li><strong>🔍 Use o Visualizador:</strong> Após salvar, confira seus dados na página "Visualizador" com filtros personalizados</li>
+                <li><strong>📈 Acompanhe no Analytics:</strong> Veja como seus dados contribuem para as estatísticas gerais do projeto</li>
             </ul>
 
             <div class="highlight-box">
@@ -659,7 +685,7 @@
             </div>
         </div>
 
-        <!-- Seção 6: Suporte -->
+        <!-- Seção 7: Suporte -->
         <div class="section">
             <div class="section-title">
                 <span class="icon">❓</span>
@@ -673,6 +699,13 @@
                 <ul class="margin-top-half">
                     <li>📧 E-mail: pli2050@infraestrutura.gov.br</li>
                     <li>🌐 Website: www.pli2050.gov.br</li>
+                </ul>
+                <p class="margin-top-1"><strong>Problemas técnicos comuns:</strong></p>
+                <ul class="margin-top-half">
+                    <li>🔧 Backend não responde? Verifique se está rodando na porta 8000</li>
+                    <li>📊 Dados não aparecem? Aguarde alguns segundos e recarregue a página</li>
+                    <li>💾 Excel não baixou? Verifique se o navegador não bloqueou o download</li>
+                    <li>🔍 Erro no Visualizador? Confirme se o backend FastAPI está ativo</li>
                 </ul>
             </div>
         </div>
