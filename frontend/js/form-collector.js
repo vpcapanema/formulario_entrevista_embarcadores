@@ -337,16 +337,17 @@ const FormCollector = {
         
         // ==== SEÇÃO 0: Responsável pelo Preenchimento ====
         const tipoResponsavel = document.querySelector('input[name="tipo-responsavel"]:checked');
-        data.tipoResponsavel = tipoResponsavel ? tipoResponsavel.value : null;
+        data.tipoResponsavel = tipoResponsavel ? tipoResponsavel.value : 'entrevistado'; // Default
         
-        if (data.tipoResponsavel === 'entrevistador') {
-            const idResponsavel = document.getElementById('id-responsavel');
-            data.idResponsavel = idResponsavel ? parseInt(idResponsavel.value) : null;
-        }
+        // idResponsavel NÃO é enviado pelo frontend - será calculado pelo backend:
+        // - Se 'entrevistado': usa id_entrevistado após INSERT
+        // - Se 'entrevistador': usa ID fixo ou de tabela entrevistadores
+        // Por enquanto enviamos null e o backend decide
+        data.idResponsavel = null; // Backend resolverá a lógica
         
         // ==== SEÇÃO 1: Dados do Entrevistado ====
         data.nome = this._getValue('nome');
-        data.funcao = this._getValue('funcao');
+        data.funcao = this._getValue('funcao-entrevistado'); // Corrigido: id correto do campo
         data.telefone = this._getValue('telefone');
         data.email = this._getValue('email');
         

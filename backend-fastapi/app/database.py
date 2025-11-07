@@ -23,18 +23,32 @@ DATABASE_URL = os.getenv(
 # Schema name
 SCHEMA_NAME = os.getenv("SCHEMA_NAME", "formulario_embarcadores")
 
-# Engine com pool otimizado para RDS
+# Engine com pool otimizado para RDS (AWS)
 engine = create_engine(
     DATABASE_URL,
-    pool_size=10,              # Conexões mantidas no pool
-    max_overflow=20,           # Conexões extras permitidas
-    pool_timeout=30,           # Timeout para obter conexão
-    pool_recycle=1800,         # Reconectar após 30 min
-    pool_pre_ping=True,        # Verificar conexão antes de usar
-    echo=False,                # Logs SQL (True para debug)
+    # ============================================================
+    # CONNECTION POOL - Otimizado para Produção
+    # ============================================================
+    pool_size=10,              # Conexões persistentes no pool
+    max_overflow=20,           # Conexões extras sob demanda (picos de tráfego)
+    pool_timeout=30,           # Timeout para obter conexão (segundos)
+    pool_recycle=3600,         # ✅ OTIMIZADO: Recicla após 1h (era 30min)
+    pool_pre_ping=True,        # Testa conexão antes de usar (evita "server has gone away")
+    
+    # ============================================================
+    # PERFORMANCE
+    # ============================================================
+    echo=False,                # Logs SQL (True apenas em debug)
+    echo_pool=False,           # Logs de pool (False em produção)
+    
+    # ============================================================
+    # POSTGRESQL ESPECÍFICO
+    # ============================================================
     connect_args={
-        "options": f"-csearch_path={SCHEMA_NAME},public",
-        "sslmode": "require"   # SSL obrigatório para RDS
+        "options": f"-csearch_path={SCHEMA_NAME},public -c timezone=America/Sao_Paulo",
+        "sslmode": "require",          # SSL obrigatório para AWS RDS
+        "connect_timeout": 10,         # ✅ NOVO: Timeout de conexão
+        "application_name": "PLI2050_FastAPI"  # ✅ NOVO: Identificação no pg_stat_activity
     }
 )
 

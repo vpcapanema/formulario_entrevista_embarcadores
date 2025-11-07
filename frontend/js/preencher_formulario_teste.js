@@ -37,7 +37,13 @@ async function preencherFormularioCompletoTeste() {
                 field.value = value;
                 field.dispatchEvent(new Event('input', { bubbles: true }));
                 field.dispatchEvent(new Event('change', { bubbles: true }));
-                console.log(`✓ ${id} = "${value}"`);
+                
+                // Verificar se o valor foi realmente definido
+                if (field.value !== value) {
+                    console.warn(`⚠️ AVISO: ${id} não aceitou o valor "${value}" (atual: "${field.value}")`);
+                } else {
+                    console.log(`✓ ${id} = "${value}"`);
+                }
                 return true;
             }
             console.warn(`⚠️ Campo não encontrado: ${id}`);
@@ -72,8 +78,32 @@ async function preencherFormularioCompletoTeste() {
         
         const aguardar = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         
+        // Função para aguardar até um select estar populado
+        const aguardarSelect = async (id, maxTentativas = 20) => {
+            for (let i = 0; i < maxTentativas; i++) {
+                const select = document.getElementById(id);
+                if (select && select.options.length > 1) {
+                    // Select tem mais de 1 opção (além de "Carregando...")
+                    console.log(`✓ Select ${id} populado com ${select.options.length} opções`);
+                    return true;
+                }
+                await aguardar(200); // Aguarda 200ms entre tentativas
+            }
+            console.warn(`⚠️ Timeout: Select ${id} não foi populado após ${maxTentativas * 200}ms`);
+            return false;
+        };
+        
+        console.log('\n📝 CARD 0: Tipo de Responsável');
+        setRadio('tipo-responsavel', 'entrevistado'); // Marca "Entrevistado" como responsável
+        console.log('✅ Card 0 OK\n');
+        
         console.log('\n📝 CARD 1: Entrevistado');
         setField('nome', 'João da Silva Santos');
+        
+        // Aguardar carregamento das funções do DropdownManager
+        console.log('🔍 Aguardando carregamento do select funcao-entrevistado...');
+        await aguardarSelect('funcao-entrevistado');
+        
         setField('funcao-entrevistado', '1');
         setField('telefone', '11987654321');
         setField('email', 'joao.silva@transportes.com.br');
@@ -84,37 +114,88 @@ async function preencherFormularioCompletoTeste() {
         setField('cnpj-empresa', '11222333000181');
         console.log('🔍 Aguardando API CNPJ (2s)...');
         await aguardar(2000);
+        
+        // Verificar se API preencheu razaoSocial, senão preencher nomeEmpresa manualmente
+        const razaoSocial = document.getElementById('razao-social');
+        const nomeEmpresa = document.getElementById('nome-empresa');
+        if (!razaoSocial || !razaoSocial.value) {
+            console.warn('⚠️ API CNPJ não preencheu razao-social, preenchendo nome-empresa manualmente');
+            setField('nome-empresa', 'Petrobras Distribuidora S.A.');
+        }
+        if (!nomeEmpresa || !nomeEmpresa.value) {
+            setField('nome-empresa', 'Petrobras Distribuidora S.A.');
+        }
+        
+        // Preencher município se não foi preenchido pela API
+        const municipioEmpresa = document.getElementById('municipio-empresa');
+        if (!municipioEmpresa || !municipioEmpresa.value) {
+            console.warn('⚠️ API CNPJ não preencheu municipio, preenchendo manualmente');
+            setField('municipio-empresa', 'São Paulo');
+        }
+        
         console.log('✅ Card 2 OK\n');
         
         console.log('📝 CARD 3: Produtos Transportados');
         const tabelaProdutos = document.getElementById('produtos-table-body');
         if (tabelaProdutos && tabelaProdutos.children.length === 0) {
             const btnAddProduto = document.querySelector('button[onclick*="addProdutoRow"]');
-            if (btnAddProduto) btnAddProduto.click();
-            await aguardar(100);
+            if (btnAddProduto) {
+                btnAddProduto.click();
+                await aguardar(100);
+            }
         }
+        
+        // Preencher primeira linha da tabela (usar name em vez de id para campos dinâmicos)
         setField('produto-carga-1', 'Soja em grão');
         setField('produto-movimentacao-1', '50000');
         setField('produto-origem-1', 'Ribeirão Preto');
         setField('produto-destino-1', 'Santos');
         setField('produto-distancia-1', '450.5');
-        setField('produto-modalidade-1', 'rodoviario');
-        setField('produto-acondicionamento-1', 'Granel');
+        
+        // Selects da tabela podem ter name diferente
+        const modalidade = document.querySelector('[name="produto-modalidade-1"]');
+        if (modalidade) {
+            modalidade.value = 'rodoviario';
+            modalidade.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('✓ produto-modalidade-1 = "rodoviario"');
+        }
+        
+        const acondicionamento = document.querySelector('[name="produto-acondicionamento-1"]');
+        if (acondicionamento) {
+            acondicionamento.value = 'granel-solido';
+            acondicionamento.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('✓ produto-acondicionamento-1 = "granel-solido"');
+        }
+        
         console.log('✅ Card 3 OK\n');
         
         console.log('📝 CARD 4: Informações de Logística');
         setField('produto-principal', 'Soja');
         setField('agrupamento-produto', 'agricola');
         setRadio('tipo-transporte', 'local');
+        
+        // Aguardar carregamento dos selects de país/estado/município
+        console.log('🔍 Aguardando carregamento dos selects de localização...');
+        await aguardarSelect('origem-pais');
+        
         setField('origem-pais', '31');
-        await aguardar(200);
+        await aguardar(300); // Aguarda cascata estado
+        await aguardarSelect('origem-estado');
+        
         setField('origem-estado', '35');
-        await aguardar(200);
+        await aguardar(300); // Aguarda cascata município
+        await aguardarSelect('origem-municipio');
+        
         setField('origem-municipio', '3550308');
+        
         setField('destino-pais', '31');
-        await aguardar(200);
+        await aguardar(300);
+        await aguardarSelect('destino-estado');
+        
         setField('destino-estado', '33');
-        await aguardar(200);
+        await aguardar(300);
+        await aguardarSelect('destino-municipio');
+        
         setField('destino-municipio', '3304557');
         setField('distancia', '450.5');
         setRadio('tem-paradas', 'nao');
@@ -138,6 +219,8 @@ async function preencherFormularioCompletoTeste() {
         setField('tempo-horas', '5');
         setField('tempo-minutos', '30');
         setField('frequencia', 'diaria');
+        await aguardar(100); // Aguarda campo condicional aparecer
+        setField('frequencia-diaria', '3.5'); // Número de viagens por dia
         console.log('✅ Card 6 OK\n');
         
         console.log('📝 CARD 7: Importâncias e Variações');
@@ -193,6 +276,6 @@ async function preencherFormularioCompletoTeste() {
 
 window.preencherFormularioCompletoTeste = preencherFormularioCompletoTeste;
 
-console.log('✅ Script carregado!');
+console.log('✅ Script V4.0 carregado!');
 console.log('💡 Execute: preencherFormularioCompletoTeste()');
-console.log('💡 Ou clique no botão: 🧪 Preencher Formulário Completo de Teste');
+console.log('💡 Ou clique: 🧪 Preencher Formulário Completo de Teste');

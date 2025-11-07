@@ -8,6 +8,8 @@ Endpoint crítico para salvar pesquisa completa (4 tabelas)
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import func
 from app.database import get_db
 from app.schemas import SubmitFormData, SubmitFormResponse
 from app.models import Empresa, Entrevistado, Pesquisa, ProdutoTransportado
@@ -39,60 +41,68 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
     
     try:
         # ====================================================
-        # ETAPA 1: EMPRESA (INSERT ou UPDATE se CNPJ existe)
+        # ETAPA 1: EMPRESA (UPSERT NATIVO - PostgreSQL)
         # ====================================================
         
-        empresa_existente = None
+        # Preparar CNPJ (remover formatação)
+        cnpj_digits = None
         if data.cnpj:
-            # Limpar CNPJ (remover pontos, traços, barras)
             cnpj_digits = data.cnpj.replace('.', '').replace('/', '').replace('-', '')
-            empresa_existente = db.query(Empresa).filter(
-                Empresa.cnpj_digits == cnpj_digits
-            ).first()
         
-        if empresa_existente:
-            # UPDATE empresa existente
-            empresa_existente.nome_empresa = data.nomeEmpresa
-            empresa_existente.tipo_empresa = data.tipoEmpresa
-            empresa_existente.outro_tipo = data.outroTipo
-            empresa_existente.municipio = data.municipio
-            empresa_existente.razao_social = data.razaoSocial
-            empresa_existente.nome_fantasia = data.nomeFantasia
-            empresa_existente.logradouro = data.logradouro
-            empresa_existente.numero = data.numero
-            empresa_existente.complemento = data.complemento
-            empresa_existente.bairro = data.bairro
-            empresa_existente.cep = data.cep
-            empresa_existente.data_atualizacao = datetime.now()
-            empresa = empresa_existente
-            logger.info(f"Empresa atualizada: {empresa.id_empresa} - {empresa.nome_empresa}")
-        else:
-            # INSERT nova empresa
-            empresa = Empresa(
-                nome_empresa=data.nomeEmpresa,
-                tipo_empresa=data.tipoEmpresa,
-                outro_tipo=data.outroTipo,
-                municipio=data.municipio,
-                cnpj=data.cnpj,
-                cnpj_digits=cnpj_digits if data.cnpj else None,
-                razao_social=data.razaoSocial,
-                nome_fantasia=data.nomeFantasia,
-                logradouro=data.logradouro,
-                numero=data.numero,
-                complemento=data.complemento,
-                bairro=data.bairro,
-                cep=data.cep
+        # ✅ OTIMIZAÇÃO: UPSERT nativo PostgreSQL (1 query ao invés de 2)
+        # INSERT ... ON CONFLICT DO UPDATE
+        stmt = insert(Empresa).values(
+            nome_empresa=data.nomeEmpresa,
+            tipo_empresa=data.tipoEmpresa,
+            outro_tipo=data.outroTipo,
+            municipio=data.municipio,
+            cnpj=data.cnpj,
+            cnpj_digits=cnpj_digits,
+            razao_social=data.razaoSocial,
+            nome_fantasia=data.nomeFantasia,
+            logradouro=data.logradouro,
+            numero=data.numero,
+            complemento=data.complemento,
+            bairro=data.bairro,
+            cep=data.cep,
+            data_cadastro=func.now()
+        )
+        
+        # Se CNPJ já existe, atualiza os dados
+        if cnpj_digits:
+            stmt = stmt.on_conflict_do_update(
+                index_elements=['cnpj_digits'],  # Coluna de conflito (UNIQUE constraint)
+                set_={
+                    'nome_empresa': data.nomeEmpresa,
+                    'tipo_empresa': data.tipoEmpresa,
+                    'outro_tipo': data.outroTipo,
+                    'municipio': data.municipio,
+                    'razao_social': data.razaoSocial,
+                    'nome_fantasia': data.nomeFantasia,
+                    'logradouro': data.logradouro,
+                    'numero': data.numero,
+                    'complemento': data.complemento,
+                    'bairro': data.bairro,
+                    'cep': data.cep,
+                    'data_atualizacao': func.now()
+                }
             )
-            db.add(empresa)
-            db.flush()  # Garante que id_empresa seja gerado
-            logger.info(f"Nova empresa criada: {empresa.id_empresa} - {empresa.nome_empresa}")
+        
+        # Executa UPSERT e retorna id_empresa
+        stmt = stmt.returning(Empresa.id_empresa, Empresa.nome_empresa)
+        result = db.execute(stmt)
+        empresa_row = result.fetchone()
+        id_empresa = empresa_row[0]
+        nome_empresa = empresa_row[1]
+        
+        logger.info(f"✅ Empresa UPSERT: {id_empresa} - {nome_empresa} (CNPJ: {cnpj_digits or 'N/A'})")
         
         # ====================================================
         # ETAPA 2: ENTREVISTADO
         # ====================================================
         
         entrevistado = Entrevistado(
-            id_empresa=empresa.id_empresa,
+            id_empresa=id_empresa,
             nome=data.nome,
             funcao=data.funcao,
             telefone=data.telefone,
@@ -105,14 +115,26 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
         logger.info(f"Entrevistado criado: {entrevistado.id_entrevistado} - {entrevistado.nome}")
         
         # ====================================================
+        # CÁLCULO DO id_responsavel (LÓGICA DE NEGÓCIO)
+        # ====================================================
+        # - Se tipo_responsavel = 'entrevistado' → usa id_entrevistado recém criado
+        # - Se tipo_responsavel = 'entrevistador' → usa id enviado ou default 1
+        if data.tipoResponsavel == 'entrevistado':
+            id_responsavel = entrevistado.id_entrevistado
+        else:  # 'entrevistador'
+            id_responsavel = data.idResponsavel if data.idResponsavel else 1  # Default ID 1
+        
+        logger.info(f"✅ id_responsavel calculado: {id_responsavel} (tipo: {data.tipoResponsavel})")
+        
+        # ====================================================
         # ETAPA 3: PESQUISA
         # ====================================================
         
         pesquisa = Pesquisa(
-            id_empresa=empresa.id_empresa,
+            id_empresa=id_empresa,
             id_entrevistado=entrevistado.id_entrevistado,
             tipo_responsavel=data.tipoResponsavel,
-            id_responsavel=data.idResponsavel,
+            id_responsavel=id_responsavel,  # Usando valor calculado
             
             # Produto
             produto_principal=data.produtoPrincipal,
@@ -196,29 +218,32 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
         logger.info(f"Pesquisa criada: {pesquisa.id_pesquisa}")
         
         # ====================================================
-        # ETAPA 4: PRODUTOS TRANSPORTADOS (ARRAY)
+        # ETAPA 4: PRODUTOS TRANSPORTADOS (BULK INSERT)
         # ====================================================
         
         produtos_count = 0
-        for idx, produto_data in enumerate(data.produtos, start=1):
-            produto = ProdutoTransportado(
-                id_pesquisa=pesquisa.id_pesquisa,
-                id_empresa=empresa.id_empresa,
-                carga=produto_data.carga,
-                movimentacao=produto_data.movimentacao,
-                origem=produto_data.origem,
-                destino=produto_data.destino,
-                distancia=produto_data.distancia,
-                modalidade=produto_data.modalidade,
-                acondicionamento=produto_data.acondicionamento,
-                ordem=idx
-            )
-            db.add(produto)
-            produtos_count += 1
-        
-        if produtos_count > 0:
-            db.flush()
-            logger.info(f"{produtos_count} produtos transportados inseridos")
+        if data.produtos:
+            # ✅ OTIMIZAÇÃO: Bulk insert em 1 query ao invés de N queries
+            produtos_list = [
+                {
+                    "id_pesquisa": pesquisa.id_pesquisa,
+                    "id_empresa": id_empresa,
+                    "carga": produto_data.carga,
+                    "movimentacao": produto_data.movimentacao,
+                    "origem": produto_data.origem,
+                    "destino": produto_data.destino,
+                    "distancia": produto_data.distancia,
+                    "modalidade": produto_data.modalidade,
+                    "acondicionamento": produto_data.acondicionamento,
+                    "ordem": idx
+                }
+                for idx, produto_data in enumerate(data.produtos, start=1)
+            ]
+            
+            # Bulk insert: 1 query para todos os produtos
+            db.bulk_insert_mappings(ProdutoTransportado, produtos_list)
+            produtos_count = len(produtos_list)
+            logger.info(f"✅ {produtos_count} produtos transportados inseridos (bulk insert)")
         
         # ====================================================
         # COMMIT TRANSAÇÃO
@@ -231,14 +256,14 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
             success=True,
             message="Pesquisa salva com sucesso!",
             data={
-                "empresa": empresa.nome_empresa,
+                "empresa": nome_empresa,
                 "entrevistado": entrevistado.nome,
                 "produto_principal": pesquisa.produto_principal,
                 "origem": f"{pesquisa.origem_municipio}/{pesquisa.origem_estado}",
                 "destino": f"{pesquisa.destino_municipio}/{pesquisa.destino_estado}"
             },
             id_pesquisa=pesquisa.id_pesquisa,
-            id_empresa=empresa.id_empresa,
+            id_empresa=id_empresa,
             id_entrevistado=entrevistado.id_entrevistado,
             produtos_inseridos=produtos_count
         )

@@ -5,10 +5,11 @@ PYDANTIC SCHEMAS - FastAPI PLI 2050
 Schemas de validação para requests e responses
 """
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
+import re
 
 # ============================================================
 # SCHEMAS AUXILIARES
@@ -272,7 +273,7 @@ class SubmitFormData(BaseModel):
     
     # ---- METADADOS ----
     tipoResponsavel: str = Field(..., alias="tipoResponsavel")
-    idResponsavel: int = Field(..., alias="idResponsavel")
+    idResponsavel: Optional[int] = Field(None, alias="idResponsavel")  # Opcional - backend calcula
     consentimento: bool = False
     transportaCarga: bool = Field(False, alias="transportaCarga")
     
@@ -352,6 +353,193 @@ class SubmitFormData(BaseModel):
     
     # ---- PRODUTOS TRANSPORTADOS (ARRAY) ----
     produtos: List[ProdutoTransportadoBase] = []
+    
+    # ============================================================
+    # VALIDADORES CUSTOMIZADOS
+    # ============================================================
+    
+    @field_validator('cnpj')
+    @classmethod
+    def validate_cnpj(cls, v):
+        """
+        Valida CNPJ brasileiro (formato + dígitos verificadores)
+        Aceita: 00.000.000/0000-00 ou 00000000000000
+        """
+        if not v:
+            return v
+        
+        # Remove formatação
+        digits = re.sub(r'\D', '', v)
+        
+        # Valida comprimento
+        if len(digits) != 14:
+            raise ValueError(
+                f'CNPJ inválido: deve ter 14 dígitos (recebeu {len(digits)}). '
+                f'Formato esperado: 00.000.000/0000-00'
+            )
+        
+        # Valida CNPJs conhecidos como inválidos
+        if digits == digits[0] * 14:
+            raise ValueError('CNPJ inválido: todos os dígitos são iguais')
+        
+        # Calcula dígitos verificadores
+        def calc_digit(cnpj_part, weights):
+            soma = sum(int(d) * w for d, w in zip(cnpj_part, weights))
+            resto = soma % 11
+            return 0 if resto < 2 else 11 - resto
+        
+        weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        
+        digit1 = calc_digit(digits[:12], weights1)
+        digit2 = calc_digit(digits[:13], weights2)
+        
+        if int(digits[12]) != digit1 or int(digits[13]) != digit2:
+            raise ValueError(
+                'CNPJ inválido: dígitos verificadores incorretos. '
+                'Verifique se o CNPJ foi digitado corretamente.'
+            )
+        
+        return v
+    
+    @field_validator('telefone')
+    @classmethod
+    def validate_telefone(cls, v):
+        """
+        Valida telefone brasileiro
+        Aceita: (00) 0000-0000, (00) 00000-0000, 00000000000
+        """
+        if not v:
+            return v
+        
+        # Remove formatação
+        digits = re.sub(r'\D', '', v)
+        
+        # Valida comprimento (10 ou 11 dígitos)
+        if len(digits) not in [10, 11]:
+            raise ValueError(
+                f'Telefone inválido: deve ter 10 ou 11 dígitos (recebeu {len(digits)}). '
+                f'Formato esperado: (00) 0000-0000 ou (00) 00000-0000'
+            )
+        
+        # Valida DDD
+        ddd = int(digits[:2])
+        if ddd < 11 or ddd > 99:
+            raise ValueError(f'DDD inválido: {ddd}. Deve estar entre 11 e 99.')
+        
+        return v
+    
+    @field_validator('cep')
+    @classmethod
+    def validate_cep(cls, v):
+        """
+        Valida CEP brasileiro
+        Aceita: 00000-000 ou 00000000
+        """
+        if not v:
+            return v
+        
+        # Remove formatação
+        digits = re.sub(r'\D', '', v)
+        
+        if len(digits) != 8:
+            raise ValueError(
+                f'CEP inválido: deve ter 8 dígitos (recebeu {len(digits)}). '
+                f'Formato esperado: 00000-000'
+            )
+        
+        return v
+    
+    @field_validator('pesoCarga', 'custoTransporte', 'valorCarga')
+    @classmethod
+    def validate_valores_positivos(cls, v):
+        """Valida que valores monetários/peso são positivos"""
+        if v is not None and v <= 0:
+            raise ValueError('Valor deve ser maior que zero')
+        return v
+    
+    @field_validator('capacidadeUtilizada')
+    @classmethod
+    def validate_capacidade(cls, v):
+        """Valida que capacidade está entre 0 e 100%"""
+        if v is not None and (v < 0 or v > 100):
+            raise ValueError('Capacidade utilizada deve estar entre 0% e 100%')
+        return v
+    
+    @field_validator('numParadas')
+    @classmethod
+    def validate_paradas_positivo(cls, v):
+        """Valida que número de paradas é positivo"""
+        if v is not None and v <= 0:
+            raise ValueError('Número de paradas deve ser maior que zero')
+        return v
+    
+    @field_validator('tempoDias', 'tempoHoras', 'tempoMinutos')
+    @classmethod
+    def validate_tempo_positivo(cls, v):
+        """Valida que tempo é não-negativo"""
+        if v is not None and v < 0:
+            raise ValueError('Tempo não pode ser negativo')
+        return v
+    
+    @field_validator('tempoHoras')
+    @classmethod
+    def validate_horas(cls, v):
+        """Valida que horas está entre 0 e 23"""
+        if v is not None and (v < 0 or v > 23):
+            raise ValueError('Horas deve estar entre 0 e 23')
+        return v
+    
+    @field_validator('tempoMinutos')
+    @classmethod
+    def validate_minutos(cls, v):
+        """Valida que minutos está entre 0 e 59"""
+        if v is not None and (v < 0 or v > 59):
+            raise ValueError('Minutos deve estar entre 0 e 59')
+        return v
+    
+    @field_validator('modos')
+    @classmethod
+    def validate_modos(cls, v):
+        """Valida que pelo menos um modo de transporte foi selecionado"""
+        if not v or len(v) == 0:
+            raise ValueError('Selecione pelo menos um modo de transporte')
+        
+        modos_validos = ['rodoviario', 'ferroviario', 'hidroviario', 'cabotagem', 'dutoviario', 'aeroviario']
+        for modo in v:
+            if modo not in modos_validos:
+                raise ValueError(f'Modo de transporte inválido: {modo}')
+        
+        return v
+    
+    @model_validator(mode='after')
+    def validate_campos_condicionais(self):
+        """
+        Validações cruzadas (campos condicionais)
+        """
+        # Se tem paradas = sim, número de paradas é obrigatório
+        if self.temParadas == 'sim' and not self.numParadas:
+            raise ValueError(
+                'Campo "Número de paradas" é obrigatório quando tem_paradas = "sim"'
+            )
+        
+        # Se modos inclui rodoviário, configuração de veículo é obrigatória
+        if 'rodoviario' in self.modos and not self.configVeiculo:
+            raise ValueError(
+                'Campo "Configuração do veículo" é obrigatório quando modo rodoviário está selecionado'
+            )
+        
+        # Se tipo empresa = outro, campo outro_tipo é obrigatório
+        if self.tipoEmpresa == 'outro' and not self.outroTipo:
+            raise ValueError(
+                'Campo "Especificar outro tipo" é obrigatório quando tipo_empresa = "outro"'
+            )
+        
+        # Valida que o tempo total não seja zero
+        if self.tempoDias == 0 and self.tempoHoras == 0 and self.tempoMinutos == 0:
+            raise ValueError('Tempo de transporte deve ser maior que zero')
+        
+        return self
     
     class Config:
         populate_by_name = True  # Permite usar aliases
