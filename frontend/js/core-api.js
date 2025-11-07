@@ -32,7 +32,7 @@ const CoreAPI = {
             return 'https://formulario-entrevista-embarcadores.onrender.com';
         }
         
-        return 'http://localhost:8080'; // Porta local atualizada
+        return 'http://localhost:8000'; // FastAPI porta 8000
     },
     
     // ============================================================

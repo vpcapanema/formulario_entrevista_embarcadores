@@ -1,0 +1,50 @@
+[
+  {
+    "id_funcao": 4,
+    "nome_funcao": "Analista de Logística"
+  },
+  {
+    "id_funcao": 2,
+    "nome_funcao": "Coordenador de Transportes"
+  },
+  {
+    "id_funcao": 10,
+    "nome_funcao": "Diretor Comercial"
+  },
+  {
+    "id_funcao": 3,
+    "nome_funcao": "Diretor de Operações"
+  },
+  {
+    "id_funcao": 1,
+    "nome_funcao": "Gerente de Logística"
+  },
+  {
+    "id_funcao": 6,
+    "nome_funcao": "Gerente de Supply Chain"
+  },
+  {
+    "id_funcao": 9,
+    "nome_funcao": "Gerente Geral"
+  },
+  {
+    "id_funcao": 7,
+    "nome_funcao": "Proprietário"
+  },
+  {
+    "id_funcao": 8,
+    "nome_funcao": "Sócio-Diretor"
+  },
+  {
+    "id_funcao": 5,
+    "nome_funcao": "Supervisor de Transporte"
+  },
+  {
+    "id_funcao": 12,
+    "nome_funcao": "Não sei / Não se aplica"
+  },
+  {
+    "id_funcao": 11,
+    "nome_funcao": "Outro"
+  }
+]
