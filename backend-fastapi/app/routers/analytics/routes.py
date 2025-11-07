@@ -70,16 +70,16 @@ async def get_distribuicao_modal(db: Session = Depends(get_db)):
     """
     Retorna distribuição de modais de transporte
     Formato: {labels: [...], values: [...], percentuais: [...]}
+    CORRIGIDO: Agrupa modais iguais e converte arrays para strings
     """
     try:
         query = text("""
             SELECT
-                modos as modal,
-                COUNT(*) as quantidade,
-                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
+                ARRAY_TO_STRING(modos, '+') as modal_str,
+                COUNT(*) as quantidade
             FROM formulario_embarcadores.pesquisas
             WHERE status = 'finalizada' AND modos IS NOT NULL
-            GROUP BY modos
+            GROUP BY modal_str
             ORDER BY quantidade DESC
         """)
         
@@ -95,12 +95,14 @@ async def get_distribuicao_modal(db: Session = Depends(get_db)):
                 }
             }
         
+        total = sum(row[1] for row in results)
+        
         return {
             "success": True,
             "data": {
                 "labels": [row[0] for row in results],
                 "values": [row[1] for row in results],
-                "percentuais": [float(row[2]) for row in results]
+                "percentuais": [round((row[1] / total) * 100, 2) for row in results]
             }
         }
     except Exception as e:
