@@ -28,9 +28,8 @@ const CoreAPI = {
         const hostname = window.location.hostname;
         
         if (hostname.includes('github.io')) {
-            // ⚠️ ATUALIZAR COM SUA URL DO RAILWAY APÓS O DEPLOY!
-            // Exemplo: 'https://pli2050-backend-production.up.railway.app'
-            return 'https://formulario-embarcadores-production.up.railway.app';
+            // ✅ URL do backend em produção (Render.com)
+            return 'https://formulario-entrevista-embarcadores.onrender.com';
         }
         
         return 'http://localhost:8080'; // Porta local atualizada
