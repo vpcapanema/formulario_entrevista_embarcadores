@@ -99,6 +99,10 @@ const CoreAPI = {
         });
     },
     
+    async delete(url) {
+        return this.request(url, { method: 'DELETE' });
+    },
+    
     // ============================================================
     // ENDPOINTS ESPECÍFICOS
     // ============================================================

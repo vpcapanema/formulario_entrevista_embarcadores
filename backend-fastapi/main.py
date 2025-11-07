@@ -23,6 +23,7 @@ load_dotenv()
 # Import routers (modularizados por domínio)
 from app.routers.health import routes as health_router
 from app.routers.submit import routes as submit_router
+from app.routers.pesquisas import router as pesquisas_router  # NOVO: Router de pesquisas
 # from app.routers.lists import routes as lists_router  # DEPRECATED: Agora são JSONs estáticos
 from app.routers.analytics import routes as analytics_router
 from app.routers.external import router as external_router
@@ -121,6 +122,7 @@ logger.info(f"📂 JSONs de listas disponíveis em: /lists/")
 
 app.include_router(health_router.router)    # GET /health, /info
 app.include_router(submit_router.router)    # POST /api/submit-form
+app.include_router(pesquisas_router)        # GET /api/pesquisas/* (NOVO)
 # app.include_router(lists_router.router)   # DEPRECATED: Substituído por JSONs estáticos em /lists/
 app.include_router(analytics_router.router) # GET /api/analytics/*
 app.include_router(external_router, prefix="/api/external", tags=["External APIs"])  # GET /api/external/cnpj/*
