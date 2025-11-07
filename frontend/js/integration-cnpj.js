@@ -1,13 +1,28 @@
 /**
  * ============================================================
- * CNPJ AUTO-FILL - PLI 2050
+ * INTEGRATION-CNPJ - Auto-preenchimento via Receita Federal
  * ============================================================
- * Preenche automaticamente dados da empresa ao digitar CNPJ
- * - Q6b: Razão Social (nome da empresa)
- * - Q7: Município da unidade de produção
+ * Consulta CNPJ na Receita Federal (BrasilAPI) e preenche dados automaticamente
+ * 
+ * CAMPOS PREENCHIDOS (TABELA: empresas):
+ * - razao_social (VARCHAR) ← API Receita: razao_social
+ * - nome_fantasia (VARCHAR) ← API Receita: nome_fantasia
+ * - municipio (VARCHAR) ← API Receita: municipio
+ * - estado (VARCHAR) ← API Receita: uf
+ * - logradouro (VARCHAR) ← API Receita: logradouro
+ * - numero (VARCHAR) ← API Receita: numero
+ * - bairro (VARCHAR) ← API Receita: bairro
+ * - cep (VARCHAR) ← API Receita: cep
+ * - complemento (VARCHAR) ← API Receita: complemento
+ * 
+ * FLUXO:
+ * 1. Usuário digita CNPJ no campo cnpj-empresa
+ * 2. onBlur → consulta CoreAPI.consultarCNPJ()
+ * 3. Auto-preenche 9 campos da tabela empresas
+ * 4. DropdownManager carrega municípios da UF retornada
  */
 
-const CNPJAutoFill = {
+const IntegrationCNPJ = {
     // ============================================================
     // INICIALIZAÇÃO
     // ============================================================
@@ -29,6 +44,7 @@ const CNPJAutoFill = {
         }
         
         // Evento: Quando usuário terminar de digitar CNPJ (blur)
+        // Dispara automaticamente ao sair do campo
         cnpjInput.addEventListener('blur', async (e) => {
             const cnpj = e.target.value;
             
@@ -37,53 +53,7 @@ const CNPJAutoFill = {
             }
         });
         
-        // Adicionar botão de consulta ao lado do campo CNPJ
-        this._addConsultarButton(cnpjInput);
-        
-        console.log('✅ CNPJ Auto-Fill inicializado');
-    },
-    
-    // ============================================================
-    // ADICIONAR BOTÃO "CONSULTAR CNPJ"
-    // ============================================================
-    
-    _addConsultarButton(cnpjInput) {
-        // Criar botão
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'btn-consultar-cnpj';
-        button.innerHTML = '🔍 Buscar na Receita Federal';
-        button.style.cssText = `
-            margin-left: 10px;
-            padding: 8px 16px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        `;
-        
-        button.addEventListener('mouseover', () => {
-            button.style.background = '#0056b3';
-        });
-        
-        button.addEventListener('mouseout', () => {
-            button.style.background = '#007bff';
-        });
-        
-        button.addEventListener('click', async () => {
-            const cnpj = cnpjInput.value;
-            if (cnpj) {
-                await this.consultarEPreencherDados(cnpj);
-            } else {
-                this._showMessage('⚠️ Digite o CNPJ primeiro', 'warning');
-            }
-        });
-        
-        // Inserir botão após o campo CNPJ
-        cnpjInput.parentNode.appendChild(button);
+        console.log('✅ IntegrationCNPJ inicializado (consulta automática ao terminar de digitar)');
     },
     
     // ============================================================
@@ -92,11 +62,25 @@ const CNPJAutoFill = {
     
     async consultarEPreencherDados(cnpj) {
         try {
+            // Limpar CNPJ (remover pontos, barras, hífens)
+            const cnpjLimpo = cnpj.replace(/\D/g, '');
+            
+            // Validar comprimento
+            if (cnpjLimpo.length !== 14) {
+                this._showMessage(
+                    `❌ CNPJ incompleto!\n` +
+                    `Digite os 14 dígitos (você digitou ${cnpjLimpo.length}).\n` +
+                    `Formato: 00.000.000/0000-00`,
+                    'error'
+                );
+                return;
+            }
+            
             // Mostrar loading
             this._showMessage('🔍 Consultando CNPJ na Receita Federal...', 'info');
             
             // Consultar API
-            const response = await API.consultarCNPJ(cnpj);
+            const response = await CoreAPI.consultarCNPJ(cnpjLimpo);
             
             if (!response.success) {
                 this._showMessage('❌ ' + response.message, 'error');
@@ -138,7 +122,7 @@ const CNPJAutoFill = {
                     console.log(`🔄 Carregando municípios de ${dados.uf}...`);
                     
                     try {
-                        const municipios = await API.getMunicipiosByUF(dados.uf);
+                        const municipios = await CoreAPI.getMunicipiosByUF(dados.uf);
                         
                         // Limpar dropdown
                         municipioSelect.innerHTML = '<option value="">Selecione o município</option>';
@@ -277,6 +261,9 @@ const CNPJAutoFill = {
 };
 
 // Exportar e inicializar
-window.CNPJAutoFill = CNPJAutoFill;
-CNPJAutoFill.init();
+window.IntegrationCNPJ = IntegrationCNPJ;
+// Compatibilidade com código antigo
+window.CNPJAutoFill = IntegrationCNPJ;
+
+IntegrationCNPJ.init();
 

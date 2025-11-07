@@ -8,9 +8,10 @@
     <meta http-equiv="Expires" content="0">
     <title>PLI 2050 - Formulário de Entrevistas com Embarcadores</title>
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-    <!-- CSS Modularizado: Estilos globais + validação -->
+    <!-- CSS Modularizado: Estilos globais -->
     <link rel="stylesheet" href="/css/index.css?v=20251106">
-    <link rel="stylesheet" href="/css/validacao-visual.css?v=20251106">
+    <!-- CSS de Validação Visual (Tipo Híbrido) -->
+    <link rel="stylesheet" href="/css/validation.css?v=20251106">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -396,7 +397,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="num-paradas"><span class="question-number">16.</span> Número de paradas *</label>
-                                <select id="num-paradas" name="num-paradas" required onchange="toggleParadasExato()">
+                                <select id="num-paradas" name="num-paradas" required>
                                     <option value="">Selecione...</option>
                                     <option value="0">0 paradas</option>
                                     <option value="1">1 parada</option>
@@ -1305,16 +1306,38 @@
     <!-- Biblioteca XLSX para geração de Excel -->
     <script src="/vendor/xlsx.full.min.js"></script>
     
-    <!-- 1. API Client - Interface única com backend FastAPI -->
-    <script src="/js/api.js?v=20251106d"></script>
+    <!-- ============================================================ -->
+    <!-- ARQUITETURA REFATORADA - Nomenclatura por Domínio           -->
+    <!-- ============================================================ -->
     
-    <!-- 2. UI Manager - Gerencia toda interface visual (modais, feedback, navegação) -->
-    <script src="/js/ui.js?v=20251106d"></script>
+    <!-- 🔵 CORE - Infraestrutura Base -->
+    <!-- 1. CoreAPI - Comunicação HTTP + Backend FastAPI -->
+    <script src="/js/core-api.js?v=20251107"></script>
     
-    <!-- 3. Form Manager - Coleta dados e submete para backend -->
-    <script src="/js/form.js?v=20251106d"></script>
+    <!-- 2. CoreValidators - Validadores PostgreSQL puros -->
+    <script src="/js/core-validators.js?v=20251107"></script>
     
-    <!-- 4. CNPJ Auto-Fill - Preenche dados automaticamente via Receita Federal -->
-    <script src="/js/cnpj-autofill.js?v=20251106d"></script>
+    <!-- 🟢 DROPDOWN - Gestão de Listas Cascateadas -->
+    <!-- 3. DropdownManager - Motor de dropdowns (país→estado→município) -->
+    <script src="/js/dropdown-manager.js?v=20251107"></script>
+    
+    <!-- 🟡 FORM - Formulário e Validação -->
+    <!-- 4. FormCollector - Coleta de dados e submissão -->
+    <script src="/js/form-collector.js?v=20251107"></script>
+    
+    <!-- 5. FormValidator - Motor de validação visual (onBlur + onSubmit) -->
+    <script src="/js/form-validator.js?v=20251107"></script>
+    
+    <!-- 🔴 UI - Interface Visual -->
+    <!-- 6. UIFeedback - Modais, mensagens, navegação -->
+    <script src="/js/ui-feedback.js?v=20251107"></script>
+    
+    <!-- 🟣 INTEGRATION - APIs Externas -->
+    <!-- 7. IntegrationCNPJ - Auto-fill via Receita Federal -->
+    <script src="/js/integration-cnpj.js?v=20251107"></script>
+    
+    <!-- 🧪 TESTES - Suite de testes automatizados (apenas em desenvolvimento) -->
+    <!-- Descomente a linha abaixo para carregar testes no console -->
+    <!-- <script src="/js/test-suite.js?v=20251107"></script> -->
 </body>
 </html>

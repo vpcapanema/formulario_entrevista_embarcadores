@@ -1,15 +1,26 @@
 /**
  * ============================================================
- * UI MANAGER - PLI 2050
+ * UI-FEEDBACK - Sistema de Mensagens e Modais
  * ============================================================
  * Gerencia TODA a interface visual do sistema
- * Modais, mensagens, navegação, feedback, validação visual
+ * Modais, mensagens, navegação, feedback
  * 
- * PRINCÍPIO: UI pura - NÃO faz validação de negócio
- * Backend valida, frontend apenas exibe resultados
+ * NÃO MANIPULA DADOS DO BANCO DIRETAMENTE
+ * 
+ * Responsável por:
+ * - Exibir modais de sucesso/erro/loading
+ * - Mostrar mensagens de validação
+ * - Navegação entre páginas (formulário, analytics, instruções)
+ * - Carregar analytics
+ * 
+ * Recebe dados de:
+ * - FormCollector → após submit bem-sucedido
+ * - FormValidator → após validação com erros
+ * - IntegrationCNPJ → após consulta CNPJ
+ * - CoreAPI → após erro de conexão/banco
  */
 
-const UI = {
+const UIFeedback = {
     // ============================================================
     // MENSAGENS DE FEEDBACK
     // ============================================================
@@ -27,7 +38,7 @@ const UI = {
                             <p>📊 <strong>Arquivo gerado:</strong> ${arquivo}</p>
                             <p>💾 O download começará automaticamente em instantes.</p>
                         </div>
-                        <button onclick="UI.fecharModal()" class="btn-primary">OK, Entendi</button>
+                        <button onclick="UIFeedback.fecharModal()" class="btn-primary">OK, Entendi</button>
                     </div>
                 `
             }
@@ -49,7 +60,7 @@ const UI = {
                                 <li>Tente salvar novamente</li>
                             </ul>
                         </div>
-                        <button onclick="UI.fecharModal(); UI.scrollToFirstError()" class="btn-primary">Ver Primeiro Erro</button>
+                        <button onclick="UIFeedback.fecharModal(); UIFeedback.scrollToFirstError()" class="btn-primary">Ver Primeiro Erro</button>
                     </div>
                 `
             },
@@ -114,7 +125,7 @@ const UI = {
                                 <summary>🔧 Detalhes técnicos (para suporte)</summary>
                                 <pre>${JSON.stringify(erro, null, 2)}</pre>
                             </details>
-                            <button onclick="UI.fecharModal()" class="btn-primary">Fechar</button>
+                            <button onclick="UIFeedback.fecharModal()" class="btn-primary">Fechar</button>
                         </div>
                     `;
                 }
@@ -269,244 +280,32 @@ const UI = {
     },
     
     // ============================================================
-    // POPULAÇÃO DE DROPDOWNS
+    // SCROLL TO ERROR (migrado de FormValidator)
     // ============================================================
     
     /**
-     * Popula dropdown com opções
+     * Rola até o primeiro campo com erro
      */
-    populateDropdown(selectId, items, valueKey, labelKey) {
-        const select = document.getElementById(selectId);
-        if (!select) {
-            console.error(`Select ${selectId} não encontrado`);
-            return;
-        }
-        
-        // Limpar opções existentes (exceto a primeira - placeholder)
-        while (select.options.length > 1) {
-            select.remove(1);
-        }
-        
-        // Adicionar novas opções
-        items.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item[valueKey];
-            option.textContent = item[labelKey];
-            select.appendChild(option);
-        });
-        
-        console.log(`✅ ${items.length} opções carregadas em ${selectId}`);
-    },
-    
-    /**
-     * Carrega todas as listas auxiliares do backend
-     * OTIMIZADO: Municípios carregados SOB DEMANDA quando UF é selecionada
-     */
-    async carregarListas() {
-        try {
-            // Carregar apenas listas fixas (sem municípios ainda)
-            const [estados, paises, funcoes, entrevistadores] = await Promise.all([
-                API.getEstados(),
-                API.getPaises(),
-                API.getFuncoes(),
-                API.getEntrevistadores()
-            ]);
-            
-            // Popular dropdowns de origem e destino (Q12 e Q13)
-            this.populateDropdown('origem-pais', paises, 'id_pais', 'nm_pais', 31); // Brasil pré-selecionado
-            this.populateDropdown('destino-pais', paises, 'id_pais', 'nm_pais', 31); // Brasil pré-selecionado
-            
-            // Popular dropdown de função
-            this.populateDropdown('funcao-entrevistado', funcoes, 'id_funcao', 'nome_funcao');
-            this.populateDropdown('id-entrevistador', entrevistadores, 'id_entrevistador', 'nome_completo');
-            
-            // Configurar listeners para Q12 e Q13 (origem/destino)
-            this.setupOrigemDestinoFilters();
-            
-            console.log('✅ Todas as listas auxiliares carregadas');
-        } catch (error) {
-            console.error('❌ Erro ao carregar listas:', error);
-            this.mostrarErroConexao(error.message);
-        }
-    },
-    
-    /**
-     * Configura filtros dinâmicos para Q12 (Origem) e Q13 (Destino)
-     * REGRAS:
-     * - País: OBRIGATÓRIO (sempre visível e habilitado)
-     * - Estado: SEMPRE VISÍVEL, mas DESABILITADO se País ≠ Brasil
-     * - Município: SEMPRE VISÍVEL, mas DESABILITADO se Estado não selecionado
-     */
-    setupOrigemDestinoFilters() {
-        // ===== Q12: ORIGEM =====
-        const origemPaisSelect = document.getElementById('origem-pais');
-        const origemEstadoSelect = document.getElementById('origem-estado');
-        const origemMunicipioSelect = document.getElementById('origem-municipio');
-        
-        if (origemPaisSelect) {
-            origemPaisSelect.addEventListener('change', async (e) => {
-                const idPais = parseInt(e.target.value);
-                
-                if (idPais === 31) { // Brasil
-                    // Habilitar estado (obrigatório) e município (opcional)
-                    if (origemEstadoSelect) {
-                        origemEstadoSelect.disabled = false;
-                        origemEstadoSelect.setAttribute('required', 'required');
-                        // Carregar estados
-                        const estados = await API.getEstados();
-                        this.populateDropdown('origem-estado', estados, 'sigla_uf', 'nm_uf');
-                    }
-                    // Município continua desabilitado até selecionar estado
-                    if (origemMunicipioSelect) {
-                        origemMunicipioSelect.disabled = true;
-                        origemMunicipioSelect.value = '';
-                        origemMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
-                    }
-                } else if (idPais) {
-                    // Outro país: desabilitar estado e município
-                    if (origemEstadoSelect) {
-                        origemEstadoSelect.disabled = true;
-                        origemEstadoSelect.removeAttribute('required');
-                        origemEstadoSelect.value = '';
-                        origemEstadoSelect.innerHTML = '<option value="">País não é Brasil</option>';
-                    }
-                    if (origemMunicipioSelect) {
-                        origemMunicipioSelect.disabled = true;
-                        origemMunicipioSelect.value = '';
-                        origemMunicipioSelect.innerHTML = '<option value="">País não é Brasil</option>';
-                    }
-                } else {
-                    // Nenhum país selecionado: desabilitar estado e município
-                    if (origemEstadoSelect) {
-                        origemEstadoSelect.disabled = true;
-                        origemEstadoSelect.removeAttribute('required');
-                        origemEstadoSelect.value = '';
-                        origemEstadoSelect.innerHTML = '<option value="">Primeiro selecione o país</option>';
-                    }
-                    if (origemMunicipioSelect) {
-                        origemMunicipioSelect.disabled = true;
-                        origemMunicipioSelect.value = '';
-                        origemMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o país</option>';
-                    }
-                }
+    scrollToFirstError() {
+        const firstError = document.querySelector('.required-empty, .invalid-format');
+        if (firstError) {
+            // Adiciona animação de shake
+            firstError.classList.add('shake-error');
+            setTimeout(() => {
+                firstError.classList.remove('shake-error');
+            }, 500);
+
+            // Scroll suave até o campo
+            firstError.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
             });
-            
-            // Executar na inicialização (Brasil pré-selecionado)
-            origemPaisSelect.dispatchEvent(new Event('change'));
+
+            // Foca no campo
+            setTimeout(() => {
+                firstError.focus();
+            }, 300);
         }
-        
-        // Estado → Municípios (Origem)
-        if (origemEstadoSelect && origemMunicipioSelect) {
-            origemEstadoSelect.addEventListener('change', async (e) => {
-                const uf = e.target.value;
-                if (uf) {
-                    console.log(`🔍 Carregando municípios de ${uf} (origem)...`);
-                    try {
-                        // Habilitar dropdown de município
-                        origemMunicipioSelect.disabled = false;
-                        const municipios = await API.getMunicipiosByUF(uf);
-                        this.populateDropdown('origem-municipio', municipios, 'cd_mun', 'nm_mun');
-                        console.log(`✅ ${municipios.length} municípios de ${uf} carregados (origem)`);
-                    } catch (error) {
-                        console.error('❌ Erro ao carregar municípios:', error);
-                    }
-                } else {
-                    // Desabilitar município se estado não selecionado
-                    origemMunicipioSelect.disabled = true;
-                    origemMunicipioSelect.value = '';
-                    origemMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
-                }
-            });
-        }
-        
-        // ===== Q13: DESTINO =====
-        const destinoPaisSelect = document.getElementById('destino-pais');
-        const destinoEstadoSelect = document.getElementById('destino-estado');
-        const destinoMunicipioSelect = document.getElementById('destino-municipio');
-        
-        if (destinoPaisSelect) {
-            destinoPaisSelect.addEventListener('change', async (e) => {
-                const idPais = parseInt(e.target.value);
-                
-                if (idPais === 31) { // Brasil
-                    // Habilitar estado (obrigatório) e município (opcional)
-                    if (destinoEstadoSelect) {
-                        destinoEstadoSelect.disabled = false;
-                        destinoEstadoSelect.setAttribute('required', 'required');
-                        // Carregar estados
-                        const estados = await API.getEstados();
-                        this.populateDropdown('destino-estado', estados, 'sigla_uf', 'nm_uf');
-                    }
-                    // Município continua desabilitado até selecionar estado
-                    if (destinoMunicipioSelect) {
-                        destinoMunicipioSelect.disabled = true;
-                        destinoMunicipioSelect.value = '';
-                        destinoMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
-                    }
-                } else if (idPais) {
-                    // Outro país: desabilitar estado e município
-                    if (destinoEstadoSelect) {
-                        destinoEstadoSelect.disabled = true;
-                        destinoEstadoSelect.removeAttribute('required');
-                        destinoEstadoSelect.value = '';
-                        destinoEstadoSelect.innerHTML = '<option value="">País não é Brasil</option>';
-                    }
-                    if (destinoMunicipioSelect) {
-                        destinoMunicipioSelect.disabled = true;
-                        destinoMunicipioSelect.value = '';
-                        destinoMunicipioSelect.innerHTML = '<option value="">País não é Brasil</option>';
-                    }
-                } else {
-                    // Nenhum país selecionado: desabilitar estado e município
-                    if (destinoEstadoSelect) {
-                        destinoEstadoSelect.disabled = true;
-                        destinoEstadoSelect.removeAttribute('required');
-                        destinoEstadoSelect.value = '';
-                        destinoEstadoSelect.innerHTML = '<option value="">Primeiro selecione o país</option>';
-                    }
-                    if (destinoMunicipioSelect) {
-                        destinoMunicipioSelect.disabled = true;
-                        destinoMunicipioSelect.value = '';
-                        destinoMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o país</option>';
-                    }
-                }
-            });
-            
-            // Executar na inicialização (Brasil pré-selecionado)
-            destinoPaisSelect.dispatchEvent(new Event('change'));
-        }
-        
-        // Estado → Municípios (Destino)
-        if (destinoEstadoSelect && destinoMunicipioSelect) {
-            destinoEstadoSelect.addEventListener('change', async (e) => {
-                const uf = e.target.value;
-                if (uf) {
-                    console.log(`🔍 Carregando municípios de ${uf} (destino)...`);
-                    try {
-                        // Habilitar dropdown de município
-                        destinoMunicipioSelect.disabled = false;
-                        const municipios = await API.getMunicipiosByUF(uf);
-                        this.populateDropdown('destino-municipio', municipios, 'cd_mun', 'nm_mun');
-                        console.log(`✅ ${municipios.length} municípios de ${uf} carregados (destino)`);
-                    } catch (error) {
-                        console.error('❌ Erro ao carregar municípios:', error);
-                    }
-                } else {
-                    // Desabilitar município se estado não selecionado
-                    destinoMunicipioSelect.disabled = true;
-                    destinoMunicipioSelect.value = '';
-                    destinoMunicipioSelect.innerHTML = '<option value="">Primeiro selecione o estado</option>';
-                }
-            });
-        }
-    },
-    
-    /**
-     * Configura filtros dinâmicos de municípios por UF (DEPRECATED - usar setupOrigemDestinoFilters)
-     */
-    setupMunicipioFilters() {
-        // Mantido para compatibilidade, mas não é mais usado
-        console.warn('⚠️ setupMunicipioFilters() está deprecated. Use setupOrigemDestinoFilters()');
     },
     
     // ============================================================
@@ -555,7 +354,7 @@ const UI = {
             this.mostrarLoading('Carregando analytics...');
             
             // Buscar KPIs do backend
-            const kpis = await API.getKPIs();
+            const kpis = await CoreAPI.getKPIs();
             
             // Atualizar DOM com KPIs
             if (kpis.success) {
@@ -598,8 +397,10 @@ const UI = {
 };
 
 // Exportar para uso global
-window.UI = UI;
+window.UIFeedback = UIFeedback;
+// Compatibilidade com código antigo
+window.UI = UIFeedback;
 
 // Atalhos para funções legadas (compatibilidade)
-window.mostrarFeedback = (html) => UI.mostrarModal(html);
-window.fecharFeedback = () => UI.fecharModal();
+window.mostrarFeedback = (html) => UIFeedback.mostrarModal(html);
+window.fecharFeedback = () => UIFeedback.fecharModal();

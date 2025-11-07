@@ -1,16 +1,24 @@
 /**
  * ============================================================
- * API CLIENT - PLI 2050
+ * CORE-API - Comunicação com Backend FastAPI
  * ============================================================
- * Interface única para comunicação com backend FastAPI
+ * Interface única para comunicação HTTP
  * Detecta automaticamente ambiente (dev/prod)
  * Implementa retry e tratamento de erros
  * 
- * IMPORTANTE: Frontend NÃO valida - apenas coleta e envia
- * Backend faz validação via Pydantic
+ * TABELAS DO BANCO MANIPULADAS:
+ * - empresas (19 colunas): nome_empresa, tipo_empresa, cnpj, municipio, etc
+ * - entrevistados (9 colunas): nome, funcao, telefone, email
+ * - pesquisas (89 colunas): produto_principal, origem_pais, destino_pais, etc
+ * - produtos_transportados: produto, movimentacao_anual, origem_pais, etc
+ * 
+ * ENDPOINTS:
+ * - POST /api/submit-form → INSERT em 4 tabelas
+ * - GET /api/analytics/* → SELECT agregações
+ * - GET /lists/*.json → Arquivos JSON estáticos (países, estados, municípios)
  */
 
-const API = {
+const CoreAPI = {
     // ============================================================
     // CONFIGURAÇÃO DE AMBIENTE
     // ============================================================
@@ -134,14 +142,14 @@ const API = {
         try {
             const startTime = performance.now();
             
-            // 2. Fetch DIRETO do disco (mesmo diretório que index.html)
-            const response = await fetch(`./lists/${fileName}`, {
+            // 2. Fetch com caminho ABSOLUTO (FastAPI monta em /lists/)
+            const response = await fetch(`/lists/${fileName}`, {
                 method: 'GET',
                 cache: 'force-cache' // Prioriza cache do navegador
             });
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${fileName} não encontrado`);
             }
             
             const data = await response.json();
@@ -154,7 +162,7 @@ const API = {
             return data;
             
         } catch (error) {
-            console.error(`❌ Erro: ${fileName}`, error);
+            console.error(`❌ Erro ao carregar ${fileName}:`, error);
             throw error;
         }
     },
@@ -302,4 +310,6 @@ const API = {
 };
 
 // Exportar para uso global
-window.API = API;
+window.CoreAPI = CoreAPI;
+// Compatibilidade com código antigo
+window.API = CoreAPI;

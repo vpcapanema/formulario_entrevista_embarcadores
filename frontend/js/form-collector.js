@@ -1,15 +1,99 @@
 /**
  * ============================================================
- * FORM MANAGER - PLI 2050
+ * FORM-COLLECTOR - Coleta de Dados e Submissão
  * ============================================================
- * Gerencia coleta de dados do formulário e submissão
+ * Gerencia coleta de dados do formulário e submissão para backend
+ * 
+ * MAPEAMENTO COMPLETO: Frontend → PostgreSQL
+ * 
+ * ========== TABELA: empresas (19 colunas) ==========
+ * tipo-empresa                 → tipo_empresa (VARCHAR NOT NULL)
+ * outro-tipo                   → outro_tipo (VARCHAR NULL)
+ * cnpj-empresa                 → cnpj (VARCHAR NULL)
+ * nome-empresa                 → nome_empresa (VARCHAR NOT NULL)
+ * municipio-empresa            → municipio (VARCHAR NOT NULL)
+ * razao-social                 → razao_social (VARCHAR NULL)
+ * nome-fantasia                → nome_fantasia (VARCHAR NULL)
+ * logradouro                   → logradouro (VARCHAR NULL)
+ * numero                       → numero (VARCHAR NULL)
+ * complemento                  → complemento (VARCHAR NULL)
+ * bairro                       → bairro (VARCHAR NULL)
+ * cep                          → cep (VARCHAR NULL)
+ * 
+ * ========== TABELA: entrevistados (9 colunas) ==========
+ * nome                         → nome (VARCHAR NOT NULL)
+ * funcao-entrevistado          → funcao (VARCHAR NOT NULL)
+ * telefone                     → telefone (VARCHAR NOT NULL)
+ * email                        → email (VARCHAR NOT NULL)
+ * 
+ * ========== TABELA: pesquisas (89 colunas) ==========
+ * tipo-responsavel             → tipo_responsavel (VARCHAR NOT NULL)
+ * id-responsavel               → id_responsavel (INTEGER NOT NULL)
+ * produto-principal            → produto_principal (VARCHAR NOT NULL)
+ * agrupamento-produto          → agrupamento_produto (VARCHAR NOT NULL)
+ * outro-produto                → outro_produto (VARCHAR NULL)
+ * tipo-transporte              → tipo_transporte (VARCHAR NOT NULL)
+ * origem-pais                  → origem_pais (VARCHAR NOT NULL)
+ * origem-estado                → origem_estado (VARCHAR NOT NULL)
+ * origem-municipio             → origem_municipio (VARCHAR NOT NULL)
+ * destino-pais                 → destino_pais (VARCHAR NOT NULL)
+ * destino-estado               → destino_estado (VARCHAR NOT NULL)
+ * destino-municipio            → destino_municipio (VARCHAR NOT NULL)
+ * distancia                    → distancia (NUMERIC NOT NULL)
+ * tem-paradas                  → tem_paradas (VARCHAR NOT NULL)
+ * num-paradas                  → num_paradas (INTEGER NULL)
+ * modo (checkboxes)            → modos (ARRAY NOT NULL)
+ * config-veiculo               → config_veiculo (VARCHAR NULL)
+ * capacidade-utilizada         → capacidade_utilizada (NUMERIC NULL)
+ * peso-carga                   → peso_carga (NUMERIC NOT NULL)
+ * unidade-peso                 → unidade_peso (VARCHAR NOT NULL)
+ * custo-transporte             → custo_transporte (NUMERIC NOT NULL)
+ * valor-carga                  → valor_carga (NUMERIC NOT NULL)
+ * tipo-embalagem               → tipo_embalagem (VARCHAR NOT NULL)
+ * carga-perigosa               → carga_perigosa (VARCHAR NOT NULL)
+ * tempo-dias                   → tempo_dias (INTEGER NOT NULL)
+ * tempo-horas                  → tempo_horas (INTEGER NOT NULL)
+ * tempo-minutos                → tempo_minutos (INTEGER NOT NULL)
+ * frequencia                   → frequencia (VARCHAR NOT NULL)
+ * frequencia-diaria            → frequencia_diaria (NUMERIC NULL)
+ * frequencia-outra             → frequencia_outra (VARCHAR NULL)
+ * importancia-custo            → importancia_custo (VARCHAR NOT NULL)
+ * variacao-custo               → variacao_custo (NUMERIC NOT NULL)
+ * importancia-tempo            → importancia_tempo (VARCHAR NOT NULL)
+ * variacao-tempo               → variacao_tempo (NUMERIC NOT NULL)
+ * importancia-confiabilidade   → importancia_confiabilidade (VARCHAR NOT NULL)
+ * variacao-confiabilidade      → variacao_confiabilidade (NUMERIC NOT NULL)
+ * importancia-seguranca        → importancia_seguranca (VARCHAR NOT NULL)
+ * variacao-seguranca           → variacao_seguranca (NUMERIC NOT NULL)
+ * importancia-capacidade       → importancia_capacidade (VARCHAR NOT NULL)
+ * variacao-capacidade          → variacao_capacidade (NUMERIC NOT NULL)
+ * tipo-cadeia                  → tipo_cadeia (VARCHAR NOT NULL)
+ * modal-alternativo            → modais_alternativos (ARRAY NULL)
+ * fator-adicional              → fator_adicional (TEXT NULL)
+ * dificuldade (checkboxes)     → dificuldades (ARRAY NULL)
+ * detalhe-dificuldade          → detalhe_dificuldade (TEXT NULL)
+ * observacoes                  → observacoes (TEXT NULL)
+ * consentimento                → consentimento (BOOLEAN DEFAULT false)
+ *                              → transporta_carga (BOOLEAN DEFAULT true)
+ * 
+ * ========== TABELA: produtos_transportados (N produtos) ==========
+ * produto-carga-*              → produto (VARCHAR)
+ * produto-movimentacao-*       → movimentacao_anual (NUMERIC)
+ * produto-origem-pais-*        → origem_pais (VARCHAR)
+ * produto-origem-estado-*      → origem_estado (VARCHAR)
+ * produto-origem-municipio-*   → origem_municipio (VARCHAR)
+ * produto-destino-pais-*       → destino_pais (VARCHAR)
+ * produto-destino-estado-*     → destino_estado (VARCHAR)
+ * produto-destino-municipio-*  → destino_municipio (VARCHAR)
+ * produto-distancia-*          → distancia (NUMERIC)
+ * produto-modalidade-*         → modalidade (VARCHAR)
+ * produto-acondicionamento-*   → acondicionamento (VARCHAR)
  * 
  * PRINCÍPIO: Frontend coleta dados, backend valida e salva
- * NÃO faz validação de negócio (backend Pydantic faz isso)
- * Apenas validação visual básica (campos vazios)
+ * NÃO faz validação de negócio (FormValidator + Backend fazem isso)
  */
 
-const FORM = {
+const FormCollector = {
     // ============================================================
     // INICIALIZAÇÃO
     // ============================================================
@@ -45,10 +129,29 @@ const FORM = {
         // Configurar campos condicionais
         this._setupConditionalFields();
         
-        // Carregar listas auxiliares
-        UI.carregarListas();
+        // Carregar listas auxiliares via DropdownManager
+        this._loadDropdowns();
         
-        console.log('✅ Form manager inicializado');
+        console.log('✅ FormCollector inicializado');
+    },
+    
+    /**
+     * Carrega dropdowns usando DropdownManager
+     */
+    async _loadDropdowns() {
+        try {
+            // Carregar listas iniciais
+            await DropdownManager.loadInitialData();
+            
+            // Aplicar em seções específicas
+            await DropdownManager.applyToOrigemDestino(); // Q12, Q13
+            await DropdownManager.applyToFuncao(); // Q2
+            await DropdownManager.applyToEntrevistador(); // Q0
+            
+            console.log('✅ Dropdowns carregados via DropdownManager');
+        } catch (error) {
+            console.error('❌ Erro ao carregar dropdowns:', error);
+        }
     },
     
     /**
@@ -438,7 +541,7 @@ const FORM = {
             UI.mostrarLoading('Enviando dados para o servidor...');
             
             // Enviar para backend
-            const response = await API.submitForm(formData);
+            const response = await CoreAPI.submitForm(formData);
             
             console.log('✅ Resposta do backend:', response);
             
@@ -564,13 +667,13 @@ async function addProdutoRow() {
         <td><input type="number" name="produto-movimentacao-${currentCounter}" class="table-input" placeholder="Toneladas/ano" min="0"></td>
         <td>
             <div class="produto-origem-container">
-                <select name="produto-origem-pais-${currentCounter}" class="table-input produto-pais-select" data-row="${currentCounter}" data-tipo="origem" onchange="handleProdutoPaisChange(${currentCounter}, 'origem')" required>
+                <select id="produto-origem-pais-select-${currentCounter}" name="produto-origem-pais-${currentCounter}" class="table-input produto-pais-select" data-row="${currentCounter}" data-tipo="origem" required>
                     <option value="">Selecione o país...</option>
                 </select>
-                <select name="produto-origem-estado-${currentCounter}" class="table-input produto-estado-select" data-row="${currentCounter}" data-tipo="origem" onchange="handleProdutoEstadoChange(${currentCounter}, 'origem')" style="display:none; margin-top:4px;" required>
+                <select id="produto-origem-estado-select-${currentCounter}" name="produto-origem-estado-${currentCounter}" class="table-input produto-estado-select" data-row="${currentCounter}" data-tipo="origem" style="display:none; margin-top:4px;">
                     <option value="">Selecione o estado...</option>
                 </select>
-                <select name="produto-origem-municipio-${currentCounter}" class="table-input produto-municipio-select" data-row="${currentCounter}" data-tipo="origem" style="display:none; margin-top:4px;">
+                <select id="produto-origem-municipio-select-${currentCounter}" name="produto-origem-municipio-${currentCounter}" class="table-input produto-municipio-select" data-row="${currentCounter}" data-tipo="origem" style="display:none; margin-top:4px;">
                     <option value="">Município (opcional)...</option>
                 </select>
                 <input type="text" name="produto-origem-text-${currentCounter}" class="table-input produto-text-input" placeholder="Origem" style="display:none; margin-top:4px;">
@@ -578,13 +681,13 @@ async function addProdutoRow() {
         </td>
         <td>
             <div class="produto-destino-container">
-                <select name="produto-destino-pais-${currentCounter}" class="table-input produto-pais-select" data-row="${currentCounter}" data-tipo="destino" onchange="handleProdutoPaisChange(${currentCounter}, 'destino')" required>
+                <select id="produto-destino-pais-select-${currentCounter}" name="produto-destino-pais-${currentCounter}" class="table-input produto-pais-select" data-row="${currentCounter}" data-tipo="destino" required>
                     <option value="">Selecione o país...</option>
                 </select>
-                <select name="produto-destino-estado-${currentCounter}" class="table-input produto-estado-select" data-row="${currentCounter}" data-tipo="destino" onchange="handleProdutoEstadoChange(${currentCounter}, 'destino')" style="display:none; margin-top:4px;" required>
+                <select id="produto-destino-estado-select-${currentCounter}" name="produto-destino-estado-${currentCounter}" class="table-input produto-estado-select" data-row="${currentCounter}" data-tipo="destino" style="display:none; margin-top:4px;">
                     <option value="">Selecione o estado...</option>
                 </select>
-                <select name="produto-destino-municipio-${currentCounter}" class="table-input produto-municipio-select" data-row="${currentCounter}" data-tipo="destino" style="display:none; margin-top:4px;">
+                <select id="produto-destino-municipio-select-${currentCounter}" name="produto-destino-municipio-${currentCounter}" class="table-input produto-municipio-select" data-row="${currentCounter}" data-tipo="destino" style="display:none; margin-top:4px;">
                     <option value="">Município (opcional)...</option>
                 </select>
                 <input type="text" name="produto-destino-text-${currentCounter}" class="table-input produto-text-input" placeholder="Destino" style="display:none; margin-top:4px;">
@@ -627,9 +730,8 @@ async function addProdutoRow() {
     
     tbody.appendChild(row);
     
-    // Popular dropdowns de países usando JSON
-    await popularPaisesProduto(currentCounter, 'origem');
-    await popularPaisesProduto(currentCounter, 'destino');
+    // Popular dropdowns via DropdownManager
+    await DropdownManager.applyToProductRow(currentCounter);
 }
 
 /**
@@ -639,200 +741,6 @@ function removeProdutoRow(rowId) {
     const row = document.getElementById(rowId);
     if (row) {
         row.remove();
-    }
-}
-
-/**
- * Popular dropdown de países na tabela de produtos
- */
-async function popularPaisesProduto(rowId, tipo) {
-    const paisSelect = document.querySelector(`select[name="produto-${tipo}-pais-${rowId}"]`);
-    
-    if (!paisSelect) {
-        console.error('❌ Select de país não encontrado');
-        return;
-    }
-    
-    try {
-        // Buscar países usando o cache do API
-        const paises = await API.getPaises();
-        
-        // Limpar opções existentes
-        paisSelect.innerHTML = '<option value="">Selecione o país...</option>';
-        
-        // Popular com países
-        paises.forEach(pais => {
-            const option = document.createElement('option');
-            option.value = pais.id_pais;
-            option.textContent = pais.nm_pais;
-            
-            // Brasil pré-selecionado (id_pais = 31)
-            if (pais.id_pais === 31) {
-                option.selected = true;
-            }
-            
-            paisSelect.appendChild(option);
-        });
-        
-        console.log(`✅ ${paises.length} países carregados na tabela de produtos`);
-        
-        // Se Brasil foi selecionado (default), carregar estados
-        if (paisSelect.value === '31') {
-            handleProdutoPaisChange(rowId, tipo);
-        }
-    } catch (error) {
-        console.error('❌ Erro ao carregar países:', error);
-    }
-}
-
-/**
- * Manipula mudança de país na tabela de produtos
- * REGRAS:
- * - País: OBRIGATÓRIO
- * - Se Brasil: mostra Estado (OBRIGATÓRIO) + Município (OPCIONAL)
- * - Se outro país: mostra input text (OPCIONAL)
- */
-async function handleProdutoPaisChange(rowId, tipo) {
-    const paisSelect = document.querySelector(`select[name="produto-${tipo}-pais-${rowId}"]`);
-    const estadoSelect = document.querySelector(`select[name="produto-${tipo}-estado-${rowId}"]`);
-    const municipioSelect = document.querySelector(`select[name="produto-${tipo}-municipio-${rowId}"]`);
-    const textInput = document.querySelector(`input[name="produto-${tipo}-text-${rowId}"]`);
-    
-    if (!paisSelect) {
-        console.error(`❌ País select não encontrado para row ${rowId} tipo ${tipo}`);
-        return;
-    }
-    
-    const idPais = parseInt(paisSelect.value);
-    
-    console.log(`🗺️ País selecionado na tabela de produtos (${tipo}): ${paisSelect.options[paisSelect.selectedIndex]?.text || 'nenhum'}`);
-    
-    // Brasil = id_pais 31
-    if (idPais === 31) {
-        // Mostrar dropdowns de estado e município
-        if (estadoSelect) {
-            estadoSelect.style.display = 'block';
-            estadoSelect.setAttribute('required', 'required'); // ✅ Estado OBRIGATÓRIO
-        }
-        if (municipioSelect) {
-            municipioSelect.style.display = 'none'; // Oculto até selecionar estado
-            municipioSelect.removeAttribute('required'); // ❌ Município OPCIONAL
-        }
-        if (textInput) {
-            textInput.style.display = 'none';
-            textInput.removeAttribute('required');
-        }
-        
-        // Popular dropdown de estados
-        await popularEstadosProduto(rowId, tipo);
-    } else if (idPais) {
-        // Outro país: mostrar input text (OPCIONAL)
-        if (estadoSelect) {
-            estadoSelect.style.display = 'none';
-            estadoSelect.removeAttribute('required');
-        }
-        if (municipioSelect) {
-            municipioSelect.style.display = 'none';
-            municipioSelect.removeAttribute('required');
-        }
-        if (textInput) {
-            textInput.style.display = 'block';
-            const nomePais = paisSelect.options[paisSelect.selectedIndex].text;
-            textInput.placeholder = `${tipo.charAt(0).toUpperCase() + tipo.slice(1)} (${nomePais})`;
-            textInput.removeAttribute('required'); // ❌ Input text OPCIONAL
-        }
-    } else {
-        // Nenhum país selecionado: ocultar tudo
-        if (estadoSelect) {
-            estadoSelect.style.display = 'none';
-            estadoSelect.removeAttribute('required');
-        }
-        if (municipioSelect) {
-            municipioSelect.style.display = 'none';
-            municipioSelect.removeAttribute('required');
-        }
-        if (textInput) {
-            textInput.style.display = 'none';
-            textInput.removeAttribute('required');
-        }
-    }
-}
-
-/**
- * Popular dropdown de estados na tabela de produtos
- */
-async function popularEstadosProduto(rowId, tipo) {
-    const estadoSelect = document.querySelector(`select[name="produto-${tipo}-estado-${rowId}"]`);
-    
-    if (!estadoSelect) {
-        console.error('❌ Select de estado não encontrado');
-        return;
-    }
-    
-    try {
-        // Buscar estados usando o cache do API
-        const estados = await API.getEstados();
-        
-        // Limpar opções existentes
-        estadoSelect.innerHTML = '<option value="">Selecione o estado...</option>';
-        
-        // Popular com estados
-        estados.forEach(estado => {
-            const option = document.createElement('option');
-            option.value = estado.sigla_uf;
-            option.textContent = estado.nm_uf;
-            estadoSelect.appendChild(option);
-        });
-        
-        console.log(`✅ ${estados.length} estados carregados na tabela de produtos`);
-    } catch (error) {
-        console.error('❌ Erro ao carregar estados:', error);
-    }
-}
-
-/**
- * Manipula mudança de estado na tabela de produtos
- * Filtra e mostra municípios do estado selecionado
- */
-async function handleProdutoEstadoChange(rowId, tipo) {
-    const estadoSelect = document.querySelector(`select[name="produto-${tipo}-estado-${rowId}"]`);
-    const municipioSelect = document.querySelector(`select[name="produto-${tipo}-municipio-${rowId}"]`);
-    
-    if (!estadoSelect || !municipioSelect) {
-        console.error(`❌ Selects não encontrados para row ${rowId} tipo ${tipo}`);
-        return;
-    }
-    
-    const uf = estadoSelect.value;
-    
-    if (!uf) {
-        municipioSelect.style.display = 'none';
-        municipioSelect.innerHTML = '<option value="">Município (opcional)...</option>';
-        return;
-    }
-    
-    console.log(`🔍 Estado selecionado na tabela (${tipo}): ${uf}`);
-    
-    try {
-        // Buscar municípios usando o cache do API
-        const municipios = await API.getMunicipiosByUF(uf);
-        
-        // Limpar e popular dropdown de municípios
-        municipioSelect.innerHTML = '<option value="">Município (opcional)...</option>';
-        
-        municipios.forEach(municipio => {
-            const option = document.createElement('option');
-            option.value = municipio.cd_mun;
-            option.textContent = municipio.nm_mun;
-            municipioSelect.appendChild(option);
-        });
-        
-        // Mostrar dropdown de municípios
-        municipioSelect.style.display = 'block';
-        
-        console.log(`🏙️ ${municipios.length} municípios carregados`);
-    } catch (error) {
-        console.error('❌ Erro ao carregar municípios:', error);
     }
 }
 
@@ -868,12 +776,12 @@ function handleProdutoAcondicionamentoChange(rowId) {
 // Exportar funções para escopo global (para uso em onclick inline no HTML)
 window.addProdutoRow = addProdutoRow;
 window.removeProdutoRow = removeProdutoRow;
-window.handleProdutoPaisChange = handleProdutoPaisChange;
-window.handleProdutoEstadoChange = handleProdutoEstadoChange;
 window.handleProdutoAcondicionamentoChange = handleProdutoAcondicionamentoChange;
 
 // Exportar para uso global
-window.FORM = FORM;
+window.FormCollector = FormCollector;
+// Compatibilidade com código antigo
+window.FORM = FormCollector;
 
 // Inicializar automaticamente
-FORM.init();
+FormCollector.init();

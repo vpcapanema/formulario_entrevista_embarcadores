@@ -274,11 +274,21 @@ body {
     color: var(--text-primary);
 }
 
-/* Força cor de texto em options */
+/* Força cor de texto em options - SEMPRE PRETO E VISÍVEL */
 .form-group select option,
-select.table-input option {
-    background-color: white;
-    color: var(--text-primary);
+select.table-input option,
+select option {
+    background-color: white !important;
+    color: #000000 !important;
+    font-weight: normal !important;
+}
+
+/* Garante que options disabled também sejam visíveis */
+.form-group select:disabled option,
+select.table-input:disabled option,
+select:disabled option {
+    background-color: #f0f0f0 !important;
+    color: #333333 !important;
 }
 
 /* Campos desabilitados */
@@ -286,9 +296,9 @@ select.table-input option {
 .form-group input:disabled,
 select.table-input:disabled {
     background-color: #f0f0f0;
-    color: #999;
+    color: #666; /* Cor mais escura para melhor legibilidade */
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.8; /* Menos opacidade para melhor contraste */
 }
 
 .form-group input:focus,
@@ -486,15 +496,29 @@ td {
 .produto-destino-container input {
     width: 100%;
     font-size: 0.85rem;
+    color: #000000 !important; /* Garante texto preto */
+}
+
+/* Options dos dropdowns de produtos - SEMPRE PRETO */
+.produto-origem-container select option,
+.produto-destino-container select option,
+.produto-pais-select option,
+.produto-estado-select option,
+.produto-municipio-select option {
+    background-color: white !important;
+    color: #000000 !important;
+    font-weight: normal !important;
 }
 
 .produto-pais-select {
     font-weight: 600;
+    color: #000000 !important;
 }
 
 .produto-estado-select,
 .produto-municipio-select {
     font-size: 0.85rem;
+    color: #000000 !important;
 }
 
 .produto-text-input {
