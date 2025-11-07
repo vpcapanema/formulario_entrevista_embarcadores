@@ -489,9 +489,9 @@
 
         <!-- Legenda de Grupos -->
         <div class="legend-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="margin: 0;">📋 Grupos de Campos - Mostrar/Ocultar</h3>
-                <div style="display: flex; gap: 0.5rem;">
+            <div class="legend-header">
+                <h3>📋 Grupos de Campos - Mostrar/Ocultar</h3>
+                <div class="legend-actions">
                     <button class="btn btn-sm btn-secondary" onclick="selecionarTodosGrupos()">
                         <span>☑️</span> Todos
                     </button>
@@ -503,72 +503,72 @@
             <div class="legend-grid">
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="identificacao" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #1a252f;"></span>
+                    <span class="legend-color group-color-identificacao"></span>
                     <span class="legend-label">Identificação</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="entrevistador" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #243447;"></span>
+                    <span class="legend-color group-color-entrevistador"></span>
                     <span class="legend-label">Entrevistador</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="entrevistado" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #2c3e50;"></span>
+                    <span class="legend-color group-color-entrevistado"></span>
                     <span class="legend-label">Entrevistado</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="empresa" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #34495e;"></span>
+                    <span class="legend-color group-color-empresa"></span>
                     <span class="legend-label">Empresa</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="produto" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #3d566e;"></span>
+                    <span class="legend-color group-color-produto"></span>
                     <span class="legend-label">Produto</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="origem" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #2c3e50;"></span>
+                    <span class="legend-color group-color-origem"></span>
                     <span class="legend-label">Origem</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="destino" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #1e3a52;"></span>
+                    <span class="legend-color group-color-destino"></span>
                     <span class="legend-label">Destino</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="transporte" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #2c4f6c;"></span>
+                    <span class="legend-color group-color-transporte"></span>
                     <span class="legend-label">Transporte</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="custos" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #1f3a48;"></span>
+                    <span class="legend-color group-color-custos"></span>
                     <span class="legend-label">Custos</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="tempo" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #263d52;"></span>
+                    <span class="legend-color group-color-tempo"></span>
                     <span class="legend-label">Tempo</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="frequencia" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #2e4a5f;"></span>
+                    <span class="legend-color group-color-frequencia"></span>
                     <span class="legend-label">Frequência</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="importancias" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #1d3847;"></span>
+                    <span class="legend-color group-color-importancias"></span>
                     <span class="legend-label">Importâncias</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="variacoes" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #243b4f;"></span>
+                    <span class="legend-color group-color-variacoes"></span>
                     <span class="legend-label">Variações</span>
                 </label>
                 <label class="legend-item legend-checkbox">
                     <input type="checkbox" class="group-toggle" data-group="outros" checked onchange="toggleGrupo(this)">
-                    <span class="legend-color" style="background: #2a4456;"></span>
+                    <span class="legend-color group-color-outros"></span>
                     <span class="legend-label">Outros</span>
                 </label>
             </div>
@@ -815,17 +815,17 @@
             }
 
             // Tabela com scroll horizontal e todos os campos
-            let html = '<div style="overflow-x: auto;"><table><thead><tr>';
+            let html = '<div class="table-scroll"><table><thead><tr>';
             
             // Cabeçalho com todos os campos E cores por grupo
             Object.keys(camposAmigaveis).forEach(campo => {
                 const grupo = campoGrupos[campo] || 'outros';
                 
                 // Coluna ID com controle de ordenação
-                if (campo === 'id_pesquisa') {
+                    if (campo === 'id_pesquisa') {
                     const icone = ordemId === 'asc' ? '↑' : '↓';
-                    html += `<th class="group-${grupo}" style="cursor: pointer;" onclick="ordenarPorId()" title="Clique para ordenar">
-                        ${camposAmigaveis[campo]} <span style="font-size: 1.2em;">${icone}</span>
+                    html += `<th class="group-${grupo} th-sortable" onclick="ordenarPorId()" title="Clique para ordenar">
+                        ${camposAmigaveis[campo]} <span class="sort-icon">${icone}</span>
                     </th>`;
                 } else {
                     html += `<th class="group-${grupo}">${camposAmigaveis[campo]}</th>`;

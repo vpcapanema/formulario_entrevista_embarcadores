@@ -251,28 +251,28 @@
             <h3>🎯 Filtros de Consulta</h3>
             <div class="controles-grid">
                 <div class="control-group">
-                    <label>🏢 Empresa</label>
+                    <label for="filtro-empresa">🏢 Empresa</label>
                     <select id="filtro-empresa">
                         <option value="">Todas as empresas</option>
                     </select>
                 </div>
 
                 <div class="control-group">
-                    <label>📦 Produto</label>
+                    <label for="filtro-produto">📦 Produto</label>
                     <select id="filtro-produto">
                         <option value="">Todos os produtos</option>
                     </select>
                 </div>
 
                 <div class="control-group">
-                    <label>📍 Estado Origem</label>
+                    <label for="filtro-estado">📍 Estado Origem</label>
                     <select id="filtro-estado">
                         <option value="">Todos os estados</option>
                     </select>
                 </div>
 
                 <div class="control-group">
-                    <label>🚚 Tipo de Transporte</label>
+                    <label for="filtro-tipo">🚚 Tipo de Transporte</label>
                     <select id="filtro-tipo">
                         <option value="">Todos os tipos</option>
                         <option value="importacao">Importação</option>
@@ -286,14 +286,14 @@
                 <button class="btn-visualizar" onclick="carregarDados()">
                     🔍 Visualizar Dados
                 </button>
-                <button class="btn-visualizar" onclick="limparFiltros()" style="background: var(--text-secondary);">
+                <button class="btn-visualizar btn-muted" onclick="limparFiltros()">
                     🔄 Limpar Filtros
                 </button>
             </div>
         </div>
 
         <!-- KPIs Rápidos -->
-        <div class="kpi-mini-grid" id="kpis-container" style="display: none;">
+        <div class="kpi-mini-grid hidden" id="kpis-container">
             <!-- Preenchido via JS -->
         </div>
 

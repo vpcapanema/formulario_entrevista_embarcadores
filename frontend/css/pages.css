@@ -444,3 +444,89 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Accessibility and legend helpers (moved from inline styles) */
+.legend-label {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.legend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.legend-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.flex-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.flex-row-center {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.legend-color {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
+}
+.group-color-identificacao { background: #1a252f; }
+.group-color-entrevistador { background: #243447; }
+.group-color-entrevistado { background: #2c3e50; }
+.group-color-empresa { background: #34495e; }
+.group-color-produto { background: #3d566e; }
+.group-color-origem { background: #2c3e50; }
+.group-color-destino { background: #1e3a52; }
+.group-color-transporte { background: #2c4f6c; }
+.group-color-custos { background: #1f3a48; }
+.group-color-tempo { background: #263d52; }
+.group-color-frequencia { background: #2e4a5f; }
+.group-color-importancias { background: #1d3847; }
+.group-color-variacoes { background: #243b4f; }
+.group-color-outros { background: #2a4456; }
+
+.btn-muted {
+    background: var(--text-secondary);
+    color: white;
+}
+
+/* Small page utility classes */
+.page-top-space {
+    margin-top: 2rem;
+}
+
+/* Small list utilities to replace inline styles in HTML */
+.list-tight {
+    margin-top: 0.5rem;
+}
+.list-indent {
+    padding-left: 1.5rem;
+}
+
+/* Helpers for dynamic table rendering */
+.table-scroll {
+    overflow-x: auto;
+}
+.th-sortable {
+    cursor: pointer;
+}
+.sort-icon {
+    font-size: 1.2em;
+}
+.hidden {
+    display: none !important;
+}
