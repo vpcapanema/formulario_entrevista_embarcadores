@@ -264,6 +264,21 @@
             align-items: center;
             gap: 0.5rem;
         }
+        .legend-checkbox {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+        .legend-checkbox:hover {
+            background: rgba(52, 152, 219, 0.05);
+        }
+        .legend-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+        }
         .legend-color {
             width: 24px;
             height: 24px;
@@ -274,6 +289,16 @@
         .legend-label {
             font-size: 0.9rem;
             color: var(--text-primary);
+            user-select: none;
+        }
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        
+        /* Ocultar colunas quando grupo está desmarcado */
+        .column-hidden {
+            display: none !important;
         }
         
         /* Classes de cores para cabeçalhos dos grupos */
@@ -450,64 +475,88 @@
 
         <!-- Legenda de Grupos -->
         <div class="legend-section">
-            <h3>📋 Legenda de Grupos de Campos</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;">📋 Grupos de Campos - Mostrar/Ocultar</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-sm btn-secondary" onclick="selecionarTodosGrupos()">
+                        <span>☑️</span> Todos
+                    </button>
+                    <button class="btn btn-sm btn-secondary" onclick="limparSelecaoGrupos()">
+                        <span>☐</span> Nenhum
+                    </button>
+                </div>
+            </div>
             <div class="legend-grid">
-                <div class="legend-item">
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="identificacao" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #e3f2fd;"></span>
                     <span class="legend-label">Identificação</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="entrevistador" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #f3e5f5;"></span>
                     <span class="legend-label">Entrevistador</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="entrevistado" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #e8f5e9;"></span>
                     <span class="legend-label">Entrevistado</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="empresa" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #fff3e0;"></span>
                     <span class="legend-label">Empresa</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="produto" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #fce4ec;"></span>
                     <span class="legend-label">Produto</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="origem" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #e0f2f1;"></span>
                     <span class="legend-label">Origem</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="destino" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #e1f5fe;"></span>
                     <span class="legend-label">Destino</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="transporte" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #fff9c4;"></span>
                     <span class="legend-label">Transporte</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="custos" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #f1f8e9;"></span>
                     <span class="legend-label">Custos</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="tempo" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #ede7f6;"></span>
                     <span class="legend-label">Tempo</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="frequencia" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #ffeaa7;"></span>
                     <span class="legend-label">Frequência</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="importancias" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #dfe6e9;"></span>
                     <span class="legend-label">Importâncias</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="variacoes" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #fadbd8;"></span>
                     <span class="legend-label">Variações</span>
-                </div>
-                <div class="legend-item">
+                </label>
+                <label class="legend-item legend-checkbox">
+                    <input type="checkbox" class="group-toggle" data-group="outros" checked onchange="toggleGrupo(this)">
                     <span class="legend-color" style="background: #d5f4e6;"></span>
                     <span class="legend-label">Outros</span>
-                </div>
+                </label>
             </div>
         </div>
 
@@ -870,6 +919,74 @@
             const wrapper = document.getElementById('table-wrapper');
             wrapper.innerHTML = '<div class="empty-state"><h3>📋 Nenhuma pesquisa encontrada</h3><p>Ainda não há respostas cadastradas no sistema.</p><p>Use o formulário para adicionar novas pesquisas.</p><button class="btn btn-primary" onclick="navegarPara(&#39;formulario&#39;)">📋 Ir para o Formulário</button></div>';
         }
+
+        // ==========================================
+        // CONTROLE DE VISIBILIDADE DOS GRUPOS
+        // ==========================================
+        
+        function toggleGrupo(checkbox) {
+            const grupo = checkbox.dataset.group;
+            const isVisible = checkbox.checked;
+            
+            // Seleciona todas as colunas do grupo (th e td)
+            const table = document.querySelector('#table-wrapper table');
+            if (!table) return;
+            
+            // Pega o índice das colunas deste grupo
+            const headers = table.querySelectorAll('thead th');
+            const colIndices = [];
+            
+            headers.forEach((th, index) => {
+                if (th.classList.contains(`group-${grupo}`)) {
+                    colIndices.push(index);
+                }
+            });
+            
+            // Aplica/remove classe de ocultar para th e td
+            colIndices.forEach(colIndex => {
+                // Header
+                const th = headers[colIndex];
+                if (isVisible) {
+                    th.classList.remove('column-hidden');
+                } else {
+                    th.classList.add('column-hidden');
+                }
+                
+                // Todas as células desta coluna
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const td = row.children[colIndex];
+                    if (td) {
+                        if (isVisible) {
+                            td.classList.remove('column-hidden');
+                        } else {
+                            td.classList.add('column-hidden');
+                        }
+                    }
+                });
+            });
+        }
+        
+        function selecionarTodosGrupos() {
+            const checkboxes = document.querySelectorAll('.group-toggle');
+            checkboxes.forEach(checkbox => {
+                if (!checkbox.checked) {
+                    checkbox.checked = true;
+                    toggleGrupo(checkbox);
+                }
+            });
+        }
+        
+        function limparSelecaoGrupos() {
+            const checkboxes = document.querySelectorAll('.group-toggle');
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.checked = false;
+                    toggleGrupo(checkbox);
+                }
+            });
+        }
+    
     </script>
     <script src="/js/navbar.js?v=20251107"></script>
 </body>
