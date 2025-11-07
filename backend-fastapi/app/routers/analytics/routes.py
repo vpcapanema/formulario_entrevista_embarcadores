@@ -243,22 +243,28 @@ async def get_produtos_top(db: Session = Depends(get_db)):
         }
 
 # ============================================================
-# IMPORTÂNCIAS (MÉDIA DE FATORES)
+# IMPORTÂNCIAS (PERCENTUAIS DE "MUITO IMPORTANTE")
 # ============================================================
 
 @router.get("/importancias")
 async def get_importancias(db: Session = Depends(get_db)):
     """
-    Retorna média das importâncias de cada fator
+    Retorna percentual de "muito importante" para cada fator
+    Formato para gráfico radar: labels + datasets
     """
     try:
         query = text("""
             SELECT
-                AVG(importancia_custo) as custo,
-                AVG(importancia_tempo) as tempo,
-                AVG(importancia_confiabilidade) as confiabilidade,
-                AVG(importancia_seguranca) as seguranca,
-                AVG(importancia_capacidade) as capacidade
+                COUNT(*) FILTER (WHERE importancia_custo = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as custo_muito,
+                COUNT(*) FILTER (WHERE importancia_custo = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as custo_importante,
+                COUNT(*) FILTER (WHERE importancia_tempo = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as tempo_muito,
+                COUNT(*) FILTER (WHERE importancia_tempo = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as tempo_importante,
+                COUNT(*) FILTER (WHERE importancia_confiabilidade = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as confiab_muito,
+                COUNT(*) FILTER (WHERE importancia_confiabilidade = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as confiab_importante,
+                COUNT(*) FILTER (WHERE importancia_seguranca = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as segur_muito,
+                COUNT(*) FILTER (WHERE importancia_seguranca = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as segur_importante,
+                COUNT(*) FILTER (WHERE importancia_capacidade = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as capac_muito,
+                COUNT(*) FILTER (WHERE importancia_capacidade = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as capac_importante
             FROM formulario_embarcadores.pesquisas
             WHERE status = 'finalizada'
         """)
@@ -268,11 +274,21 @@ async def get_importancias(db: Session = Depends(get_db)):
         return {
             "success": True,
             "data": {
-                "custo": float(result[0] or 0),
-                "tempo": float(result[1] or 0),
-                "confiabilidade": float(result[2] or 0),
-                "seguranca": float(result[3] or 0),
-                "capacidade": float(result[4] or 0)
+                "labels": ["Custo", "Tempo", "Confiabilidade", "Segurança", "Capacidade"],
+                "muito_importante": [
+                    round(float(result[0] or 0), 1),  # Custo
+                    round(float(result[2] or 0), 1),  # Tempo
+                    round(float(result[4] or 0), 1),  # Confiabilidade
+                    round(float(result[6] or 0), 1),  # Segurança
+                    round(float(result[8] or 0), 1)   # Capacidade
+                ],
+                "importante": [
+                    round(float(result[1] or 0), 1),  # Custo
+                    round(float(result[3] or 0), 1),  # Tempo
+                    round(float(result[5] or 0), 1),  # Confiabilidade
+                    round(float(result[7] or 0), 1),  # Segurança
+                    round(float(result[9] or 0), 1)   # Capacidade
+                ]
             }
         }
     except Exception as e:
