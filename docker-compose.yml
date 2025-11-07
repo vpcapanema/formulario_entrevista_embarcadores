@@ -1,0 +1,110 @@
+# ============================================
+# Docker Compose - PLI 2050
+# Backend FastAPI + PostgreSQL (opcional local)
+# ============================================
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # Backend FastAPI
+  # ==========================================
+  backend:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: pli2050-backend
+    image: pli2050-backend:latest
+    ports:
+      - "8000:8000"
+    environment:
+      # PostgreSQL Connection (AWS RDS em produção)
+      PGHOST: ${PGHOST:-seu-rds.us-east-1.rds.amazonaws.com}
+      PGPORT: ${PGPORT:-5432}
+      PGDATABASE: ${PGDATABASE:-pli2050}
+      PGUSER: ${PGUSER:-postgres}
+      PGPASSWORD: ${PGPASSWORD}
+      PGSCHEMA: ${PGSCHEMA:-formulario_embarcadores}
+      
+      # CORS Origins
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8000,http://127.0.0.1:8000,http://localhost:5500}
+      
+      # Application
+      APP_ENV: ${APP_ENV:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Recursos
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Networks
+    networks:
+      - pli2050-network
+    
+    # Volumes (logs opcionais)
+    volumes:
+      - ./logs:/app/logs
+
+  # ==========================================
+  # PostgreSQL Local (APENAS para desenvolvimento)
+  # Comentar em produção (usar AWS RDS)
+  # ==========================================
+  # postgres:
+  #   image: postgres:17-alpine
+  #   container_name: pli2050-postgres
+  #   environment:
+  #     POSTGRES_DB: pli2050
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: ${PGPASSWORD}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #     - ./sql:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - pli2050-network
+  #   restart: unless-stopped
+
+  # ==========================================
+  # Nginx (OPCIONAL - reverse proxy)
+  # ==========================================
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: pli2050-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./frontend:/usr/share/nginx/html:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - pli2050-network
+  #   restart: unless-stopped
+
+networks:
+  pli2050-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

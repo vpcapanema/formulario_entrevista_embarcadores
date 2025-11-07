@@ -1,0 +1,112 @@
+# ============================================
+# .dockerignore - Arquivos excluídos do build
+# ============================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Ambiente virtual
+venv/
+env/
+ENV/
+.venv/
+
+# Variáveis de ambiente (NUNCA incluir no Docker)
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node.js (se houver)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Testes
+tests/
+test_*.py
+*_test.py
+.pytest_cache/
+
+# Documentação (não necessária em produção)
+docs/
+*.md
+!README.md
+
+# Arquivos temporários
+*.tmp
+*.temp
+*.bak
+*.backup
+archive/
+migrations/
+.github/
+
+# SQL scripts (não necessários em runtime)
+sql/
+*.sql
+
+# Scripts de desenvolvimento
+testar_api.py
+criar_banco.py
+DIAGNOSTICO.ps1
+
+# Frontend build artifacts (se houver)
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+
+# Certificados e chaves (SEGURANÇA)
+*.pem
+*.key
+*.crt
+*.cer
+
+# Backups de banco
+*.dump
+*.sql.gz
+
+# Arquivos grandes
+*.zip
+*.tar.gz
+*.xlsx
+*.csv
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Workspace
+*.code-workspace
