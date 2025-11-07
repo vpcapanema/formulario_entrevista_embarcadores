@@ -280,13 +280,14 @@
             </div>
 
             <div class="info-box">
-                <div class="title">💾 Salvamento Automático</div>
+                <div class="title">💾 Salvamento no Banco de Dados PostgreSQL</div>
                 <p>Ao clicar em "Salvar Respostas":</p>
                 <ul class="margin-top-half">
-                    <li>✓ Os dados são salvos no navegador (IndexedDB)</li>
+                    <li>✓ Os dados são enviados para o banco PostgreSQL 17 (AWS RDS)</li>
                     <li>✓ Um arquivo Excel é gerado automaticamente</li>
-                    <li>✓ O download inicia automaticamente</li>
+                    <li>✓ O download do Excel inicia automaticamente</li>
                     <li>✓ Um popup de confirmação aparecerá</li>
+                    <li>✓ Os dados ficam disponíveis em "Respostas" e "Analytics"</li>
                 </ul>
             </div>
 
@@ -582,28 +583,57 @@
             <div class="subsection">
                 <div class="subsection-title">
                     <span class="number">3</span>
-                    <span>Visualização de Dados Salvos</span>
+                    <span>Visualização de Dados Salvos no Banco</span>
                 </div>
-                <p class="instruction-text">Para visualizar ou exportar dados salvos anteriormente:</p>
+                <p class="instruction-text">Para visualizar dados salvos no banco PostgreSQL:</p>
                 <ul class="instruction-list">
-                    <li>Clique na aba <strong>"📊 Respostas Salvas"</strong> no menu superior</li>
-                    <li>Visualize todas as entrevistas realizadas</li>
-                    <li>Use os botões de exportação: Excel, CSV ou PDF</li>
-                    <li>Edite ou exclua respostas se necessário</li>
+                    <li>Clique na aba <strong>"📊 Respostas"</strong> no menu superior</li>
+                    <li>Visualize todas as 11 pesquisas cadastradas no banco</li>
+                    <li>Use checkboxes para mostrar/ocultar grupos de colunas</li>
+                    <li>Clique no cabeçalho "ID ↓" para ordenar crescente/decrescente</li>
+                    <li>Exporte os dados filtrados em Excel ou CSV</li>
+                    <li>Aplique filtros por empresa, produto, estado ou tipo</li>
                 </ul>
+                <div class="success-box">
+                    <div class="title">✅ Dados em Tempo Real</div>
+                    <p>A página "Respostas" consulta o banco de dados PostgreSQL em tempo real através da view <strong>v_pesquisas_completa</strong>, que traz todos os 65 campos consolidados.</p>
+                </div>
             </div>
 
             <div class="subsection">
                 <div class="subsection-title">
                     <span class="number">4</span>
-                    <span>Analytics e Análises</span>
+                    <span>Analytics e Análises em Tempo Real</span>
                 </div>
-                <p class="instruction-text">Acesse a aba <strong>"📈 Analytics"</strong> para visualizar:</p>
+                <p class="instruction-text">Acesse a aba <strong>"📈 Analytics"</strong> para visualizar análises consolidadas:</p>
                 <ul class="instruction-list">
-                    <li>📊 KPIs (Indicadores-chave): Total de entrevistas, distância média, custo médio, etc.</li>
-                    <li>📈 12 gráficos interativos com análises de modalidades, produtos, fatores de decisão</li>
-                    <li>🎯 Insights sobre padrões logísticos</li>
+                    <li>📊 <strong>5 KPIs principais:</strong> Total de pesquisas (11), empresas cadastradas, produtos únicos, distância média e custo médio</li>
+                    <li>📈 <strong>6 gráficos interativos:</strong>
+                        <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                            <li>Distribuição Modal (pizza)</li>
+                            <li>Top 10 Produtos (barras verticais)</li>
+                            <li>Tipo de Transporte (rosca)</li>
+                            <li>Importância dos Fatores (radar)</li>
+                            <li>Frequência de Transporte (barras)</li>
+                            <li>Principais Dificuldades (barras horizontais)</li>
+                        </ul>
+                    </li>
+                    <li>🎯 Dados agregados e calculados automaticamente pelo banco</li>
+                    <li>🔄 Atualização automática conforme novas pesquisas são cadastradas</li>
                 </ul>
+                <div class="info-box">
+                    <div class="title">⚡ Endpoints de Analytics</div>
+                    <p>O backend FastAPI fornece 7 endpoints especializados:</p>
+                    <ul style="margin-top: 0.5rem;">
+                        <li><code>/api/analytics/kpis</code> - Indicadores principais</li>
+                        <li><code>/api/analytics/distribuicao-modal</code></li>
+                        <li><code>/api/analytics/produtos-top</code></li>
+                        <li><code>/api/analytics/tipo-transporte</code></li>
+                        <li><code>/api/analytics/importancias</code></li>
+                        <li><code>/api/analytics/frequencia</code></li>
+                        <li><code>/api/analytics/dificuldades</code></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
