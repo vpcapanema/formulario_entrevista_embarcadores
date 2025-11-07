@@ -1,0 +1,221 @@
+/**
+ * ============================================================
+ * VALIDAÇÃO VISUAL - PLI 2050
+ * ============================================================
+ * Todos os estilos relacionados à validação de campos
+ * - Campos com erro (borda vermelha)
+ * - Campos com sucesso (borda verde)
+ * - Mensagens de erro/sucesso
+ * - Popup de resumo de validação
+ * - Animações (shake, pulse)
+ */
+
+/* ============================================
+   CAMPO COM ERRO
+   ============================================ */
+
+.field-error,
+.invalid {
+    border: 3px solid #dc3545 !important;
+    background-color: #ffebee !important;
+    animation: shake 0.3s ease-in-out;
+    outline: none !important;
+}
+
+.field-error:focus,
+.invalid:focus {
+    border-color: #c82333 !important;
+    box-shadow: 0 0 0 0.3rem rgba(220, 53, 69, 0.4) !important;
+}
+
+/* ============================================
+   CAMPO COM SUCESSO
+   ============================================ */
+
+.field-success {
+    border: 3px solid #28a745 !important;
+    background-color: #e8f5e9 !important;
+    animation: pulse-success 0.3s ease-in-out;
+    outline: none !important;
+}
+
+.field-success:focus {
+    border-color: #218838 !important;
+    box-shadow: 0 0 0 0.3rem rgba(40, 167, 69, 0.4) !important;
+}
+
+/* ============================================
+   MENSAGENS DE VALIDAÇÃO
+   ============================================ */
+
+/* Mensagem de erro em bloco */
+.validation-error-text {
+    color: #dc3545;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: block;
+    padding-left: 0.25rem;
+}
+
+/* Mensagem de erro inline (mais compacta) */
+.validation-error-inline {
+    color: #dc3545;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+    display: block;
+    padding-left: 0.25rem;
+}
+
+/* Mensagem de sucesso */
+.validation-success-text {
+    color: #28a745;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    display: block;
+    padding-left: 0.25rem;
+}
+
+/* Highlight de erro (texto em vermelho) */
+.error-highlight {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* ============================================
+   POPUP DE RESUMO DE VALIDAÇÃO
+   ============================================ */
+
+.validation-summary {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 9999;
+    animation: slideInRight 0.3s ease-out;
+    max-width: 400px;
+}
+
+.validation-summary-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.validation-summary-message {
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+}
+
+.validation-summary-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.validation-summary-close:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* ============================================
+   ANIMAÇÕES
+   ============================================ */
+
+/* Shake - Para campos com erro */
+@keyframes shake {
+    0%, 100% { 
+        transform: translateX(0); 
+    }
+    25% { 
+        transform: translateX(-5px); 
+    }
+    75% { 
+        transform: translateX(5px); 
+    }
+}
+
+/* Pulse - Para campos com sucesso */
+@keyframes pulse-success {
+    0% { 
+        transform: scale(1); 
+    }
+    50% { 
+        transform: scale(1.02); 
+    }
+    100% { 
+        transform: scale(1); 
+    }
+}
+
+/* Slide In Right - Para popup de validação */
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Slide Out Right - Para fechar popup */
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .validation-summary {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateY(-100px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateY(-100px);
+            opacity: 0;
+        }
+    }
+}
