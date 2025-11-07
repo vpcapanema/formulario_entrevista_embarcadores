@@ -241,6 +241,99 @@
         .error-state h3 {
             margin-top: 0;
         }
+        /* Estilos da Legenda de Grupos */
+        .legend-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 2px solid var(--border-color);
+        }
+        .legend-section h3 {
+            margin: 0 0 1rem 0;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+        .legend-label {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+        
+        /* Classes de cores para cabeçalhos dos grupos */
+        .group-identificacao {
+            background: #e3f2fd !important;
+            font-weight: 600 !important;
+        }
+        .group-entrevistador {
+            background: #f3e5f5 !important;
+            font-weight: 600 !important;
+        }
+        .group-entrevistado {
+            background: #e8f5e9 !important;
+            font-weight: 600 !important;
+        }
+        .group-empresa {
+            background: #fff3e0 !important;
+            font-weight: 600 !important;
+        }
+        .group-produto {
+            background: #fce4ec !important;
+            font-weight: 600 !important;
+        }
+        .group-origem {
+            background: #e0f2f1 !important;
+            font-weight: 600 !important;
+        }
+        .group-destino {
+            background: #e1f5fe !important;
+            font-weight: 600 !important;
+        }
+        .group-transporte {
+            background: #fff9c4 !important;
+            font-weight: 600 !important;
+        }
+        .group-custos {
+            background: #f1f8e9 !important;
+            font-weight: 600 !important;
+        }
+        .group-tempo {
+            background: #ede7f6 !important;
+            font-weight: 600 !important;
+        }
+        .group-frequencia {
+            background: #ffeaa7 !important;
+            font-weight: 600 !important;
+        }
+        .group-importancias {
+            background: #dfe6e9 !important;
+            font-weight: 600 !important;
+        }
+        .group-variacoes {
+            background: #fadbd8 !important;
+            font-weight: 600 !important;
+        }
+        .group-outros {
+            background: #d5f4e6 !important;
+            font-weight: 600 !important;
+        }
+
         @media (max-width: 768px) {
             .stats-bar {
                 grid-template-columns: 1fr;
@@ -254,6 +347,9 @@
             .btn {
                 width: 100%;
                 justify-content: center;
+            }
+            .legend-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -351,6 +447,70 @@
                 </button>
             </div>
         </div>
+
+        <!-- Legenda de Grupos -->
+        <div class="legend-section">
+            <h3>📋 Legenda de Grupos de Campos</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #e3f2fd;"></span>
+                    <span class="legend-label">Identificação</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #f3e5f5;"></span>
+                    <span class="legend-label">Entrevistador</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #e8f5e9;"></span>
+                    <span class="legend-label">Entrevistado</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #fff3e0;"></span>
+                    <span class="legend-label">Empresa</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #fce4ec;"></span>
+                    <span class="legend-label">Produto</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #e0f2f1;"></span>
+                    <span class="legend-label">Origem</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #e1f5fe;"></span>
+                    <span class="legend-label">Destino</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #fff9c4;"></span>
+                    <span class="legend-label">Transporte</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #f1f8e9;"></span>
+                    <span class="legend-label">Custos</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #ede7f6;"></span>
+                    <span class="legend-label">Tempo</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #ffeaa7;"></span>
+                    <span class="legend-label">Frequência</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #dfe6e9;"></span>
+                    <span class="legend-label">Importâncias</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #fadbd8;"></span>
+                    <span class="legend-label">Variações</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #d5f4e6;"></span>
+                    <span class="legend-label">Outros</span>
+                </div>
+            </div>
+        </div>
+
         <div class="table-container">
             <div class="table-wrapper" id="table-wrapper">
                 <div class="loading">
@@ -487,6 +647,102 @@
             'qtd_produtos': 'Qtd. Produtos'
         };
 
+        // Mapeamento de campos para grupos (cores)
+        const campoGrupos = {
+            // Grupo 1: Identificação (azul claro)
+            'id_pesquisa': 'identificacao',
+            
+            // Grupo 2: Entrevistador (roxo claro)
+            'entrevistador_nome': 'entrevistador',
+            'entrevistador_email': 'entrevistador',
+            'entrevistador_instituicao': 'entrevistador',
+            'entrevistador_cnpj': 'entrevistador',
+            'data_entrevista': 'entrevistador',
+            'data_atualizacao': 'entrevistador',
+            'status_pesquisa': 'entrevistador',
+            
+            // Grupo 3: Entrevistado (verde claro)
+            'entrevistado_nome': 'entrevistado',
+            'entrevistado_funcao': 'entrevistado',
+            'entrevistado_telefone': 'entrevistado',
+            'entrevistado_email': 'entrevistado',
+            'responsavel_principal': 'entrevistado',
+            
+            // Grupo 4: Empresa (laranja claro)
+            'nome_empresa': 'empresa',
+            'tipo_empresa': 'empresa',
+            'outro_tipo_empresa': 'empresa',
+            'cnpj_empresa': 'empresa',
+            'municipio_empresa': 'empresa',
+            'estado_empresa': 'empresa',
+            
+            // Grupo 5: Produto (rosa claro)
+            'agrupamento_produto': 'produto',
+            'produto_principal': 'produto',
+            'outro_produto': 'produto',
+            
+            // Grupo 6: Origem (verde água)
+            'origem_pais': 'origem',
+            'origem_estado': 'origem',
+            'origem_municipio': 'origem',
+            'origem_completa': 'origem',
+            
+            // Grupo 7: Destino (ciano claro)
+            'destino_pais': 'destino',
+            'destino_estado': 'destino',
+            'destino_municipio': 'destino',
+            'destino_completa': 'destino',
+            
+            // Grupo 8: Transporte (amarelo claro)
+            'tipo_transporte': 'transporte',
+            'distancia': 'transporte',
+            'num_paradas': 'transporte',
+            'num_paradas_exato': 'transporte',
+            'modais': 'transporte',
+            'configuracao_veiculo': 'transporte',
+            'tipo_embalagem': 'transporte',
+            'carga_perigosa': 'transporte',
+            
+            // Grupo 9: Custos (lima)
+            'capacidade_utilizada': 'custos',
+            'peso_carga': 'custos',
+            'custo_transporte': 'custos',
+            'valor_carga': 'custos',
+            'custo_por_tonelada': 'custos',
+            
+            // Grupo 10: Tempo (lavanda)
+            'tempo_viagem': 'tempo',
+            'tempo_total_minutos': 'tempo',
+            'tipo_cadeia': 'tempo',
+            
+            // Grupo 11: Frequência (dourado claro)
+            'frequencia': 'frequencia',
+            'frequencia_diaria': 'frequencia',
+            'frequencia_outra': 'frequencia',
+            
+            // Grupo 12: Importâncias (cinza claro)
+            'importancia_custo': 'importancias',
+            'importancia_tempo': 'importancias',
+            'importancia_confiabilidade': 'importancias',
+            'importancia_seguranca': 'importancias',
+            'importancia_capacidade': 'importancias',
+            
+            // Grupo 13: Variações (rosa claro)
+            'variacao_custo': 'variacoes',
+            'variacao_tempo': 'variacoes',
+            'variacao_confiabilidade': 'variacoes',
+            'variacao_seguranca': 'variacoes',
+            'variacao_capacidade': 'variacoes',
+            
+            // Grupo 14: Outros (menta)
+            'modais_alternativos': 'outros',
+            'fator_adicional': 'outros',
+            'dificuldades': 'outros',
+            'detalhe_dificuldade': 'outros',
+            'observacoes': 'outros',
+            'qtd_produtos': 'outros'
+        };
+
         function renderizarTabela() {
             const wrapper = document.getElementById('table-wrapper');
             if (dadosFiltrados.length === 0) {
@@ -497,9 +753,10 @@
             // Tabela com scroll horizontal e todos os campos
             let html = '<div style="overflow-x: auto;"><table><thead><tr>';
             
-            // Cabeçalho com todos os campos
+            // Cabeçalho com todos os campos E cores por grupo
             Object.keys(camposAmigaveis).forEach(campo => {
-                html += `<th>${camposAmigaveis[campo]}</th>`;
+                const grupo = campoGrupos[campo] || 'outros';
+                html += `<th class="group-${grupo}">${camposAmigaveis[campo]}</th>`;
             });
             html += '</tr></thead><tbody>';
 
