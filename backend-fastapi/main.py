@@ -109,6 +109,7 @@ app.mount("/css", StaticFiles(directory=str(frontend_path / "css")), name="css")
 app.mount("/js", StaticFiles(directory=str(frontend_path / "js")), name="js")
 app.mount("/assets", StaticFiles(directory=str(frontend_path / "assets")), name="assets")
 app.mount("/vendor", StaticFiles(directory=str(frontend_path / "vendor")), name="vendor")
+app.mount("/html", StaticFiles(directory=str(frontend_path / "html")), name="html")
 
 # NOVO: Montar JSONs estáticos de listas (cache habilitado) - CORRIGIDO PARA NOVO CAMINHO
 app.mount("/lists", StaticFiles(directory=str(frontend_path / "html" / "lists")), name="lists")

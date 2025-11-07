@@ -3,46 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLI 2050 - Respostas Coletadas</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>PLI 2050 - Respostas Salvas</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="/css/index.css?v=20251107">
+    <link rel="stylesheet" href="/css/pages.css?v=20251107">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        .container {
-            max-width: 1800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
+        /* Estilos específicos da página de respostas */
 
         .toolbar {
             background: #f8f9fa;
@@ -271,10 +241,37 @@
     </style>
 </head>
 <body>
+    <!-- Navegação -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>PLI 2050 - SP</h1>
+                <p>Plano de Logística e Investimentos</p>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-btn" onclick="navegarPara('formulario')">
+                    <span>📋</span> Formulário
+                </button>
+                <button class="nav-btn active" onclick="navegarPara('respostas')">
+                    <span>📊</span> Respostas
+                </button>
+                <button class="nav-btn" onclick="navegarPara('analytics')">
+                    <span>📈</span> Analytics
+                </button>
+                <button class="nav-btn" onclick="navegarPara('instrucoes')">
+                    <span>📖</span> Instruções
+                </button>
+                <button class="nav-btn" onclick="navegarPara('visualizador')">
+                    <span>🔍</span> Visualizador
+                </button>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <div class="header">
-            <h1>📋 Respostas Coletadas</h1>
-            <p>Sistema de Formulários de Entrevista - PLI 2050</p>
+        <div class="page-header">
+            <h2>📋 Respostas Coletadas</h2>
+            <p>Visualize, filtre e exporte os dados das entrevistas realizadas</p>
         </div>
 
         <div class="toolbar">
@@ -623,5 +620,8 @@
             URL.revokeObjectURL(url);
         }
     </script>
+    
+    <!-- Script de Navegação -->
+    <script src="/js/navbar.js?v=20251107"></script>
 </body>
 </html>

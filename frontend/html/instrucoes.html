@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instruções - Formulário PLI 2050</title>
-    <!-- CSS Modularizado: Estilos globais (validação não é necessária aqui) -->
-    <link rel="stylesheet" href="../css/index.css?v=20251106">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>PLI 2050 - Instruções de Preenchimento</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="/css/index.css?v=20251107">
+    <link rel="stylesheet" href="/css/pages.css?v=20251107">
     <style>
         .instructions-container {
             max-width: 1000px;
@@ -215,20 +219,37 @@
     </style>
 </head>
 <body>
-    <!-- Barra de Navegação -->
+    <!-- Navegação -->
     <nav class="navbar">
-        <div class="nav-brand">
-            🚚 PLI 2050 - Entrevistas com Embarcadores
-        </div>
-        <div class="nav-links">
-            <a href="index.html">← Voltar ao Formulário</a>
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>PLI 2050 - SP</h1>
+                <p>Plano de Logística e Investimentos</p>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-btn" onclick="navegarPara('formulario')">
+                    <span>📋</span> Formulário
+                </button>
+                <button class="nav-btn" onclick="navegarPara('respostas')">
+                    <span>📊</span> Respostas
+                </button>
+                <button class="nav-btn" onclick="navegarPara('analytics')">
+                    <span>📈</span> Analytics
+                </button>
+                <button class="nav-btn active" onclick="navegarPara('instrucoes')">
+                    <span>📖</span> Instruções
+                </button>
+                <button class="nav-btn" onclick="navegarPara('visualizador')">
+                    <span>🔍</span> Visualizador
+                </button>
+            </div>
         </div>
     </nav>
 
     <div class="instructions-container">
-        <div class="instructions-header">
-            <h1>📋 Instruções de Preenchimento</h1>
-            <p class="subtitle">Guia completo para preenchimento do Formulário de Entrevistas com Embarcadores - PLI 2050</p>
+        <div class="page-header">
+            <h2>📖 Instruções de Preenchimento</h2>
+            <p>Guia completo para preenchimento do formulário de entrevistas</p>
         </div>
 
         <!-- Seção 1: Introdução -->
@@ -641,5 +662,8 @@
             © 2025 - Todos os direitos reservados | Versão 1.0
         </p>
     </footer>
+    
+    <!-- Script de Navegação -->
+    <script src="/js/navbar.js?v=20251107"></script>
 </body>
 </html>
