@@ -277,21 +277,57 @@ aws ecs update-service \
 
 ---
 
-## 💰 Estimativa de Custos (us-east-1)
+## 💰 Estimativa de Custos (us-east-1) - **COMPATÍVEL COM FREE TIER** 🎉
 
-| Recurso | Configuração | Custo/mês |
-|---------|-------------|-----------|
-| **ECS Fargate** | 512 CPU, 1GB RAM, 2 tasks | ~$28 |
-| **ALB** | Standard | ~$16 |
-| **RDS PostgreSQL** | db.t3.micro, 20GB | ~$15 |
-| **ECR** | 1GB armazenamento | ~$0.10 |
-| **CloudWatch Logs** | 5GB/mês | ~$2.50 |
-| **Data Transfer** | 10GB OUT | ~$0.90 |
-| **Route 53** | Hosted zone | ~$0.50 |
-| **ACM Certificate** | 1 certificado | **Grátis** |
-| **TOTAL ESTIMADO** | | **~$63/mês** |
+### Opção 1: TOTALMENTE GRATUITO (primeiros 12 meses) ⭐
 
-*Custos podem variar com uso real. Use AWS Cost Calculator para estimativa precisa.*
+| Recurso | Configuração | Free Tier | Custo |
+|---------|-------------|-----------|-------|
+| **EC2** | t2.micro (1 vCPU, 1GB RAM) | ✅ 750h/mês | **$0** |
+| **RDS PostgreSQL** | db.t3.micro, 20GB SSD | ✅ 750h/mês | **$0** |
+| **EBS** | 30GB SSD | ✅ Incluído | **$0** |
+| **Data Transfer OUT** | Até 15GB/mês | ✅ Incluído | **$0** |
+| **CloudWatch Logs** | Até 5GB/mês | ✅ Incluído | **$0** |
+| **ECR** | 500MB armazenamento | ✅ Incluído | **$0** |
+| **TOTAL (12 meses)** | | | **$0/mês** 🎉 |
+
+**Após 12 meses (mesma config):** ~$26/mês
+
+### Opção 2: App Runner (Mais Barato após Free Tier)
+
+| Recurso | Configuração | Free Tier | Custo/mês |
+|---------|-------------|-----------|-----------|
+| **App Runner** | 0.25 vCPU, 0.5GB RAM | 🎁 2 meses grátis | **$2.50** |
+| **RDS PostgreSQL** | db.t3.micro, 20GB | ✅ 750h (12 meses) | **$0** (depois $15) |
+| **ECR** | 500MB | ✅ Incluído | **$0** |
+| **CloudWatch** | 5GB logs | ✅ Incluído | **$0** |
+| **TOTAL (12 meses)** | | | **~$2.50/mês** |
+| **Após Free Tier** | | | **~$17.50/mês** |
+
+### Opção 3: ECS Fargate (Produção com Alta Disponibilidade)
+
+| Recurso | Configuração | Free Tier | Custo/mês |
+|---------|-------------|-----------|-----------|
+| **ECS Fargate** | 256 CPU, 512MB, 2 tasks | ✅ 25GB/dia (12 meses) | **$0-7** |
+| **ALB** | Standard | ❌ Não coberto | **$16** |
+| **RDS PostgreSQL** | db.t3.micro, 20GB | ✅ 750h (12 meses) | **$0** (depois $15) |
+| **ECR** | 1GB | ✅ 500MB grátis | **~$0.10** |
+| **CloudWatch** | 5GB | ✅ Incluído | **$0** |
+| **TOTAL (12 meses c/ ALB)** | | | **~$16-23/mês** |
+| **TOTAL (sem ALB)** | | | **$0-7/mês** 🎉 |
+
+---
+
+## 🏆 RECOMENDAÇÃO PARA FREE TIER
+
+### Para Primeiros 12 Meses:
+**✅ EC2 t2.micro + RDS t3.micro = $0/mês**
+
+### Depois do Free Tier:
+**✅ App Runner 0.25vCPU + RDS t3.micro = ~$17.50/mês**
+
+### Produção Crítica (sempre):
+**✅ ECS Fargate 256CPU + ALB + RDS = ~$30-40/mês**
 
 ---
 

@@ -32,12 +32,14 @@ Este guia cobre as principais opções para fazer deploy da aplicação PLI 2050
 
 ## Opções de Deploy
 
-| Opção | Complexidade | Custo | Escalabilidade | Auto-Scaling | Recomendado Para |
-|-------|-------------|-------|----------------|--------------|------------------|
-| **ECS Fargate** | Média | Médio | Alta | ✅ Sim | **Produção** |
-| **App Runner** | Baixa | Médio | Média | ✅ Sim | Protótipos/MVPs |
-| **EC2 + Docker** | Baixa | Baixo | Baixa | ❌ Não | Testes/Dev |
-| **Elastic Beanstalk** | Baixa | Baixo | Alta | ✅ Sim | Apps tradicionais |
+| Opção | Complexidade | Custo | Escalabilidade | Auto-Scaling | Free Tier | Recomendado Para |
+|-------|-------------|-------|----------------|--------------|-----------|------------------|
+| **EC2 t2.micro** | Baixa | **$0*** | Baixa | ❌ Não | ✅ 750h/mês | **Início/Testes** ⭐ |
+| **App Runner** | Baixa | **$2.50** | Média | ✅ Sim | ✅ 2 meses | **Protótipos/MVPs** |
+| **ECS Fargate** | Média | **$0-7*** | Alta | ✅ Sim | ✅ 25GB/dia | **Produção** |
+| **Beanstalk (single)** | Baixa | **$0*** | Média | ❌ Não | ✅ 750h/mês | **Apps tradicionais** |
+
+**\* Free Tier válido por 12 meses para novos clientes AWS**
 
 ---
 
@@ -80,8 +82,8 @@ Crie arquivo `ecs-task-definition.json`:
   "family": "pli2050-backend-task",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "512",
-  "memory": "1024",
+  "cpu": "256",
+  "memory": "512",
   "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
@@ -190,13 +192,16 @@ aws ecs create-service `
     --load-balancers "targetGroupArn=<TG_ARN>,containerName=pli2050-backend,containerPort=8000"
 ```
 
-### Custos Estimados (us-east-1)
+### Custos Estimados (us-east-1) - **FREE TIER** 🎉
 
-- **Fargate (512 CPU, 1024 MB):** ~$14/mês (730 horas)
-- **ALB:** ~$16/mês
-- **ECR:** $0.10/GB/mês (primeiros 500 MB grátis)
-- **CloudWatch Logs:** ~$2-5/mês
-- **Total:** ~$30-35/mês
+- **Fargate (256 CPU, 512 MB):** ~$7/mês (730 horas) - **Primeiros 12 meses: GRÁTIS até 25GB/dia**
+- **ALB:** ~$16/mês - **NÃO incluído no Free Tier**
+- **ECR:** $0.10/GB/mês (primeiros 500 MB grátis) - **~$0** 
+- **CloudWatch Logs:** ~$2-5/mês - **5GB/mês incluído no Free Tier**
+- **RDS db.t3.micro:** ~$15/mês - **Primeiros 12 meses: 750 horas/mês GRÁTIS + 20GB**
+- **Total (sem Free Tier):** ~$40/mês
+- **Total (com Free Tier - 12 meses):** ~$16/mês (apenas ALB)
+- **Alternativa SEM ALB (apenas Fargate):** ~$7/mês ou **GRÁTIS** nos primeiros 12 meses!
 
 ---
 
@@ -224,16 +229,17 @@ aws apprunner create-service `
         "AutoDeploymentsEnabled": true
     }' `
     --instance-configuration '{
-        "Cpu": "1 vCPU",
-        "Memory": "2 GB"
+        "Cpu": "0.25 vCPU",
+        "Memory": "0.5 GB"
     }'
 ```
 
-### Custos Estimados
+### Custos Estimados - **COMPATÍVEL COM FREE TIER** 🎉
 
-- **Computação:** $0.007/hora (~$5/mês para uso contínuo)
-- **Memória:** $0.0008/GB/hora (~$1.17/mês)
-- **Total:** ~$6-7/mês
+- **Computação (0.25 vCPU):** $0.003/hora (~$2.19/mês para uso contínuo)
+- **Memória (0.5 GB):** $0.0004/GB/hora (~$0.29/mês)
+- **Total:** ~$2.50/mês - **MAIS BARATO QUE ECS!**
+- **Free Tier:** 2 meses grátis para novos usuários + $0 build time incluído
 
 ---
 
@@ -247,10 +253,10 @@ aws apprunner create-service `
 # Criar key pair
 aws ec2 create-key-pair --key-name pli2050-key --query 'KeyMaterial' --output text > pli2050-key.pem
 
-# Lançar instância (Ubuntu 22.04)
+# Lançar instância (Ubuntu 22.04) - FREE TIER t2.micro
 aws ec2 run-instances `
     --image-id ami-0c7217cdde317cfec `
-    --instance-type t3.small `
+    --instance-type t2.micro `
     --key-name pli2050-key `
     --security-group-ids <SG_ID> `
     --subnet-id <SUBNET_ID> `
@@ -293,11 +299,13 @@ docker-compose up --build -d
 docker-compose logs -f
 ```
 
-### Custos Estimados
+### Custos Estimados - **FREE TIER ELEGÍVEL** 🎉
 
-- **t3.small:** ~$15/mês
-- **EBS (20GB):** ~$2/mês
-- **Total:** ~$17/mês
+- **t2.micro (1 vCPU, 1GB RAM):** **GRÁTIS** nos primeiros 12 meses (750 horas/mês)
+- **EBS (30GB):** **GRÁTIS** nos primeiros 12 meses (30GB incluídos)
+- **Data Transfer OUT:** **GRÁTIS** até 15GB/mês
+- **Total (após 12 meses):** ~$8/mês
+- **Total (primeiros 12 meses):** **$0/mês** 🎉
 
 ---
 
@@ -330,8 +338,8 @@ docker-compose logs -f
 # Inicializar EB
 eb init -p docker -r us-east-1 pli2050-backend
 
-# Criar ambiente
-eb create pli2050-prod --instance-type t3.small --envvars APP_ENV=production,PGHOST=<RDS_HOST>,PGUSER=<USER>,PGPASSWORD=<PASS>
+# Criar ambiente - FREE TIER t2.micro
+eb create pli2050-prod --instance-type t2.micro --single --envvars APP_ENV=production,PGHOST=<RDS_HOST>,PGUSER=<USER>,PGPASSWORD=<PASS>
 
 # Deploy
 eb deploy
@@ -340,11 +348,13 @@ eb deploy
 eb open
 ```
 
-### Custos Estimados
+### Custos Estimados - **FREE TIER ELEGÍVEL** 🎉
 
-- **t3.small:** ~$15/mês
-- **Load Balancer:** ~$16/mês
-- **Total:** ~$31/mês
+- **t2.micro (single instance):** **GRÁTIS** nos primeiros 12 meses (750 horas/mês)
+- **EBS (10GB):** **GRÁTIS** nos primeiros 12 meses
+- **Load Balancer (se usar):** ~$16/mês - **NÃO incluído no Free Tier**
+- **Total com single instance (sem LB):** **$0/mês** nos primeiros 12 meses
+- **Total após 12 meses:** ~$8/mês
 
 ---
 
@@ -369,7 +379,12 @@ aws rds create-db-instance `
     --publicly-accessible false
 ```
 
-**Custos:** db.t3.micro = ~$15/mês
+**Custos - FREE TIER ELEGÍVEL:** 🎉
+- **db.t3.micro:** **GRÁTIS** nos primeiros 12 meses (750 horas/mês)
+- **20GB SSD:** **GRÁTIS** nos primeiros 12 meses (incluídos)
+- **20GB Backup:** **GRÁTIS** (incluído)
+- **Total (primeiros 12 meses):** **$0/mês**
+- **Total (após 12 meses):** ~$15/mês
 
 ---
 
@@ -432,12 +447,35 @@ aws cloudwatch put-metric-alarm `
 
 ## Resumo de Custos
 
-| Serviço | Free Tier | Baixo Custo | Produção |
-|---------|-----------|-------------|----------|
-| **Opção** | App Runner | EC2 t3.small | ECS Fargate |
-| **Custo/mês** | ~$7 | ~$17 | ~$35 |
-| **Escalabilidade** | Automática | Manual | Automática |
-| **Gerenciamento** | Baixo | Médio | Baixo |
+| Serviço | Free Tier (12 meses) | Baixo Custo | Produção c/ Alta Disponibilidade |
+|---------|---------------------|-------------|----------------------------------|
+| **Opção** | **EC2 t2.micro** ⭐ | **App Runner** | ECS Fargate + ALB |
+| **Custo/mês** | **$0** 🎉 | **~$2.50** | ~$16-23 (sem RDS Free Tier) |
+| **Escalabilidade** | Manual | Automática | Automática |
+| **Gerenciamento** | Médio | Baixo | Baixo |
+| **Recomendado para** | Primeiros 12 meses | Depois do Free Tier | Apps críticos |
+
+### 💰 Detalhamento de Custos FREE TIER (primeiros 12 meses)
+
+**Opção MAIS ECONÔMICA (EC2 t2.micro + RDS t3.micro):**
+- ✅ **EC2 t2.micro:** $0/mês (750h incluídas)
+- ✅ **RDS t3.micro:** $0/mês (750h incluídas)
+- ✅ **EBS 30GB:** $0/mês (incluído)
+- ✅ **Data Transfer:** $0/mês (15GB incluídos)
+- ✅ **CloudWatch Logs:** $0/mês (5GB incluídos)
+- **TOTAL: $0/mês** 🎉🎉🎉
+
+**Após 12 meses (mesma configuração):**
+- EC2 t2.micro: ~$8/mês
+- RDS t3.micro: ~$15/mês
+- EBS: ~$3/mês
+- **Total: ~$26/mês**
+
+**Opção INTERMEDIÁRIA (App Runner + RDS Free Tier):**
+- App Runner (0.25 vCPU, 0.5GB): ~$2.50/mês
+- ✅ RDS t3.micro: $0/mês (primeiros 12 meses)
+- **Total primeiros 12 meses: ~$2.50/mês**
+- **Total após 12 meses: ~$17.50/mês**
 
 ---
 
