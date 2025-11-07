@@ -2,12 +2,10 @@ version: 2
 services:
   - type: web
     name: pli2050-backend
-    env: python
+    env: docker
     region: oregon
     plan: free
     branch: main
-    buildCommand: cd backend-fastapi && pip install -r requirements.txt
-    startCommand: cd backend-fastapi && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PGHOST
         value: sigma-pli-postgresql-db.cwlmgwc4igdh.us-east-1.rds.amazonaws.com
@@ -26,6 +24,6 @@ services:
       - key: APP_ENV
         value: production
       - key: DEBUG
-        value: false
+        value: "false"
       - key: LOG_LEVEL
         value: info
