@@ -147,7 +147,7 @@ class ProdutoTransportado(BaseModel):
 # ENDPOINTS
 # ============================================================
 
-@router.get("/listar", response_model=List[PesquisaListItem])
+@router.get("/listar")
 async def listar_pesquisas(
     db: Session = Depends(get_db),
     limit: int = Query(100, ge=1, le=1000, description="Número máximo de registros"),
@@ -156,6 +156,17 @@ async def listar_pesquisas(
 ):
     """
     Lista todas as pesquisas com informações resumidas
+    
+    **Retorno:**
+    ```json
+    {
+        "success": true,
+        "data": [...],
+        "total": 11,
+        "limit": 100,
+        "offset": 0
+    }
+    ```
     
     **Paginação:**
     - limit: número máximo de registros (padrão: 100, máximo: 1000)
@@ -207,7 +218,13 @@ async def listar_pesquisas(
             ))
         
         logger.info(f"✅ Listadas {len(pesquisas)} pesquisas (limit={limit}, offset={offset})")
-        return pesquisas
+        return {
+            "success": True,
+            "data": pesquisas,
+            "total": len(pesquisas),
+            "limit": limit,
+            "offset": offset
+        }
     
     except Exception as e:
         logger.error(f"❌ Erro ao listar pesquisas: {str(e)}")
