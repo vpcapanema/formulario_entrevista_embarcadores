@@ -1,0 +1,31 @@
+version: 2
+services:
+  - type: web
+    name: pli2050-backend
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: cd backend-fastapi && pip install -r requirements.txt
+    startCommand: cd backend-fastapi && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PGHOST
+        value: sigma-pli-postgresql-db.cwlmgwc4igdh.us-east-1.rds.amazonaws.com
+      - key: PGPORT
+        value: 5432
+      - key: PGDATABASE
+        value: sigma_pli
+      - key: PGUSER
+        value: sigma_admin
+      - key: PGPASSWORD
+        value: Malditas131533*
+      - key: SCHEMA_NAME
+        value: formulario_embarcadores
+      - key: ALLOWED_ORIGINS
+        value: https://vpcapanema.github.io,http://localhost:5500,http://127.0.0.1:5500
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: info
