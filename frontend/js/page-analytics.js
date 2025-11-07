@@ -449,14 +449,5 @@ const PageAnalytics = {
 // Exportar para uso global
 window.PageAnalytics = PageAnalytics;
 
-// Auto-inicializar quando a página de analytics estiver visível
-const originalShowPageAnalytics = window.showPage;
-window.showPage = function(pageId) {
-    if (originalShowPageAnalytics) originalShowPageAnalytics(pageId);
-    
-    if (pageId === 'analytics') {
-        setTimeout(() => PageAnalytics.init(), 100);
-    }
-};
-
 console.log('✅ PageAnalytics carregado');
+

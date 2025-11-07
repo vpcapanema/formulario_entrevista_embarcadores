@@ -449,14 +449,5 @@ const PageRespostas = {
 // Exportar para uso global
 window.PageRespostas = PageRespostas;
 
-// Auto-inicializar quando a página de respostas estiver visível
-const originalShowPage = window.showPage;
-window.showPage = function(pageId) {
-    if (originalShowPage) originalShowPage(pageId);
-    
-    if (pageId === 'respostas') {
-        setTimeout(() => PageRespostas.init(), 100);
-    }
-};
-
 console.log('✅ PageRespostas carregado');
+

@@ -162,22 +162,25 @@ async def listar_pesquisas(
     """
     
     try:
-        # Query otimizada usando a view v_pesquisas_completa
+        # Query usando JOINs diretos (view pode não existir)
         sql = text(f"""
             SELECT 
-                id_pesquisa,
-                nome_empresa,
-                nome_entrevistado,
-                produto_principal,
-                origem_municipio,
-                origem_estado,
-                destino_municipio,
-                destino_estado,
-                data_entrevista,
-                tipo_transporte,
-                distancia::FLOAT as distancia
-            FROM {SCHEMA_NAME}.v_pesquisas_completa
-            ORDER BY data_entrevista {ordem.upper()}
+                p.id_pesquisa,
+                e.nome_empresa,
+                ent.nome as nome_entrevistado,
+                p.produto_principal,
+                p.origem_municipio,
+                p.origem_estado,
+                p.destino_municipio,
+                p.destino_estado,
+                p.data_entrevista,
+                p.tipo_transporte,
+                COALESCE(CAST(p.distancia AS FLOAT), 0.0) as distancia
+            FROM {SCHEMA_NAME}.pesquisas p
+            INNER JOIN {SCHEMA_NAME}.empresas e ON p.id_empresa = e.id_empresa
+            INNER JOIN {SCHEMA_NAME}.entrevistados ent ON p.id_entrevistado = ent.id_entrevistado
+            WHERE p.status = 'finalizada'
+            ORDER BY p.data_entrevista {ordem.upper()}
             LIMIT :limit OFFSET :offset
         """)
         

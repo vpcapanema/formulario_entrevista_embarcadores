@@ -404,3 +404,51 @@ window.UI = UIFeedback;
 // Atalhos para funções legadas (compatibilidade)
 window.mostrarFeedback = (html) => UIFeedback.mostrarModal(html);
 window.fecharFeedback = () => UIFeedback.fecharModal();
+
+/**
+ * ============================================================
+ * NAVEGAÇÃO ENTRE PÁGINAS
+ * ============================================================
+ * Função global para alternar entre as 5 páginas do sistema
+ */
+window.showPage = function(pageId) {
+    console.log(`🔄 Navegando para: ${pageId}`);
+    
+    // Esconder todas as páginas
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+    
+    // Mostrar página selecionada
+    const targetPage = document.getElementById(`page-${pageId}`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+        targetPage.style.display = 'block';
+        console.log(`✅ Página ${pageId} ativada`);
+    } else {
+        console.error(`❌ Página não encontrada: page-${pageId}`);
+    }
+    
+    // Atualizar botões de navegação
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Ativar botão correspondente
+    const activeBtn = document.querySelector(`.nav-btn[onclick="showPage('${pageId}')"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+    
+    // Inicializar página específica se necessário
+    if (pageId === 'respostas' && window.PageRespostas) {
+        setTimeout(() => window.PageRespostas.init(), 100);
+    } else if (pageId === 'analytics' && window.PageAnalytics) {
+        setTimeout(() => window.PageAnalytics.init(), 100);
+    }
+};
+
+console.log('✅ UIFeedback + showPage carregados');
