@@ -29,13 +29,17 @@ class PesquisaListItem(BaseModel):
     nome_empresa: str
     nome_entrevistado: str
     produto_principal: str
-    origem_municipio: str
-    origem_estado: str
-    destino_municipio: str
-    destino_estado: str
+    origem_municipio: Optional[str] = None  # Pode ser NULL para rotas internacionais
+    origem_estado: Optional[str] = None  # Pode ser NULL para rotas internacionais
+    destino_municipio: Optional[str] = None  # Pode ser NULL para rotas internacionais
+    destino_estado: Optional[str] = None  # Pode ser NULL para rotas internacionais
+    destino_pais: Optional[str] = None  # Adicionar país de destino
     data_entrevista: datetime
     tipo_transporte: str
-    distancia: float
+    distancia: Optional[float] = None
+    custo_transporte: Optional[Decimal] = None
+    modos: Optional[List[str]] = []
+    status: Optional[str] = 'pendente'
     
     class Config:
         from_attributes = True
