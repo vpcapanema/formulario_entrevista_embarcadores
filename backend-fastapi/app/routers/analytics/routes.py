@@ -69,6 +69,7 @@ async def get_kpis(db: Session = Depends(get_db)):
 async def get_distribuicao_modal(db: Session = Depends(get_db)):
     """
     Retorna distribuição de modais de transporte
+    Formato: {labels: [...], values: [...], percentuais: [...]}
     """
     try:
         query = text("""
@@ -84,16 +85,23 @@ async def get_distribuicao_modal(db: Session = Depends(get_db)):
         
         results = db.execute(query).fetchall()
         
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "values": [],
+                    "percentuais": []
+                }
+            }
+        
         return {
             "success": True,
-            "data": [
-                {
-                    "modal": row[0],
-                    "quantidade": row[1],
-                    "percentual": float(row[2])
-                }
-                for row in results
-            ]
+            "data": {
+                "labels": [row[0] for row in results],
+                "values": [row[1] for row in results],
+                "percentuais": [float(row[2]) for row in results]
+            }
         }
     except Exception as e:
         logger.error(f"❌ Erro ao calcular distribuição modal: {str(e)}")
@@ -167,6 +175,7 @@ async def get_origem_destino(db: Session = Depends(get_db)):
 async def get_tipo_transporte(db: Session = Depends(get_db)):
     """
     Retorna distribuição por tipo de transporte
+    Formato: {labels: [...], values: [...], percentuais: [...]}
     """
     try:
         query = text("""
@@ -182,16 +191,23 @@ async def get_tipo_transporte(db: Session = Depends(get_db)):
         
         results = db.execute(query).fetchall()
         
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "values": [],
+                    "percentuais": []
+                }
+            }
+        
         return {
             "success": True,
-            "data": [
-                {
-                    "tipo": row[0],
-                    "quantidade": row[1],
-                    "percentual": float(row[2])
-                }
-                for row in results
-            ]
+            "data": {
+                "labels": [row[0] for row in results],
+                "values": [row[1] for row in results],
+                "percentuais": [float(row[2]) for row in results]
+            }
         }
     except Exception as e:
         logger.error(f"❌ Erro ao calcular tipo transporte: {str(e)}")
@@ -208,6 +224,7 @@ async def get_tipo_transporte(db: Session = Depends(get_db)):
 async def get_produtos_top(db: Session = Depends(get_db)):
     """
     Retorna top 10 produtos mais transportados
+    Formato: {labels: [...], values: [...], volumes: [...]}
     """
     try:
         query = text("""
@@ -224,16 +241,23 @@ async def get_produtos_top(db: Session = Depends(get_db)):
         
         results = db.execute(query).fetchall()
         
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "values": [],
+                    "volumes": []
+                }
+            }
+        
         return {
             "success": True,
-            "data": [
-                {
-                    "produto": row[0],
-                    "quantidade": row[1],
-                    "volume_total": float(row[2] or 0)
-                }
-                for row in results
-            ]
+            "data": {
+                "labels": [row[0] for row in results],
+                "values": [row[1] for row in results],
+                "volumes": [float(row[2] or 0) for row in results]
+            }
         }
     except Exception as e:
         logger.error(f"❌ Erro ao calcular produtos top: {str(e)}")
@@ -306,6 +330,7 @@ async def get_importancias(db: Session = Depends(get_db)):
 async def get_frequencia(db: Session = Depends(get_db)):
     """
     Retorna distribuição de frequências de transporte
+    Formato: {labels: [...], values: [...], percentuais: [...]}
     """
     try:
         query = text("""
@@ -321,16 +346,23 @@ async def get_frequencia(db: Session = Depends(get_db)):
         
         results = db.execute(query).fetchall()
         
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "values": [],
+                    "percentuais": []
+                }
+            }
+        
         return {
             "success": True,
-            "data": [
-                {
-                    "frequencia": row[0],
-                    "quantidade": row[1],
-                    "percentual": float(row[2])
-                }
-                for row in results
-            ]
+            "data": {
+                "labels": [row[0] for row in results],
+                "values": [row[1] for row in results],
+                "percentuais": [float(row[2]) for row in results]
+            }
         }
     except Exception as e:
         logger.error(f"❌ Erro ao calcular frequência: {str(e)}")
@@ -347,6 +379,7 @@ async def get_frequencia(db: Session = Depends(get_db)):
 async def get_dificuldades(db: Session = Depends(get_db)):
     """
     Retorna dificuldades mais reportadas
+    Formato: {labels: [...], values: [...], percentuais: [...]}
     """
     try:
         query = text("""
@@ -362,16 +395,23 @@ async def get_dificuldades(db: Session = Depends(get_db)):
         
         results = db.execute(query).fetchall()
         
+        if not results:
+            return {
+                "success": True,
+                "data": {
+                    "labels": [],
+                    "values": [],
+                    "percentuais": []
+                }
+            }
+        
         return {
             "success": True,
-            "data": [
-                {
-                    "dificuldade": row[0],
-                    "quantidade": row[1],
-                    "percentual": float(row[2])
-                }
-                for row in results
-            ]
+            "data": {
+                "labels": [row[0] for row in results],
+                "values": [row[1] for row in results],
+                "percentuais": [float(row[2]) for row in results]
+            }
         }
     except Exception as e:
         logger.error(f"❌ Erro ao calcular dificuldades: {str(e)}")
