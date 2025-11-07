@@ -177,45 +177,21 @@ async def listar_pesquisas(
     """
     
     try:
-        # Query usando JOINs diretos (view pode não existir)
+        # Query usando a view v_pesquisas_completa com TODOS os 65 campos
         sql = text(f"""
-            SELECT 
-                p.id_pesquisa,
-                e.nome_empresa,
-                ent.nome as nome_entrevistado,
-                p.produto_principal,
-                p.origem_municipio,
-                p.origem_estado,
-                p.destino_municipio,
-                p.destino_estado,
-                p.data_entrevista,
-                p.tipo_transporte,
-                COALESCE(CAST(p.distancia AS FLOAT), 0.0) as distancia
-            FROM {SCHEMA_NAME}.pesquisas p
-            INNER JOIN {SCHEMA_NAME}.empresas e ON p.id_empresa = e.id_empresa
-            INNER JOIN {SCHEMA_NAME}.entrevistados ent ON p.id_entrevistado = ent.id_entrevistado
-            WHERE p.status = 'finalizada'
-            ORDER BY p.data_entrevista {ordem.upper()}
+            SELECT *
+            FROM {SCHEMA_NAME}.v_pesquisas_completa
+            ORDER BY id_pesquisa {ordem.upper()}
             LIMIT :limit OFFSET :offset
         """)
         
         result = db.execute(sql, {"limit": limit, "offset": offset})
         pesquisas = []
         
+        # Converter cada linha em dicionário com todos os campos
         for row in result:
-            pesquisas.append(PesquisaListItem(
-                id_pesquisa=row.id_pesquisa,
-                nome_empresa=row.nome_empresa,
-                nome_entrevistado=row.nome_entrevistado,
-                produto_principal=row.produto_principal,
-                origem_municipio=row.origem_municipio,
-                origem_estado=row.origem_estado,
-                destino_municipio=row.destino_municipio,
-                destino_estado=row.destino_estado,
-                data_entrevista=row.data_entrevista,
-                tipo_transporte=row.tipo_transporte,
-                distancia=row.distancia
-            ))
+            row_dict = dict(row._mapping)
+            pesquisas.append(row_dict)
         
         logger.info(f"✅ Listadas {len(pesquisas)} pesquisas (limit={limit}, offset={offset})")
         return {
