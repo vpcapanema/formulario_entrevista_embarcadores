@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLI 2050 - Analytics</title>
+    <link rel="stylesheet" href="/css/index.css?v=20251107">
+    <link rel="stylesheet" href="/css/pages.css?v=20251107">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>PLI 2050 - SP</h1>
+                <p>Plano de Logística e Investimentos</p>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-btn" onclick="navegarPara('formulario')">
+                    <span>📋</span> Formulário
+                </button>
+                <button class="nav-btn" onclick="navegarPara('respostas')">
+                    <span>📊</span> Respostas
+                </button>
+                <button class="nav-btn active" onclick="navegarPara('analytics')">
+                    <span>📈</span> Analytics
+                </button>
+                <button class="nav-btn" onclick="navegarPara('instrucoes')">
+                    <span>📖</span> Instruções
+                </button>
+                <button class="nav-btn" onclick="navegarPara('visualizador')">
+                    <span>👁</span> Visualizador
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container page-top-space">
+        <div class="page-header">
+            <h2>📈 Analytics - Análise de Dados</h2>
+            <p>Análise consolidada de todas as pesquisas cadastradas</p>
+        </div>
+        
+        <!-- KPIs -->
+        <div class="kpi-grid" id="kpi-container">
+            <div class="loading">⏳ Carregando KPIs...</div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="charts-grid">
+            <div class="card chart-card">
+                <h3>Distribuição Modal</h3>
+                <canvas id="chart-modal"></canvas>
+            </div>
+            <div class="card chart-card">
+                <h3>Top 10 Produtos</h3>
+                <canvas id="chart-produtos"></canvas>
+            </div>
+            <div class="card chart-card">
+                <h3>Tipo de Transporte</h3>
+                <canvas id="chart-embalagem"></canvas>
+            </div>
+            <div class="card chart-card">
+                <h3>Importância dos Fatores</h3>
+                <canvas id="chart-fatores"></canvas>
+            </div>
+            <div class="card chart-card">
+                <h3>Frequência</h3>
+                <canvas id="chart-frequencia"></canvas>
+            </div>
+            <div class="card chart-card">
+                <h3>Dificuldades</h3>
+                <canvas id="chart-dificuldades"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/core-api.js?v=20251107"></script>
+    <script src="/js/navbar.js?v=20251107"></script>
+    <script src="/js/page-analytics.js?v=20251107"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.PageAnalytics) {
+                PageAnalytics.init();
+            }
+        });
+    </script>
+</body>
+</html>
