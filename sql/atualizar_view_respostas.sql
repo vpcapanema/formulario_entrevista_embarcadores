@@ -67,7 +67,8 @@ SELECT
     -- Q2-Q6: DADOS DA EMPRESA
     -- =========================================
     
-    e.nome_empresa,
+    e.razao_social AS nome_empresa,
+    e.nome_fantasia AS empresa_nome_fantasia,
     
     CASE 
         WHEN e.tipo_empresa = 'embarcador' THEN 'Embarcador'
@@ -80,6 +81,7 @@ SELECT
     e.outro_tipo AS empresa_outro_tipo_descricao,
     
     e.cnpj AS empresa_cnpj,
+    e.razao_social AS empresa_razao_social,
     e.municipio AS empresa_municipio,
     e.estado AS empresa_estado,
     'Brasil' AS empresa_pais,
@@ -421,11 +423,3 @@ LEFT JOIN formulario_embarcadores.entrevistadores entv
     ON (p.tipo_responsavel = 'entrevistador' AND p.id_responsavel = entv.id_entrevistador)
 LEFT JOIN formulario_embarcadores.instituicoes inst 
     ON entv.id_instituicao = inst.id_instituicao;
-
-COMMENT ON VIEW formulario_embarcadores.v_pesquisas_completa IS 
-'View consolidada com todas as respostas do formulário de entrevista PLI 2050. 
-Mostra valores descritivos em vez de IDs para melhor compreensão e análise.
-Atualizada em 05/11/2025.';
-
--- Conceder permissões
-GRANT SELECT ON formulario_embarcadores.v_pesquisas_completa TO PUBLIC;
