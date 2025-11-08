@@ -52,10 +52,10 @@ app = FastAPI(
 # CORS MIDDLEWARE
 # ============================================================
 
-# Origens permitidas (localhost + produção)
+# Origens permitidas (localhost + produção GitHub Pages)
 allowed_origins_str = os.getenv(
     "ALLOWED_ORIGINS",
-    "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,http://127.0.0.1:8000"
+    "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,http://127.0.0.1:8000,https://vpcapanema.github.io"
 )
 allowed_origins = [origin.strip() for origin in allowed_origins_str.split(',')]
 
