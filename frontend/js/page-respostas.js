@@ -124,8 +124,8 @@ const PageRespostas = {
             <tr class="pesquisa-row" data-id="${pesquisa.id_pesquisa}">
                 <td class="id-cell">#${pesquisa.id_pesquisa}</td>
                 <td>${data}</td>
-                <td class="empresa-cell">${this.truncate(pesquisa.nome_empresa, 30)}</td>
-                <td>${this.truncate(pesquisa.nome_entrevistado, 25)}</td>
+                <td class="empresa-cell">${this.truncate(pesquisa.empresa_razao_social, 30)}</td>
+                <td>${this.truncate(pesquisa.entrevistado_nome, 25)}</td>
                 <td>${this.truncate(pesquisa.produto_principal, 20)}</td>
                 <td class="cidade-cell">
                     ${pesquisa.origem_municipio}/${pesquisa.origem_estado}
@@ -206,20 +206,20 @@ const PageRespostas = {
                         <h3>🏢 Empresa</h3>
                         <div class="detail-grid">
                             <div class="detail-item">
-                                <label>Nome:</label>
-                                <span>${pesquisa.nome_empresa}</span>
+                                <label>Razão Social:</label>
+                                <span>${pesquisa.empresa_razao_social}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Tipo:</label>
-                                <span>${pesquisa.tipo_empresa}</span>
+                                <span>${pesquisa.empresa_tipo}</span>
                             </div>
                             <div class="detail-item">
                                 <label>CNPJ:</label>
-                                <span>${pesquisa.cnpj || 'Não informado'}</span>
+                                <span>${pesquisa.empresa_cnpj || 'Não informado'}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Município:</label>
-                                <span>${pesquisa.municipio_empresa}</span>
+                                <span>${pesquisa.empresa_municipio}</span>
                             </div>
                         </div>
                     </div>
@@ -230,19 +230,19 @@ const PageRespostas = {
                         <div class="detail-grid">
                             <div class="detail-item">
                                 <label>Nome:</label>
-                                <span>${pesquisa.nome_entrevistado}</span>
+                                <span>${pesquisa.entrevistado_nome}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Função:</label>
-                                <span>${pesquisa.funcao_entrevistado}</span>
+                                <span>${pesquisa.entrevistado_funcao}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Telefone:</label>
-                                <span>${pesquisa.telefone_entrevistado}</span>
+                                <span>${pesquisa.entrevistado_telefone}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Email:</label>
-                                <span>${pesquisa.email_entrevistado}</span>
+                                <span>${pesquisa.entrevistado_email}</span>
                             </div>
                         </div>
                     </div>
