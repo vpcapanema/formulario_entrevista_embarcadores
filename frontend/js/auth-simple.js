@@ -17,10 +17,10 @@ class SimpleAuth {
      * Verifica se usuário está autenticado
      */
     isAuthenticated() {
-        const stored = localStorage.getItem(this.STORAGE_KEY);
-        if (!stored) return false;
-        
         try {
+            const stored = localStorage.getItem(this.STORAGE_KEY);
+            if (!stored) return false;
+            
             const data = JSON.parse(stored);
             // Verifica se token ainda é válido (expira em 7 dias)
             const expires = new Date(data.expires);
@@ -30,6 +30,8 @@ class SimpleAuth {
             }
             return data.authenticated === true;
         } catch (e) {
+            // localStorage bloqueado por Tracking Prevention
+            console.warn('⚠️ localStorage bloqueado - autenticação desabilitada');
             return false;
         }
     }
@@ -39,17 +41,24 @@ class SimpleAuth {
      */
     login(password) {
         if (password === this.PASSWORD) {
-            // Salva autenticação por 7 dias
-            const expires = new Date();
-            expires.setDate(expires.getDate() + 7);
-            
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-                authenticated: true,
-                expires: expires.toISOString(),
-                timestamp: new Date().toISOString()
-            }));
-            
-            return true;
+            try {
+                // Salva autenticação por 7 dias
+                const expires = new Date();
+                expires.setDate(expires.getDate() + 7);
+                
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+                    authenticated: true,
+                    expires: expires.toISOString(),
+                    timestamp: new Date().toISOString()
+                }));
+                
+                return true;
+            } catch (e) {
+                // localStorage bloqueado
+                console.error('❌ Não foi possível salvar autenticação:', e.message);
+                alert('⚠️ Seu navegador está bloqueando o armazenamento local.\nDesabilite "Tracking Prevention" ou use outro navegador.');
+                return false;
+            }
         }
         return false;
     }
@@ -58,7 +67,11 @@ class SimpleAuth {
      * Faz logout
      */
     logout() {
-        localStorage.removeItem(this.STORAGE_KEY);
+        try {
+            localStorage.removeItem(this.STORAGE_KEY);
+        } catch (e) {
+            console.warn('⚠️ Erro ao remover autenticação:', e.message);
+        }
     }
     
     /**
