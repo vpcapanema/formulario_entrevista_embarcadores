@@ -5,11 +5,11 @@
 
 function navegarPara(pagina) {
     const urls = {
-        'formulario': '/html/index.html',
-        'respostas': '/html/respostas.html',
-        'analytics': '/html/analytics.html',
-        'instrucoes': '/html/instrucoes.html',
-        'visualizador': '/html/visualizador_dados.html'
+        'formulario': './index.html',
+        'respostas': './respostas.html',
+        'analytics': './analytics.html',
+        'instrucoes': './instrucoes.html',
+        'visualizador': './visualizador_dados.html'
     };
     
     const url = urls[pagina];
