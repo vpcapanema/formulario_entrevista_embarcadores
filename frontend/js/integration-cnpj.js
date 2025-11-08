@@ -89,14 +89,23 @@ const IntegrationCNPJ = {
             
             const dados = response.data;
             
+            // DEBUG: Verificar o que a API retornou
+            console.log('🔍 DEBUG: Dados retornados da API:', dados);
+            console.log('🔍 DEBUG: razao_social =', dados.razao_social);
+            console.log('🔍 DEBUG: municipio =', dados.municipio);
+            
             // ============================================================
             // PREENCHER Q6b: RAZÃO SOCIAL (Nome da Empresa)
             // ============================================================
             const razaoSocialInput = document.getElementById('razao-social');
+            console.log('🔍 DEBUG: Campo razao-social encontrado?', razaoSocialInput);
+            console.log('🔍 DEBUG: Valor atual do campo:', razaoSocialInput?.value);
+            
             if (razaoSocialInput && dados.razao_social) {
                 razaoSocialInput.value = dados.razao_social;
                 razaoSocialInput.dispatchEvent(new Event('change'));
-                console.log(`✅ Q6b preenchido: ${dados.razao_social}`);
+                console.log(`✅ Q6b preenchido com: ${dados.razao_social}`);
+                console.log('🔍 DEBUG: Valor do campo após preenchimento:', razaoSocialInput.value);
             } else {
                 console.warn('⚠️ Campo razao-social não encontrado ou API não retornou razao_social');
             }
@@ -112,10 +121,14 @@ const IntegrationCNPJ = {
             // PREENCHER Q7: MUNICÍPIO DA UNIDADE DE PRODUÇÃO (campo texto)
             // ============================================================
             const municipioInput = document.getElementById('municipio-empresa');
+            console.log('🔍 DEBUG: Campo municipio-empresa encontrado?', municipioInput);
+            console.log('🔍 DEBUG: Valor atual do campo:', municipioInput?.value);
+            
             if (municipioInput && dados.municipio) {
                 municipioInput.value = dados.municipio;
                 municipioInput.dispatchEvent(new Event('change'));
-                console.log(`✅ Q7 preenchido: ${dados.municipio}`);
+                console.log(`✅ Q7 preenchido com: ${dados.municipio}`);
+                console.log('🔍 DEBUG: Valor do campo após preenchimento:', municipioInput.value);
             } else {
                 console.warn('⚠️ Campo municipio-empresa não encontrado ou API não retornou municipio');
             }
