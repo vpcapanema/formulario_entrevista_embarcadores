@@ -1,20 +1,26 @@
 /**
- * NAVBAR - Navegação Simples entre Páginas
- * Cada botão abre uma nova aba
+ * NAVBAR - Navegação com SPA Router
+ * Usa History API para URLs limpas sem recarregar
  */
 
 function navegarPara(pagina) {
-    const urls = {
-        'formulario': './index.html',
-        'respostas': './respostas.html',
-        'analytics': './analytics.html',
-        'instrucoes': './instrucoes.html',
-        'visualizador': './visualizador_dados.html'
-    };
-    
-    const url = urls[pagina];
-    if (url) {
-        window.open(url, '_blank');
+    // Se o router estiver disponível, usa navegação SPA
+    if (window.router) {
+        window.router.navigate(pagina);
+    } else {
+        // Fallback: abrir em nova aba (caso router não carregue)
+        const urls = {
+            'formulario': './index.html',
+            'respostas': './respostas.html',
+            'analytics': './analytics.html',
+            'instrucoes': './instrucoes.html',
+            'visualizador': './visualizador_dados.html'
+        };
+        
+        const url = urls[pagina];
+        if (url) {
+            window.open(url, '_blank');
+        }
     }
 }
 
