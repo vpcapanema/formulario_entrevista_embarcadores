@@ -8,6 +8,23 @@
     <meta http-equiv="Expires" content="0">
     <title>PLI 2050 - Formulário de Entrevistas com Embarcadores</title>
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    
+    <!-- Suprimir avisos de Tracking Prevention para CDNs -->
+    <script>
+        // Intercepta avisos de "Tracking Prevention blocked access to storage"
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            const message = args.join(' ');
+            // Ignora avisos de tracking prevention de CDNs externos
+            if (message.includes('Tracking Prevention') && 
+                (message.includes('cdn.jsdelivr.net') || 
+                 message.includes('cdnjs.cloudflare.com'))) {
+                return; // Suprime o aviso
+            }
+            originalWarn.apply(console, args);
+        };
+    </script>
+    
     <!-- CSS Modularizado: Estilos globais -->
     <link rel="stylesheet" href="../css/index.css?v=20251107">
     <!-- CSS de Validação Visual (Tipo Híbrido) -->
