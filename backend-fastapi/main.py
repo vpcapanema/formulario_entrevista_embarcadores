@@ -177,9 +177,15 @@ async def startup_event():
     logger.info("📡 Framework: FastAPI")
     logger.info("📊 Database: PostgreSQL (RDS AWS)")
     logger.info(f"🔒 CORS: {len(allowed_origins)} origens permitidas")
-    logger.info("📚 Docs: http://localhost:8000/docs")
-    logger.info("🏥 Health: http://localhost:8000/health")
-    logger.info("📊 Analytics: http://localhost:8000/api/analytics/kpis")
+    logger.info("")
+    logger.info("� URLs Disponíveis:")
+    logger.info("   🏠 Frontend: http://localhost:8000/")
+    logger.info("   📋 Formulário: http://localhost:8000/html/index.html")
+    logger.info("   📊 Analytics: http://localhost:8000/html/analytics.html")
+    logger.info("   📄 Respostas: http://localhost:8000/html/respostas.html")
+    logger.info("   📚 API Docs: http://localhost:8000/docs")
+    logger.info("   🏥 Health Check: http://localhost:8000/health")
+    logger.info("")
     logger.info("="*60)
 
 # ============================================================

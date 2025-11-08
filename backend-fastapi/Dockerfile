@@ -60,10 +60,10 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copiar código da aplicação
 COPY --chown=appuser:appuser ./app ./app
 COPY --chown=appuser:appuser ./main.py .
-COPY --chown=appuser:appuser ../.env.example ./.env.example
 
-# Copiar frontend estático (servido pelo FastAPI)
-COPY --chown=appuser:appuser ../frontend ./frontend
+# ❌ FRONTEND NÃO É COPIADO EM PRODUÇÃO
+# Frontend é servido pelo GitHub Pages separadamente
+# Backend roda em modo API-only no Render
 
 # Mudar para usuário não-root
 USER appuser
