@@ -1,105 +1,50 @@
 /**
- * SPA ROUTER - Navegação com URLs limpas
- * Gerencia navegação entre páginas sem recarregar, usando History API
+ * SPA ROUTER - Navegação Multi-Page
+ * Gerencia navegação entre arquivos HTML separados
  */
 
 class SPARouter {
     constructor() {
         this.routes = {
-            '/': 'formulario',
-            '/formulario': 'formulario',
-            '/respostas': 'respostas',
-            '/analytics': 'analytics',
-            '/instrucoes': 'instrucoes',
-            '/visualizador': 'visualizador'
+            '/': 'index.html',
+            '/formulario': 'index.html',
+            '/respostas': 'respostas.html',
+            '/analytics': 'analytics.html',
+            '/instrucoes': 'instrucoes.html',
+            '/visualizador': 'visualizador_dados.html'
         };
-        
-        this.init();
     }
     
-    init() {
-        // Interceptar cliques nos botões de navegação
-        window.addEventListener('popstate', (e) => {
-            if (e.state && e.state.page) {
-                this.showPage(e.state.page, false);
-            }
-        });
-        
-        // Carregar página inicial baseada na URL
-        const path = window.location.pathname.replace('/formulario_entrevista_embarcadores/frontend/html/index.html', '');
-        const initialPage = this.routes[path] || 'formulario';
-        this.showPage(initialPage, true);
-    }
-    
+    /**
+     * Navega para uma página
+     */
     navigate(pageName) {
-        const path = this.getPathForPage(pageName);
-        history.pushState({ page: pageName }, '', path);
-        this.showPage(pageName, false);
+        const fileName = this.getFileForPage(pageName);
+        if (fileName) {
+            // Navegação simples - abre na mesma aba
+            window.location.href = `./${fileName}`;
+        }
     }
     
-    getPathForPage(pageName) {
-        // Retorna o caminho limpo baseado na página
-        const baseUrl = '/formulario_entrevista_embarcadores/frontend/html/index.html';
+    /**
+     * Retorna o arquivo HTML para a página
+     */
+    getFileForPage(pageName) {
         switch(pageName) {
-            case 'formulario': return `${baseUrl}`;
-            case 'respostas': return `${baseUrl}#respostas`;
-            case 'analytics': return `${baseUrl}#analytics`;
-            case 'instrucoes': return `${baseUrl}#instrucoes`;
-            case 'visualizador': return `${baseUrl}#visualizador`;
-            default: return baseUrl;
-        }
-    }
-    
-    showPage(pageName, isInitial) {
-        // Esconder todas as seções
-        document.querySelectorAll('.page-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        
-        // Mostrar a seção correspondente
-        const pageMap = {
-            'formulario': 'form-page',
-            'respostas': 'respostas-page',
-            'analytics': 'analytics-page',
-            'instrucoes': 'instrucoes-page',
-            'visualizador': 'visualizador-page'
-        };
-        
-        const sectionId = pageMap[pageName];
-        if (sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.style.display = 'block';
-            }
-        }
-        
-        // Atualizar botões ativos da navbar
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        const activeBtn = document.querySelector(`[onclick*="${pageName}"]`);
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-        }
-        
-        // Scroll para o topo
-        if (!isInitial) {
-            window.scrollTo(0, 0);
+            case 'formulario': return 'index.html';
+            case 'respostas': return 'respostas.html';
+            case 'analytics': return 'analytics.html';
+            case 'instrucoes': return 'instrucoes.html';
+            case 'visualizador': return 'visualizador_dados.html';
+            default: return 'index.html';
         }
     }
 }
 
 // Inicializar router
-let router;
+const router = new SPARouter();
 
-// Esperar DOM carregar
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        router = new SPARouter();
-    });
-} else {
-    router = new SPARouter();
-}
+// Exportar para uso global
+window.router = router;
 
-console.log('✅ SPA Router carregado - navegação com URLs limpas habilitada');
+console.log('✅ Multi-Page Router carregado - navegação entre arquivos HTML');

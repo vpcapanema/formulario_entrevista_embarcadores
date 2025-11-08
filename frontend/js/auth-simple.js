@@ -280,11 +280,15 @@ class SimpleAuth {
     }
     
     /**
-     * Pega página atual baseada na URL
+     * Pega página atual baseada no arquivo HTML
      */
     getCurrentPage() {
-        const hash = window.location.hash.substring(1);
-        return hash || 'formulario';
+        const fileName = window.location.pathname.split('/').pop();
+        if (fileName === 'respostas.html') return 'respostas';
+        if (fileName === 'analytics.html') return 'analytics';
+        if (fileName === 'visualizador_dados.html') return 'visualizador';
+        if (fileName === 'instrucoes.html') return 'instrucoes';
+        return 'formulario';
     }
     
     /**
@@ -304,9 +308,23 @@ class SimpleAuth {
     }
     
     /**
+     * Verifica se está em página protegida sem autenticação
+     */
+    checkPageAccess() {
+        const currentPage = this.getCurrentPage();
+        if (this.protectedPages.includes(currentPage) && !this.isAuthenticated()) {
+            alert('⚠️ Acesso negado! Esta página requer autenticação.');
+            window.location.href = './index.html';
+        }
+    }
+    
+    /**
      * Inicializa autenticação
      */
     init() {
+        // Verificar acesso à página atual
+        this.checkPageAccess();
+        
         // Atualizar UI inicial
         this.updateUI();
         
