@@ -57,6 +57,115 @@ const IntegrationCNPJ = {
     },
     
     // ============================================================
+    // NORMALIZAÇÃO DE MUNICÍPIO
+    // ============================================================
+    
+    /**
+     * Normaliza nome de município de UPPERCASE sem acentos para TitleCase com acentos
+     * @param {string} municipio - Nome do município (ex: "SAO PAULO")
+     * @returns {string} Nome normalizado (ex: "São Paulo")
+     */
+    _normalizarMunicipio(municipio) {
+        if (!municipio) return '';
+        
+        // Mapa de substituições para restaurar acentuação
+        const acentuacoes = {
+            // Vogais acentuadas
+            'A': { 'A': 'Á', 'A ': 'à', 'A~': 'Ã', 'A^': 'Â' },
+            'E': { 'E': 'É', 'E ': 'È', 'E^': 'Ê' },
+            'I': { 'I': 'Í' },
+            'O': { 'O': 'Ó', 'O ': 'Ò', 'O~': 'Õ', 'O^': 'Ô' },
+            'U': { 'U': 'Ú', 'U ': 'Ù' },
+            'C': { 'C,': 'Ç' }
+        };
+        
+        // Mapeamento específico de municípios comuns (lowercase para busca)
+        const municipiosEspeciais = {
+            'sao paulo': 'São Paulo',
+            'sao jose dos campos': 'São José dos Campos',
+            'sao bernardo do campo': 'São Bernardo do Campo',
+            'sao caetano do sul': 'São Caetano do Sul',
+            'sao vicente': 'São Vicente',
+            'santo andre': 'Santo André',
+            'ribeirao preto': 'Ribeirão Preto',
+            'bauru': 'Bauru',
+            'campinas': 'Campinas',
+            'sorocaba': 'Sorocaba',
+            'santos': 'Santos',
+            'mogi das cruzes': 'Mogi das Cruzes',
+            'diadema': 'Diadema',
+            'piracicaba': 'Piracicaba',
+            'carapicuiba': 'Carapicuíba',
+            'itaquaquecetuba': 'Itaquaquecetuba',
+            'guarulhos': 'Guarulhos',
+            'osasco': 'Osasco',
+            'jundiai': 'Jundiaí',
+            'franca': 'Franca',
+            'sao jose do rio preto': 'São José do Rio Preto',
+            'marilia': 'Marília',
+            'taubate': 'Taubaté',
+            'limeira': 'Limeira',
+            'suzano': 'Suzano',
+            'taboao da serra': 'Taboão da Serra',
+            'sumare': 'Sumaré',
+            'barueri': 'Barueri',
+            'embu das artes': 'Embu das Artes',
+            'sao carlos': 'São Carlos',
+            'maringa': 'Maringá',
+            'londrina': 'Londrina',
+            'brasilia': 'Brasília',
+            'goiania': 'Goiânia',
+            'belo horizonte': 'Belo Horizonte',
+            'curitiba': 'Curitiba',
+            'rio de janeiro': 'Rio de Janeiro',
+            'porto alegre': 'Porto Alegre',
+            'recife': 'Recife',
+            'fortaleza': 'Fortaleza',
+            'salvador': 'Salvador',
+            'manaus': 'Manaus',
+            'belem': 'Belém',
+            'macapa': 'Macapá',
+            'maceio': 'Maceió',
+            'sao luis': 'São Luís',
+            'teresina': 'Teresina',
+            'natal': 'Natal',
+            'joao pessoa': 'João Pessoa',
+            'aracaju': 'Aracaju',
+            'vitoria': 'Vitória',
+            'campo grande': 'Campo Grande',
+            'cuiaba': 'Cuiabá',
+            'porto velho': 'Porto Velho',
+            'rio branco': 'Rio Branco',
+            'boa vista': 'Boa Vista',
+            'palmas': 'Palmas'
+        };
+        
+        // Converter para lowercase para busca
+        const municipioLower = municipio.toLowerCase().trim();
+        
+        // Verificar se está no mapa de municípios especiais
+        if (municipiosEspeciais[municipioLower]) {
+            console.log(`✅ Município normalizado (mapa): ${municipio} → ${municipiosEspeciais[municipioLower]}`);
+            return municipiosEspeciais[municipioLower];
+        }
+        
+        // Fallback: Aplicar TitleCase básico
+        const palavras = municipio.toLowerCase().split(' ');
+        const palavrasMinusculas = ['da', 'de', 'do', 'das', 'dos', 'e']; // Preposições em minúscula
+        
+        const resultado = palavras.map((palavra, index) => {
+            // Primeira palavra sempre maiúscula, outras verificam se são preposições
+            if (index === 0 || !palavrasMinusculas.includes(palavra)) {
+                return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+            }
+            return palavra;
+        }).join(' ');
+        
+        console.log(`✅ Município normalizado (titlecase): ${municipio} → ${resultado}`);
+        return resultado;
+    },
+    
+    // ============================================================
     // CONSULTAR E PREENCHER DADOS
     // ============================================================
     
@@ -125,9 +234,12 @@ const IntegrationCNPJ = {
             console.log('🔍 DEBUG: Valor atual do campo:', municipioInput?.value);
             
             if (municipioInput && dados.municipio) {
-                municipioInput.value = dados.municipio;
+                // Normalizar município de "SAO PAULO" para "São Paulo"
+                const municipioNormalizado = this._normalizarMunicipio(dados.municipio);
+                
+                municipioInput.value = municipioNormalizado;
                 municipioInput.dispatchEvent(new Event('change'));
-                console.log(`✅ Q7 preenchido com: ${dados.municipio}`);
+                console.log(`✅ Q7 preenchido com: ${municipioNormalizado} (original: ${dados.municipio})`);
                 console.log('🔍 DEBUG: Valor do campo após preenchimento:', municipioInput.value);
             } else {
                 console.warn('⚠️ Campo municipio-empresa não encontrado ou API não retornou municipio');
