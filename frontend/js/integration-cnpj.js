@@ -227,6 +227,45 @@ const IntegrationCNPJ = {
             }
             
             // ============================================================
+            // PREENCHER CAMPOS INFORMATIVOS DA RECEITA FEDERAL (6c, 6d, 6e)
+            // Campos readonly apenas para visualização
+            // ============================================================
+            
+            // 6c: Nome Fantasia (campo informativo)
+            const nomeFantasiaReceitaInput = document.getElementById('nome-fantasia-receita');
+            if (nomeFantasiaReceitaInput) {
+                nomeFantasiaReceitaInput.value = dados.nome_fantasia || 'Não informado';
+                console.log(`✅ 6c preenchido: Nome Fantasia = ${dados.nome_fantasia || 'Não informado'}`);
+            }
+            
+            // 6d: Situação Cadastral (campo informativo)
+            const situacaoCadastralInput = document.getElementById('situacao-cadastral-receita');
+            if (situacaoCadastralInput) {
+                situacaoCadastralInput.value = dados.situacao_cadastral || 'Não informado';
+                // Adicionar cor visual baseado no status
+                if (dados.situacao_cadastral === 'ATIVA') {
+                    situacaoCadastralInput.style.color = '#059669'; // Verde
+                    situacaoCadastralInput.style.fontWeight = 'bold';
+                } else {
+                    situacaoCadastralInput.style.color = '#dc2626'; // Vermelho
+                }
+                console.log(`✅ 6d preenchido: Situação = ${dados.situacao_cadastral || 'Não informado'}`);
+            }
+            
+            // 6e: Atividade Principal (campo informativo)
+            const atividadePrincipalInput = document.getElementById('atividade-principal-receita');
+            if (atividadePrincipalInput) {
+                atividadePrincipalInput.value = dados.atividade_principal || 'Não informado';
+                console.log(`✅ 6e preenchido: Atividade = ${dados.atividade_principal || 'Não informado'}`);
+            }
+            
+            // Mostrar campos informativos (estavam ocultos)
+            const camposReceitaFederal = document.getElementById('campos-receita-federal');
+            const camposReceitaFederal2 = document.getElementById('campos-receita-federal-2');
+            if (camposReceitaFederal) camposReceitaFederal.style.display = 'flex';
+            if (camposReceitaFederal2) camposReceitaFederal2.style.display = 'flex';
+            
+            // ============================================================
             // PREENCHER Q7: MUNICÍPIO DA UNIDADE DE PRODUÇÃO (campo texto)
             // ============================================================
             const municipioInput = document.getElementById('municipio-empresa');
@@ -277,6 +316,20 @@ const IntegrationCNPJ = {
             
         } catch (error) {
             console.error('❌ Erro ao consultar CNPJ:', error);
+            
+            // Ocultar campos informativos da Receita Federal em caso de erro
+            const camposReceitaFederal = document.getElementById('campos-receita-federal');
+            const camposReceitaFederal2 = document.getElementById('campos-receita-federal-2');
+            if (camposReceitaFederal) camposReceitaFederal.style.display = 'none';
+            if (camposReceitaFederal2) camposReceitaFederal2.style.display = 'none';
+            
+            // Limpar valores dos campos informativos
+            const nomeFantasiaReceitaInput = document.getElementById('nome-fantasia-receita');
+            const situacaoCadastralInput = document.getElementById('situacao-cadastral-receita');
+            const atividadePrincipalInput = document.getElementById('atividade-principal-receita');
+            if (nomeFantasiaReceitaInput) nomeFantasiaReceitaInput.value = '';
+            if (situacaoCadastralInput) situacaoCadastralInput.value = '';
+            if (atividadePrincipalInput) atividadePrincipalInput.value = '';
             
             if (error.status === 404) {
                 this._showMessage('❌ CNPJ não encontrado na Receita Federal', 'error');
