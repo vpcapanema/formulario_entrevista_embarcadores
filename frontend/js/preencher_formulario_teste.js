@@ -101,10 +101,10 @@ async function preencherFormularioCompletoTeste() {
         setField('nome', 'João da Silva Santos');
         
         // Aguardar carregamento das funções do DropdownManager
-        console.log('🔍 Aguardando carregamento do select funcao-entrevistado...');
-        await aguardarSelect('funcao-entrevistado');
+        console.log('🔍 Aguardando carregamento do select funcao...');
+        await aguardarSelect('funcao');
         
-        setField('funcao-entrevistado', '1');
+        setField('funcao', '1');
         setField('telefone', '11987654321');
         setField('email', 'joao.silva@transportes.com.br');
         console.log('✅ Card 1 OK\n');

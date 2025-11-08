@@ -344,7 +344,7 @@ const DropdownManager = {
 
         if (this._cache.funcoes) {
             // Colunas: id_funcao, nome_funcao (conforme funcoes.json)
-            this.populate('funcao-entrevistado', this._cache.funcoes, 'id_funcao', 'nome_funcao');
+            this.populate('funcao', this._cache.funcoes, 'id_funcao', 'nome_funcao');
         }
 
         console.log('✅ Q2 (Função) configurado');

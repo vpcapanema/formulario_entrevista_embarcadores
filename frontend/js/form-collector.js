@@ -22,7 +22,7 @@
  * 
  * ========== TABELA: entrevistados (9 colunas) ==========
  * nome                         → nome (VARCHAR NOT NULL)
- * funcao-entrevistado          → funcao (VARCHAR NOT NULL)
+ * funcao                        → funcao (VARCHAR NOT NULL)
  * telefone                     → telefone (VARCHAR NOT NULL)
  * email                        → email (VARCHAR NOT NULL)
  * 
@@ -193,7 +193,7 @@ const FormCollector = {
         });
         
         // ===== Q2 - FUNÇÃO: "Outro" =====
-        const funcaoSelect = document.getElementById('funcao-entrevistado');
+        const funcaoSelect = document.getElementById('funcao');
         const outraFuncaoContainer = document.getElementById('outra-funcao-container');
         
         const updateFuncaoVisibility = () => {
@@ -347,7 +347,7 @@ const FormCollector = {
         
         // ==== SEÇÃO 1: Dados do Entrevistado ====
         data.nome = this._getValue('nome');
-        data.funcao = this._getValue('funcao-entrevistado'); // Corrigido: id correto do campo
+        data.funcao = this._getValue('funcao');
         data.telefone = this._getValue('telefone');
         data.email = this._getValue('email');
         

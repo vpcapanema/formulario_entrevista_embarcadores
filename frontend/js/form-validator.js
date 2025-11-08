@@ -50,7 +50,7 @@ const FormValidator = {
         // ========================================
         'id-entrevistador': { validator: 'select', required: true },
         'nome': { validator: 'varchar', required: true, maxLength: 100 },
-        'funcao-entrevistado': { validator: 'select', required: true },
+        'funcao': { validator: 'select', required: true },
         'outra-funcao': { validator: 'varchar', required: false, maxLength: 100 },
         'telefone': { validator: 'telefone', required: true },
         'email': { validator: 'email', required: true },
