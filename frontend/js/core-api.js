@@ -147,8 +147,8 @@ const CoreAPI = {
         try {
             const startTime = performance.now();
             
-            // 2. Fetch com caminho ABSOLUTO (FastAPI monta em /lists/)
-            const response = await fetch(`/lists/${fileName}`, {
+            // 2. Fetch com caminho RELATIVO (arquivos em ./lists/)
+            const response = await fetch(`./lists/${fileName}`, {
                 method: 'GET',
                 cache: 'force-cache' // Prioriza cache do navegador
             });
