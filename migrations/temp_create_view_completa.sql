@@ -2,12 +2,11 @@ DROP VIEW IF EXISTS formulario_embarcadores.v_pesquisas_completa CASCADE;
 
 CREATE VIEW formulario_embarcadores.v_pesquisas_completa AS
 SELECT 
-    -- TABELA PESQUISAS (TODAS AS COLUNAS)
+    -- APENAS ID_PESQUISA (ID unico visivel)
     p.id_pesquisa,
-    p.id_empresa,
-    p.id_entrevistado,
+    
+    -- DADOS DA PESQUISA (SEM os IDs de relacionamento)
     p.tipo_responsavel,
-    p.id_responsavel,
     p.data_entrevista,
     p.data_atualizacao,
     p.status,
@@ -23,6 +22,7 @@ SELECT
     p.destino_municipio,
     p.distancia,
     p.tem_paradas,
+    p.num_paradas,
     p.modos,
     p.config_veiculo,
     p.peso_carga,
@@ -52,28 +52,26 @@ SELECT
     p.dificuldades,
     p.detalhe_dificuldade,
     p.observacoes,
-    p.num_paradas,
     
-    -- TABELA EMPRESAS (SEM id_empresa, COM PREFIXO emp_)
+    -- DADOS DA EMPRESA (todos os campos, SEM IDs)
     e.tipo_empresa AS emp_tipo_empresa,
     e.outro_tipo AS emp_outro_tipo,
-    e.municipio AS emp_municipio,
-    e.estado AS emp_estado,
-    e.data_cadastro AS emp_data_cadastro,
-    e.data_atualizacao AS emp_data_atualizacao,
     e.razao_social AS emp_razao_social,
     e.nome_fantasia AS emp_nome_fantasia,
+    e.cnpj AS emp_cnpj,
     e.telefone AS emp_telefone,
     e.email AS emp_email,
-    e.id_municipio AS emp_id_municipio,
+    e.municipio AS emp_municipio,
+    e.estado AS emp_estado,
     e.logradouro AS emp_logradouro,
     e.numero AS emp_numero,
     e.complemento AS emp_complemento,
     e.bairro AS emp_bairro,
     e.cep AS emp_cep,
-    e.cnpj AS emp_cnpj,
+    e.data_cadastro AS emp_data_cadastro,
+    e.data_atualizacao AS emp_data_atualizacao,
     
-    -- TABELA ENTREVISTADOS (SEM id_entrevistado e id_empresa, COM PREFIXO ent_)
+    -- DADOS DO ENTREVISTADO (todos os campos, SEM IDs)
     ent.nome AS ent_nome,
     ent.funcao AS ent_funcao,
     ent.telefone AS ent_telefone,
@@ -81,13 +79,12 @@ SELECT
     ent.principal AS ent_principal,
     ent.data_cadastro AS ent_data_cadastro,
     ent.data_atualizacao AS ent_data_atualizacao,
-    ent.email_lower AS ent_email_lower,
     
-    -- TABELA ENTREVISTADORES (SEM id_entrevistador e id_instituicao, COM PREFIXO entv_)
+    -- DADOS DO ENTREVISTADOR (todos os campos, SEM IDs - NULL se tipo_responsavel != 'entrevistador')
     entv.nome_completo AS entv_nome_completo,
     entv.email AS entv_email,
     
-    -- TABELA INSTITUICOES (SEM id_instituicao, COM PREFIXO inst_)
+    -- DADOS DA INSTITUICAO (todos os campos, SEM IDs - NULL se tipo_responsavel != 'entrevistador')
     inst.nome_instituicao AS inst_nome_instituicao,
     inst.tipo_instituicao AS inst_tipo_instituicao,
     inst.cnpj AS inst_cnpj
