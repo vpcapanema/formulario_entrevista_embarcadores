@@ -35,8 +35,9 @@ const UIFeedback = {
                         <h3>✅ Resposta Salva com Sucesso!</h3>
                         <p>A resposta da empresa <strong>${nomeEmpresa}</strong> foi salva no banco de dados PostgreSQL.</p>
                         <div class="feedback-details">
-                            <p>📊 <strong>Arquivo gerado:</strong> ${arquivo}</p>
+                            <p>� <strong>Relatório PDF gerado:</strong> ${arquivo}</p>
                             <p>💾 O download começará automaticamente em instantes.</p>
+                            <p>🎨 O relatório contém o cabeçalho padrão PLI e todas as respostas formatadas.</p>
                         </div>
                         <button onclick="UIFeedback.fecharModal()" class="btn-primary">OK, Entendi</button>
                     </div>

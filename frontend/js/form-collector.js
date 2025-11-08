@@ -549,11 +549,11 @@ const FormCollector = {
             
             // Verificar sucesso
             if (response.success) {
-                // Gerar Excel
-                const nomeArquivo = this._generateExcel(formData, response);
+                // Gerar PDF estilizado
+                const nomeArquivo = window.PDFGenerator.generatePDF(formData, response);
                 
                 // Mostrar sucesso
-                UI.mostrarSucesso(formData.nomeEmpresa, nomeArquivo);
+                UI.mostrarSucesso(formData.razaoSocial || formData.nomeEmpresa, nomeArquivo);
                 
                 // Aguardar 3s e resetar formulário
                 setTimeout(() => {
@@ -585,61 +585,6 @@ const FormCollector = {
                 // Erro genérico
                 UI.mostrarErroBanco(JSON.stringify(error));
             }
-        }
-    },
-    
-    // ============================================================
-    // GERAÇÃO DE EXCEL
-    // ============================================================
-    
-    /**
-     * Gera arquivo Excel com os dados submetidos
-     */
-    _generateExcel(formData, response) {
-        try {
-            // Preparar dados para Excel
-            const excelData = [{
-                'ID Pesquisa': response.id_pesquisa || '',
-                'ID Empresa': response.id_empresa || '',
-                'ID Entrevistado': response.id_entrevistado || '',
-                'Nome Empresa': formData.nomeEmpresa || '',
-                'CNPJ': formData.cnpj || '',
-                'Nome Entrevistado': formData.nome || '',
-                'Email': formData.email || '',
-                'Telefone': formData.telefone || '',
-                'Produto Principal': formData.produtoPrincipal || '',
-                'Origem': `${formData.origemMunicipio}/${formData.origemEstado}` || '',
-                'Destino': `${formData.destinoMunicipio}/${formData.destinoEstado}` || '',
-                'Distância (km)': formData.distancia || '',
-                'Peso Carga': formData.pesoCarga || '',
-                'Valor Carga': formData.valorCarga || '',
-                'Data/Hora': new Date().toLocaleString('pt-BR')
-            }];
-            
-            // Criar workbook
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(excelData);
-            XLSX.utils.book_append_sheet(wb, ws, 'Resposta');
-            
-            // Se houver produtos, criar aba separada
-            if (formData.produtos && formData.produtos.length > 0) {
-                const wsProdutos = XLSX.utils.json_to_sheet(formData.produtos);
-                XLSX.utils.book_append_sheet(wb, wsProdutos, 'Produtos');
-            }
-            
-            // Nome do arquivo
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            const nomeArquivo = `PLI2050_${formData.nomeEmpresa}_${timestamp}.xlsx`;
-            
-            // Download
-            XLSX.writeFile(wb, nomeArquivo);
-            
-            console.log('✅ Excel gerado:', nomeArquivo);
-            return nomeArquivo;
-            
-        } catch (error) {
-            console.error('❌ Erro ao gerar Excel:', error);
-            return 'PLI2050_Resposta.xlsx';
         }
     }
 };
