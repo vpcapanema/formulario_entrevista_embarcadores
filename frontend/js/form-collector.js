@@ -10,9 +10,8 @@
  * tipo-empresa                 → tipo_empresa (VARCHAR NOT NULL)
  * outro-tipo                   → outro_tipo (VARCHAR NULL)
  * cnpj-empresa                 → cnpj (VARCHAR NULL)
- * nome-empresa                 → nome_empresa (VARCHAR NOT NULL)
- * municipio-empresa            → municipio (VARCHAR NOT NULL)
- * razao-social                 → razao_social (VARCHAR NULL)
+ * razao-social                 → razao_social (VARCHAR NOT NULL) - Q6b
+ * municipio-empresa            → municipio (VARCHAR NOT NULL) - Q7
  * nome-fantasia                → nome_fantasia (VARCHAR NULL)
  * logradouro                   → logradouro (VARCHAR NULL)
  * numero                       → numero (VARCHAR NULL)
@@ -356,10 +355,9 @@ const FormCollector = {
         if (data.tipoEmpresa === 'outro') {
             data.outroTipo = this._getValue('outro-tipo');
         }
-        data.nomeEmpresa = this._getValue('nome-empresa');
-        data.municipio = this._getValue('municipio-empresa');
+        data.razaoSocial = this._getValue('razao-social'); // Q6b - Nome da empresa
+        data.municipio = this._getValue('municipio-empresa'); // Q7 - Município
         data.cnpj = this._getValue('cnpj-empresa');
-        data.razaoSocial = this._getValue('razao-social');
         data.nomeFantasia = this._getValue('nome-fantasia');
         data.logradouro = this._getValue('logradouro');
         data.numero = this._getValue('numero');

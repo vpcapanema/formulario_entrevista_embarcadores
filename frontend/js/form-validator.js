@@ -61,8 +61,8 @@ const FormValidator = {
         'tipo-empresa': { validator: 'select', required: true },
         'outro-tipo': { validator: 'varchar', required: false, maxLength: 100 },
         'cnpj-empresa': { validator: 'cnpj', required: true },
-        'nome-empresa': { validator: 'varchar', required: true, maxLength: 200 },
-        'municipio-empresa': { validator: 'select', required: true },
+        'razao-social': { validator: 'varchar', required: true, maxLength: 200 },
+        'municipio-empresa': { validator: 'varchar', required: true, maxLength: 100 },
         
         // ========================================
         // BLOCO 3: PRODUTO PRINCIPAL (3 campos)

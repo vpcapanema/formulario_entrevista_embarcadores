@@ -191,20 +191,18 @@
                                 <small class="field-hint" id="cnpj-status"></small>
                             </div>
                             <div class="form-group">
-                                <label for="nome-empresa"><span class="question-number">6b.</span> Nome da empresa *</label>
-                                <input type="text" id="nome-empresa" name="nome-empresa" required readonly
-                                       placeholder="Será preenchido automaticamente ao digitar o CNPJ"
-                                       class="readonly-field">
+                                <label for="razao-social"><span class="question-number">6b.</span> Nome da empresa *</label>
+                                <input type="text" id="razao-social" name="razao-social" required
+                                       placeholder="Será preenchido automaticamente ao digitar o CNPJ">
                                 <small class="field-hint">Razão social obtida da Receita Federal</small>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="municipio-empresa"><span class="question-number">7.</span> Município da(s) unidade(s) de produção *</label>
-                                <select id="municipio-empresa" name="municipio-empresa" required>
-                                    <option value="">Carregando municípios...</option>
-                                </select>
-                                <small class="field-hint">Selecione o município onde a empresa está localizada (São Paulo)</small>
+                                <input type="text" id="municipio-empresa" name="municipio-empresa" required
+                                       placeholder="Será preenchido automaticamente ao digitar o CNPJ">
+                                <small class="field-hint">Município onde a empresa está localizada</small>
                             </div>
                         </div>
                     </div>

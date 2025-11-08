@@ -90,13 +90,15 @@ const IntegrationCNPJ = {
             const dados = response.data;
             
             // ============================================================
-            // PREENCHER Q6b: RAZÃO SOCIAL
+            // PREENCHER Q6b: RAZÃO SOCIAL (Nome da Empresa)
             // ============================================================
-            const razaoSocialInput = document.getElementById('nome-empresa');
-            if (razaoSocialInput) {
+            const razaoSocialInput = document.getElementById('razao-social');
+            if (razaoSocialInput && dados.razao_social) {
                 razaoSocialInput.value = dados.razao_social;
                 razaoSocialInput.dispatchEvent(new Event('change'));
                 console.log(`✅ Q6b preenchido: ${dados.razao_social}`);
+            } else {
+                console.warn('⚠️ Campo razao-social não encontrado ou API não retornou razao_social');
             }
             
             // Preencher nome fantasia (se existir)
@@ -107,64 +109,15 @@ const IntegrationCNPJ = {
             }
             
             // ============================================================
-            // PREENCHER Q7: MUNICÍPIO DA UNIDADE DE PRODUÇÃO
+            // PREENCHER Q7: MUNICÍPIO DA UNIDADE DE PRODUÇÃO (campo texto)
             // ============================================================
-            
-            // A Q7 tem apenas um dropdown simples (municipio-empresa)
-            // Vamos buscar o município pelo NOME (API retorna nome em uppercase sem acentos)
-            const municipioSelect = document.getElementById('municipio-empresa');
-            if (municipioSelect && dados.municipio) {
-                // API da Receita retorna NOME do município (ex: "BRASILIA"), não código IBGE
-                const nomeMunicipioAPI = dados.municipio;
-                
-                // Se o dropdown ainda não estiver populado, carregar municípios da UF
-                if (municipioSelect.options.length <= 1) {
-                    console.log(`🔄 Carregando municípios de ${dados.uf}...`);
-                    
-                    try {
-                        const municipios = await CoreAPI.getMunicipiosByUF(dados.uf);
-                        
-                        // Limpar dropdown
-                        municipioSelect.innerHTML = '<option value="">Selecione o município</option>';
-                        
-                        // Adicionar opções (ATENÇÃO: Colunas reais da tabela dim_municipio)
-                        municipios.forEach(mun => {
-                            const option = document.createElement('option');
-                            option.value = mun.cd_mun; // CÓDIGO IBGE 7 dígitos
-                            option.textContent = mun.nm_mun; // NOME DO MUNICÍPIO
-                            municipioSelect.appendChild(option);
-                        });
-                    } catch (error) {
-                        console.error('❌ Erro ao carregar municípios:', error);
-                    }
-                }
-                
-                // Aguardar um pouco para dropdown popular
-                await new Promise(resolve => setTimeout(resolve, 300));
-                
-                // Normalizar nome para comparação (remove acentos e converte para uppercase)
-                const normalizar = (str) => {
-                    return str
-                        .normalize('NFD')
-                        .replace(/[\u0300-\u036f]/g, '')
-                        .toUpperCase()
-                        .trim();
-                };
-                
-                const nomeNormalizado = normalizar(nomeMunicipioAPI);
-                
-                // Procurar opção comparando TEXTO normalizado (não código)
-                const optionMunicipio = Array.from(municipioSelect.options).find(
-                    opt => normalizar(opt.textContent) === nomeNormalizado
-                );
-                
-                if (optionMunicipio) {
-                    municipioSelect.value = optionMunicipio.value; // Seleciona pelo código IBGE
-                    municipioSelect.dispatchEvent(new Event('change'));
-                    console.log(`✅ Q7 preenchido: ${optionMunicipio.textContent} (${optionMunicipio.value})`);
-                } else {
-                    console.warn(`⚠️ Município "${nomeMunicipioAPI}" não encontrado no dropdown de ${dados.uf}`);
-                }
+            const municipioInput = document.getElementById('municipio-empresa');
+            if (municipioInput && dados.municipio) {
+                municipioInput.value = dados.municipio;
+                municipioInput.dispatchEvent(new Event('change'));
+                console.log(`✅ Q7 preenchido: ${dados.municipio}`);
+            } else {
+                console.warn('⚠️ Campo municipio-empresa não encontrado ou API não retornou municipio');
             }
             
             // ============================================================

@@ -115,15 +115,11 @@ async function preencherFormularioCompletoTeste() {
         console.log('🔍 Aguardando API CNPJ (2s)...');
         await aguardar(2000);
         
-        // Verificar se API preencheu razaoSocial, senão preencher nomeEmpresa manualmente
+        // Verificar se API preencheu razao-social, senão preencher manualmente
         const razaoSocial = document.getElementById('razao-social');
-        const nomeEmpresa = document.getElementById('nome-empresa');
         if (!razaoSocial || !razaoSocial.value) {
-            console.warn('⚠️ API CNPJ não preencheu razao-social, preenchendo nome-empresa manualmente');
-            setField('nome-empresa', 'Petrobras Distribuidora S.A.');
-        }
-        if (!nomeEmpresa || !nomeEmpresa.value) {
-            setField('nome-empresa', 'Petrobras Distribuidora S.A.');
+            console.warn('⚠️ API CNPJ não preencheu razao-social, preenchendo manualmente');
+            setField('razao-social', 'Petrobras Distribuidora S.A.');
         }
         
         // Preencher município se não foi preenchido pela API
