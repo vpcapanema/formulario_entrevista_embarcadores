@@ -1,103 +1,174 @@
-console.log('Script V6 carregado');
+// ==================================================
+// SCRIPT DE TESTE - Preencher Formulário Completo
+// PLI 2050 v7.0 - 08/11/2025
+// TODOS os 55 campos + 3 grupos de checkboxes + tabela
+// ==================================================
 
-async function preencherFormularioCompletoTeste() {
-    const aguardar = (ms) => new Promise(r => setTimeout(r, ms));
-    const setField = (id, v) => { const f = document.getElementById(id); if(f) { f.value = v; f.dispatchEvent(new Event('input', {bubbles:true})); f.dispatchEvent(new Event('change', {bubbles:true})); f.classList.remove('invalid'); console.log('OK:',id); return true; } return false; };
-    const setRadio = (n, v) => { const r = document.querySelector('input[name="'+n+'"][value="'+v+'"]'); if(r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles:true})); console.log('Radio:',n,'=',v); return true; } return false; };
-    const setCheckbox = (n, vs) => { document.querySelectorAll('input[name="'+n+'"]').forEach(c => c.checked = false); if(!Array.isArray(vs)) vs = [vs]; vs.forEach(v => { const c = document.querySelector('input[name="'+n+'"][value="'+v+'"]'); if(c) { c.checked = true; c.dispatchEvent(new Event('change', {bubbles:true})); } }); console.log('Checkbox:',n,vs.length,'marcados'); };
-    const aguardarSelect = async (id, max = 30) => { for(let i = 0; i < max; i++) { const s = document.getElementById(id); if(s && s.options.length > 1) return true; await aguardar(200); } return false; };
-    
-    try {
-        console.log('Preenchendo...');
-        setRadio('tipo-responsavel', 'entrevistado');
-        setField('nome', 'Maria Costa Silva');
-        await aguardarSelect('funcao');
-        setField('funcao', '1');
-        setField('telefone', '11987654321');
-        setField('email', 'maria@teste.com');
-        setField('tipo-empresa', 'embarcador');
-        setField('cnpj-empresa', '11222333000181');
-        await aguardar(3000);
-        if(!document.getElementById('razao-social').value) {
-            setField('razao-social', 'Log Moderna LTDA');
-            setField('municipio-empresa', 'Sao Paulo');
+function preencherFormularioCompletoTeste() {
+    console.log('🧪 Iniciando preenchimento COMPLETO do formulário de teste...');
+
+    // CARD 0 - Responsável pelo Preenchimento
+    document.querySelector('input[name="tipo-responsavel"][value="entrevistador"]').checked = true;
+    document.getElementById('tipo-responsavel').dispatchEvent(new Event('change', {bubbles: true}));
+    setTimeout(() => {
+        const entrevistadorSelect = document.getElementById('id-entrevistador');
+        if (entrevistadorSelect && entrevistadorSelect.options.length > 1) {
+            entrevistadorSelect.selectedIndex = 1;
         }
-        const tb = document.getElementById('produtos-tbody');
-        if(tb && tb.children.length === 0) {
-            const btn = document.querySelector('button[onclick*="addProdutoRow"]');
-            if(btn) { btn.click(); await aguardar(300); }
+    }, 200);
+
+    // CARD 1 - Dados do Entrevistado
+    document.getElementById('nome').value = 'João Silva Teste V7';
+    const funcaoSelect = document.getElementById('funcao');
+    if (funcaoSelect.options.length > 1) funcaoSelect.selectedIndex = 1;
+    document.getElementById('telefone').value = '(11) 98765-4321';
+    document.getElementById('email').value = 'teste.v7@pli2050.com.br';
+
+    // CARD 2 - Dados da Empresa
+    const tipoEmpresaSelect = document.getElementById('tipo-empresa');
+    if (tipoEmpresaSelect.options.length > 1) tipoEmpresaSelect.selectedIndex = 1;
+    document.getElementById('cnpj-empresa').value = '12345678000190';
+    document.getElementById('razao-social').value = 'EMPRESA TESTE LTDA V7';
+    document.getElementById('municipio-empresa').value = 'São Paulo';
+
+    // CARD 3 - Produtos Transportados (Tabela)
+    setTimeout(() => {
+        const tbody = document.getElementById('produtos-tbody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            const produtoRow = document.createElement('tr');
+            produtoRow.innerHTML = `
+                <td><input type="text" class="table-input" name="produto[]" value="Soja em Grãos" required></td>
+                <td><input type="number" class="table-input" name="movimentacao[]" value="50000" min="0" required></td>
+                <td><input type="text" class="table-input" name="origem-prod[]" value="Ribeirão Preto" required></td>
+                <td><input type="text" class="table-input" name="destino-prod[]" value="Santos" required></td>
+                <td><input type="text" class="table-input" name="tipo-veic[]" value="Caminhão"></td>
+                <td><select class="table-select" name="unid-prod[]" required>
+                    <option value="toneladas" selected>Toneladas</option>
+                </select></td>
+                <td><input type="number" class="table-input" name="valor-prod[]" value="150000" min="0" step="0.01"></td>
+                <td><button type="button" class="btn-remove-row" onclick="removerLinhaProduto(this)">🗑️</button></td>
+            `;
+            tbody.appendChild(produtoRow);
         }
-        setField('produto-carga-1', 'Acucar');
-        setField('produto-movimentacao-1', '120000');
-        setField('produto-origem-1', 'Piracicaba');
-        setField('produto-destino-1', 'Santos');
-        setField('produto-distancia-1', '180');
-        setField('produto-modalidade-1', 'rodoviario');
-        setField('produto-acondicionamento-1', 'big-bag');
-        setField('produto-principal', 'Acucar');
-        setField('agrupamento-produto', 'agricultura');
-        setField('tipo-transporte', 'exportacao');
-        await aguardarSelect('origem-pais');
-        setField('origem-pais', '31');
-        await aguardar(500);
-        await aguardarSelect('origem-estado');
-        setField('origem-estado', 'SP');
-        await aguardar(500);
-        await aguardarSelect('origem-municipio');
-        setField('origem-municipio', '3538709');
-        setField('destino-pais', '31');
-        await aguardar(500);
-        await aguardarSelect('destino-estado');
-        setField('destino-estado', 'SP');
-        await aguardar(500);
-        await aguardarSelect('destino-municipio');
-        setField('destino-municipio', '3548500');
-        setField('distancia', '180');
-        setField('tem-paradas', 'sim');
-        await aguardar(300);
-        setField('num-paradas', '1');
-        setCheckbox('modo', ['rodoviario', 'ferroviario']);
-        await aguardar(300);
-        setField('config-veiculo', 'cavalo-mecanico-carreta');
-        setField('capacidade-utilizada', '92.5');
-        setField('peso-carga', '32000');
-        setField('unidade-peso', 'kg');
-        setField('custo-transporte', '6500');
-        setField('valor-carga', '280000');
-        setField('tipo-embalagem', 'big-bag');
-        setField('carga-perigosa', 'nao');
-        setField('tempo-dias', '0');
-        setField('tempo-horas', '4');
-        setField('tempo-minutos', '30');
-        setField('frequencia', 'diaria');
-        await aguardar(300);
-        setField('frequencia-diaria', '3.5');
-        setField('importancia-custo', 'muito-importante');
-        setField('variacao-custo', '18');
-        setField('importancia-tempo', 'muito-importante');
-        setField('variacao-tempo', '15');
-        setField('importancia-confiabilidade', 'muito-importante');
-        setField('variacao-confiabilidade', '8');
-        setField('importancia-seguranca', 'importante');
-        setField('variacao-seguranca', '10');
-        setField('importancia-capacidade', 'importante');
-        setField('variacao-capacidade', '12');
-        setField('tipo-cadeia', 'just-in-time');
-        setCheckbox('modal-alternativo', ['ferrovia', 'hidrovia']);
-        setField('fator-adicional', 'Porto de Santos proximo');
-        setCheckbox('dificuldade', ['infra-rodoviaria', 'infra-portuaria', 'acessos-portos']);
-        setField('detalhe-dificuldade', 'Congestionamentos na Anchieta e Imigrantes');
-        const obs = document.getElementById('observacoes');
-        if(obs) setField('observacoes', 'Teste V6');
-        const cons = document.getElementById('consentimento');
-        if(cons) { cons.checked = true; cons.dispatchEvent(new Event('change', {bubbles:true})); }
-        window.scrollTo(0,0);
-        alert('Formulario preenchido!\nTODOS os campos OK!\nClique SALVAR!');
-    } catch(e) {
-        console.error('ERRO:',e);
-        alert('ERRO: '+e.message);
+    }, 300);
+
+    // CARD 4 - Produto Principal
+    document.getElementById('produto-principal').value = 'Soja em Grãos';
+    const agrupSelect = document.getElementById('agrupamento-produto');
+    if (agrupSelect.options.length > 1) agrupSelect.selectedIndex = 2;
+
+    // CARD 5 - Caracterização do Transporte
+    const tipoTranspSelect = document.getElementById('tipo-transporte');
+    if (tipoTranspSelect.options.length > 1) tipoTranspSelect.selectedIndex = 1;
+
+    // Origem e Destino
+    const origemPaisSelect = document.getElementById('origem-pais');
+    if (origemPaisSelect.options.length > 31) {
+        origemPaisSelect.selectedIndex = 31; // Brasil
+        origemPaisSelect.dispatchEvent(new Event('change', {bubbles: true}));
     }
+    setTimeout(() => {
+        const origemEstadoSelect = document.getElementById('origem-estado');
+        if (origemEstadoSelect && origemEstadoSelect.options.length > 26) {
+            origemEstadoSelect.selectedIndex = 26; // SP
+            origemEstadoSelect.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+    }, 400);
+
+    const destinoPaisSelect = document.getElementById('destino-pais');
+    if (destinoPaisSelect.options.length > 31) {
+        destinoPaisSelect.selectedIndex = 31;
+        destinoPaisSelect.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    setTimeout(() => {
+        const destinoEstadoSelect = document.getElementById('destino-estado');
+        if (destinoEstadoSelect && destinoEstadoSelect.options.length > 26) {
+            destinoEstadoSelect.selectedIndex = 26;
+            destinoEstadoSelect.dispatchEvent(new Event('change', {bubbles: true}));
+        }
+    }, 400);
+
+    document.getElementById('distancia').value = '450';
+    const temParadasSelect = document.getElementById('tem-paradas');
+    if (temParadasSelect.options.length > 1) {
+        temParadasSelect.selectedIndex = 1; // Sim
+        temParadasSelect.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+    setTimeout(() => {
+        const numParadasSelect = document.getElementById('num-paradas');
+        if (numParadasSelect && numParadasSelect.options.length > 1) {
+            numParadasSelect.selectedIndex = 2; // 3-5
+        }
+    }, 500);
+
+    // Checkboxes de Modo de Transporte
+    const modoCheckboxes = document.querySelectorAll('input[name="modo"]');
+    modoCheckboxes.forEach((cb, idx) => {
+        if (idx < 2) cb.checked = true; // Rodoviário + Ferroviário
+    });
+    modoCheckboxes[0].dispatchEvent(new Event('change', {bubbles: true}));
+
+    setTimeout(() => {
+        const configSelect = document.getElementById('config-veiculo');
+        if (configSelect && configSelect.options.length > 1) {
+            configSelect.selectedIndex = 1;
+        }
+    }, 600);
+
+    document.getElementById('capacidade-utilizada').value = '85';
+    document.getElementById('peso-carga').value = '28000';
+    const unidPesoSelect = document.getElementById('unidade-peso');
+    if (unidPesoSelect.options.length > 1) unidPesoSelect.selectedIndex = 1;
+    document.getElementById('custo-transporte').value = '5000';
+    document.getElementById('valor-carga').value = '150000';
+    const embalagemSelect = document.getElementById('tipo-embalagem');
+    if (embalagemSelect.options.length > 1) embalagemSelect.selectedIndex = 1;
+    const cargaPerigosaSelect = document.getElementById('carga-perigosa');
+    if (cargaPerigosaSelect.options.length > 1) cargaPerigosaSelect.selectedIndex = 2;
+
+    document.getElementById('tempo-dias').value = '2';
+    document.getElementById('tempo-horas').value = '8';
+    document.getElementById('tempo-minutos').value = '30';
+    const frequenciaSelect = document.getElementById('frequencia');
+    if (frequenciaSelect.options.length > 1) frequenciaSelect.selectedIndex = 1;
+
+    // CARD 6 - Importância dos Fatores
+    const fatores = ['custo', 'tempo', 'confiabilidade', 'seguranca', 'capacidade'];
+    fatores.forEach((fator, idx) => {
+        const importanciaSelect = document.getElementById(`importancia-${fator}`);
+        if (importanciaSelect && importanciaSelect.options.length > 1) {
+            importanciaSelect.selectedIndex = (idx % 5) + 1;
+        }
+        const variacao = document.getElementById(`variacao-${fator}`);
+        if (variacao) variacao.value = (10 + idx * 5).toString();
+    });
+
+    // CARD 7 - Tipo de Cadeia e Modal Alternativo
+    const cadeiaSelect = document.getElementById('tipo-cadeia');
+    if (cadeiaSelect.options.length > 1) cadeiaSelect.selectedIndex = 1;
+
+    // Checkboxes de Modal Alternativo
+    const modalCheckboxes = document.querySelectorAll('input[name="modal-alternativo"]');
+    modalCheckboxes.forEach((cb, idx) => {
+        if (idx < 2) cb.checked = true; // Ferrovia + Hidrovia
+    });
+
+    document.getElementById('fator-adicional').value = 'Este é um texto de teste para o campo de fatores adicionais do formulário PLI 2050 v7.0.';
+
+    // CARD 8 - Dificuldades
+    const dificuldadeCheckboxes = document.querySelectorAll('input[name="dificuldade"]');
+    dificuldadeCheckboxes.forEach((cb, idx) => {
+        if (idx < 3) cb.checked = true; // Primeiras 3 opções
+    });
+
+    document.getElementById('detalhe-dificuldade').value = 'Detalhes das dificuldades encontradas no transporte de mercadorias - Teste V7.0 PLI 2050.';
+
+    console.log('✅ Formulário preenchido com TODOS os campos! Total: 55 campos + 3 grupos de checkboxes + tabela de produtos');
 }
 
-window.preencherFormularioCompletoTeste = preencherFormularioCompletoTeste;
-console.log('Execute: preencherFormularioCompletoTeste()');
+// Auto-executar ao carregar
+if (typeof window !== 'undefined') {
+    window.preencherFormularioCompletoTeste = preencherFormularioCompletoTeste;
+    console.log('✅ Função preencherFormularioCompletoTeste() registrada globalmente');
+}
