@@ -356,6 +356,7 @@ const FormCollector = {
             data.outroTipo = this._getValue('outro-tipo');
         }
         data.razaoSocial = this._getValue('razao-social'); // Q6b - Nome da empresa
+        data.nomeEmpresa = this._getValue('razao-social'); // Backend espera nomeEmpresa
         data.municipio = this._getValue('municipio-empresa'); // Q7 - Município
         data.cnpj = this._getValue('cnpj-empresa');
         data.nomeFantasia = this._getValue('nome-fantasia');
