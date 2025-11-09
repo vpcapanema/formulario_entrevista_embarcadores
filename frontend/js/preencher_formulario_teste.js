@@ -8,8 +8,11 @@ function preencherFormularioCompletoTeste() {
     console.log('🧪 Iniciando preenchimento COMPLETO do formulário de teste...');
 
     // CARD 0 - Responsável pelo Preenchimento
-    document.querySelector('input[name="tipo-responsavel"][value="entrevistador"]').checked = true;
-    document.getElementById('tipo-responsavel').dispatchEvent(new Event('change', {bubbles: true}));
+    const radioEntrevistador = document.querySelector('input[name="tipo-responsavel"][value="entrevistador"]');
+    if (radioEntrevistador) {
+        radioEntrevistador.checked = true;
+        radioEntrevistador.dispatchEvent(new Event('change', {bubbles: true}));
+    }
     setTimeout(() => {
         const entrevistadorSelect = document.getElementById('id-entrevistador');
         if (entrevistadorSelect && entrevistadorSelect.options.length > 1) {
