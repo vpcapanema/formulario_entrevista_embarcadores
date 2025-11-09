@@ -95,9 +95,27 @@ const PDFGenerator = {
             // ===== SALVAR PDF =====
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const nomeArquivo = `PLI2050_Pesquisa_${response.id_pesquisa || 'Nova'}_${timestamp}.pdf`;
-            doc.save(nomeArquivo);
             
-            console.log('✅ PDF gerado:', nomeArquivo);
+            // Método 1: Tentar doc.save() padrão
+            try {
+                doc.save(nomeArquivo);
+                console.log('✅ PDF gerado via doc.save():', nomeArquivo);
+            } catch (e) {
+                // Método 2: Fallback com Blob e createObjectURL
+                console.warn('⚠️ doc.save() falhou, usando fallback com Blob');
+                const pdfBlob = doc.output('blob');
+                const url = URL.createObjectURL(pdfBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = nomeArquivo;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                console.log('✅ PDF gerado via Blob:', nomeArquivo);
+            }
+            
             return nomeArquivo;
             
         } catch (error) {

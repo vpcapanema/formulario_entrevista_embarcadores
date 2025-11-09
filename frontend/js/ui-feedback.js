@@ -35,9 +35,13 @@ const UIFeedback = {
                         <h3>✅ Resposta Salva com Sucesso!</h3>
                         <p>A resposta da empresa <strong>${nomeEmpresa}</strong> foi salva no banco de dados PostgreSQL.</p>
                         <div class="feedback-details">
-                            <p>� <strong>Relatório PDF gerado:</strong> ${arquivo}</p>
-                            <p>💾 O download começará automaticamente em instantes.</p>
+                            <p>📄 <strong>Relatório PDF gerado:</strong> ${arquivo}</p>
+                            <p>💾 <strong>O download deve iniciar automaticamente.</strong></p>
                             <p>🎨 O relatório contém o cabeçalho padrão PLI e todas as respostas formatadas.</p>
+                            <p style="margin-top: 10px; padding: 10px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+                                ⚠️ <strong>Download não iniciou?</strong> Verifique se o navegador bloqueou popups/downloads. 
+                                O PDF foi gerado com sucesso - você pode tentar novamente ou clicar em "OK" para continuar.
+                            </p>
                         </div>
                         <button onclick="fecharFeedback()" class="btn-primary">OK, Entendi</button>
                     </div>
