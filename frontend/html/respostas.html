@@ -588,7 +588,13 @@
         let dadosOriginais = [];
         let dadosFiltrados = [];
         let ordemId = 'desc'; // 'asc' ou 'desc' - padrão decrescente
-        const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
+        
+        // Auto-detecção de ambiente (igual ao core-api.js)
+        const API_BASE_URL = window.location.hostname.includes('github.io') 
+            ? 'https://formulario-entrevista-embarcadores.onrender.com'
+            : 'http://localhost:8000';
+        
+        console.log('🌐 API Base URL:', API_BASE_URL);
         document.addEventListener('DOMContentLoaded', () => { carregarDados(); });
         async function carregarDados() {
             const wrapper = document.getElementById('table-wrapper');
