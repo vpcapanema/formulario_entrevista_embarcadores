@@ -103,240 +103,209 @@
 
     <div class="container">
         <div class="page-header">
-            <h2>🔍 Visualizador de Dados IndexedDB</h2>
-            <p>Visualize os dados armazenados localmente no navegador</p>
+            <h2>🔍 Visualizador de Dados - AWS RDS</h2>
+            <p>Visualize os dados armazenados no banco PostgreSQL (AWS RDS)</p>
         </div>
     
     <div class="info-box">
         <h2>📊 Informações do Banco de Dados</h2>
-        <div id="db-info"></div>
-    </div>
-
-    <div class="info-box">
-        <h2>📁 Localização Física dos Dados</h2>
         <div class="status info">
-            <strong>Navegador Atual:</strong> <span id="browser-name"></span><br><br>
-            <strong>Caminho Provável:</strong><br>
-            <div id="storage-path" class="margin-top-half"></div>
+            <strong>🗄️ Banco:</strong> PostgreSQL 17<br>
+            <strong>☁️ Hospedagem:</strong> AWS RDS (us-east-1)<br>
+            <strong>📦 Database:</strong> sigma_pli<br>
+            <strong>🔍 Schema:</strong> formulario_embarcadores<br>
+            <strong>📋 View Principal:</strong> v_pesquisas_completa (65 campos)<br>
+            <strong>🌐 API:</strong> <span id="api-url"></span>
         </div>
     </div>
 
     <div class="info-box">
-        <h2>💾 Dados Salvos</h2>
-        <button onclick="loadData()">🔄 Carregar Dados</button>
-        <button onclick="showRawData()">📄 Ver JSON Completo</button>
-        <button onclick="calculateSize()">📊 Calcular Tamanho</button>
+        <h2>💾 Dados da View v_pesquisas_completa</h2>
+        <button onclick="loadDataFromRDS()">🔄 Carregar Dados do RDS</button>
+        <button onclick="showRawDataRDS()">📄 Ver JSON Completo</button>
+        <button onclick="exportToCSV()">� Exportar CSV</button>
+        <div id="loading-status" style="display: none; padding: 1rem; background: #d1ecf1; border-radius: 4px; margin-top: 1rem;">
+            <strong>⏳ Carregando dados do RDS...</strong>
+        </div>
         <div id="data-container"></div>
     </div>
 
     <div class="info-box">
         <h2>🛠️ Ferramentas de Desenvolvedor</h2>
         <div class="warning">
-            <strong>💡 Dica:</strong> Para ver o IndexedDB visualmente:<br>
+            <strong>💡 Dica:</strong> Para ver as requisições de rede:<br>
             1. Pressione <kbd>F12</kbd> para abrir DevTools<br>
-            2. Vá na aba <strong>"Application"</strong> (Chrome) ou <strong>"Storage"</strong> (Firefox)<br>
-            3. No menu lateral, expanda <strong>"IndexedDB"</strong><br>
-            4. Clique em <strong>"PLI2050_Database"</strong> → <strong>"respostas"</strong>
+            2. Vá na aba <strong>"Network"</strong><br>
+            3. Clique em <strong>"Carregar Dados do RDS"</strong><br>
+            4. Veja a requisição para <code>/api/pesquisas/listar</code>
         </div>
     </div>
     
     </div> <!-- Fecha container -->
 
     <script>
-        // Detectar navegador
-        function detectBrowser() {
-            const userAgent = navigator.userAgent;
-            let browserName = "Desconhecido";
-            let storagePath = "";
+        // Carregar core-api para fazer requisições
+        const script = document.createElement('script');
+        script.src = '../js/core-api.js?v=20251109';
+        document.head.appendChild(script);
 
-            if (userAgent.indexOf("Chrome") > -1 && userAgent.indexOf("Edg") === -1) {
-                browserName = "Google Chrome";
-                storagePath = `C:\\Users\\${window.navigator.userAgent.includes('Windows') ? '[SeuUsuario]' : 'Usuario'}\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\IndexedDB\\`;
-            } else if (userAgent.indexOf("Edg") > -1) {
-                browserName = "Microsoft Edge";
-                storagePath = `C:\\Users\\[SeuUsuario]\\AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\IndexedDB\\`;
-            } else if (userAgent.indexOf("Firefox") > -1) {
-                browserName = "Mozilla Firefox";
-                storagePath = `C:\\Users\\[SeuUsuario]\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\[profile]\\storage\\default\\`;
-            } else if (userAgent.indexOf("Safari") > -1) {
-                browserName = "Safari";
-                storagePath = `~/Library/Safari/Databases/`;
-            }
+        // Mostrar URL da API
+        script.onload = function() {
+            document.getElementById('api-url').textContent = window.CoreAPI.BASE_URL;
+        };
 
-            document.getElementById('browser-name').textContent = browserName;
-            document.getElementById('storage-path').innerHTML = `<code style="background: #2c3e50; color: #ecf0f1; padding: 0.5rem; display: block; border-radius: 4px;">${storagePath}</code>`;
-        }
-
-        // Informações do banco
-        async function showDatabaseInfo() {
-            const dbInfo = document.getElementById('db-info');
+        // Carregar dados do RDS via API
+        async function loadDataFromRDS() {
+            const container = document.getElementById('data-container');
+            const loadingStatus = document.getElementById('loading-status');
             
             try {
-                const request = indexedDB.open('PLI2050_Database', 1);
+                loadingStatus.style.display = 'block';
+                container.innerHTML = '';
                 
-                request.onsuccess = function(event) {
-                    const db = event.target.result;
-                    const objectStoreNames = Array.from(db.objectStoreNames);
-                    
-                    let html = `
-                        <div class="status success">
-                            ✅ <strong>Banco de Dados Encontrado!</strong><br><br>
-                            <strong>Nome do Banco:</strong> PLI2050_Database<br>
-                            <strong>Versão:</strong> ${db.version}<br>
-                            <strong>Tabelas (Object Stores):</strong> ${objectStoreNames.join(', ')}<br>
+                console.log('📡 Buscando dados do RDS...');
+                const response = await window.CoreAPI.get('/api/pesquisas/listar?limit=1000');
+                
+                loadingStatus.style.display = 'none';
+                
+                if (!response.pesquisas || response.pesquisas.length === 0) {
+                    container.innerHTML = `
+                        <div class="status info">
+                            📭 Nenhuma pesquisa encontrada no banco RDS.<br>
+                            Vá para a página de Formulário e envie uma pesquisa!
                         </div>
                     `;
-                    
-                    dbInfo.innerHTML = html;
-                };
+                    return;
+                }
                 
-                request.onerror = function() {
-                    dbInfo.innerHTML = `
-                        <div class="status warning">
-                            ⚠️ Banco de dados ainda não foi criado.<br>
-                            Preencha um formulário primeiro para criar o banco.
+                const pesquisas = response.pesquisas;
+                
+                let html = `
+                    <div class="status success">
+                        ✅ <strong>${pesquisas.length}</strong> pesquisa(s) encontrada(s) no RDS!
+                    </div>
+                    <h3>Resumo das Pesquisas:</h3>
+                `;
+                
+                pesquisas.forEach((p, i) => {
+                    html += `
+                        <div style="background: #ecf0f1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                            <strong>Pesquisa ${i + 1}:</strong><br>
+                            <strong>ID:</strong> ${p.id_pesquisa}<br>
+                            <strong>Empresa:</strong> ${p.razao_social || p.nome_empresa}<br>
+                            <strong>CNPJ:</strong> ${p.cnpj || 'N/A'}<br>
+                            <strong>Entrevistado:</strong> ${p.nome_entrevistado}<br>
+                            <strong>Função:</strong> ${p.funcao_entrevistado}<br>
+                            <strong>Data:</strong> ${p.data_entrevista || 'N/A'}<br>
+                            <strong>Produto Principal:</strong> ${p.produto_principal}<br>
+                            <strong>Tipo Transporte:</strong> ${p.tipo_transporte}
                         </div>
                     `;
-                };
+                });
+                
+                container.innerHTML = html;
+                console.log('✅ Dados carregados:', pesquisas.length);
+                
             } catch (error) {
-                dbInfo.innerHTML = `
+                loadingStatus.style.display = 'none';
+                console.error('❌ Erro ao carregar dados:', error);
+                container.innerHTML = `
                     <div class="status warning">
-                        ❌ Erro ao acessar IndexedDB: ${error.message}
+                        ❌ Erro ao conectar ao RDS:<br>
+                        <strong>Mensagem:</strong> ${error.message || 'Erro desconhecido'}<br><br>
+                        <strong>Possíveis causas:</strong><br>
+                        • Backend não está rodando no Render<br>
+                        • Problema de conexão com AWS RDS<br>
+                        • CORS bloqueando requisição<br><br>
+                        <strong>URL da API:</strong> ${window.CoreAPI?.BASE_URL || 'N/A'}
                     </div>
                 `;
             }
         }
 
-        // Carregar dados
-        async function loadData() {
-            const container = document.getElementById('data-container');
-            container.innerHTML = '<p>Carregando...</p>';
-            
-            try {
-                const request = indexedDB.open('PLI2050_Database', 1);
-                
-                request.onsuccess = function(event) {
-                    const db = event.target.result;
-                    const transaction = db.transaction(['respostas'], 'readonly');
-                    const objectStore = transaction.objectStore('respostas');
-                    const getAllRequest = objectStore.getAll();
-                    
-                    getAllRequest.onsuccess = function() {
-                        const respostas = getAllRequest.result;
-                        
-                        if (respostas.length === 0) {
-                            container.innerHTML = `
-                                <div class="status info">
-                                    📭 Nenhuma resposta salva ainda.<br>
-                                    Vá para a página principal e preencha um formulário!
-                                </div>
-                            `;
-                        } else {
-                            let html = `
-                                <div class="status success">
-                                    ✅ <strong>${respostas.length}</strong> resposta(s) encontrada(s)!
-                                </div>
-                                <h3>Resumo das Respostas:</h3>
-                            `;
-                            
-                            respostas.forEach((r, i) => {
-                                html += `
-                                    <div style="background: #ecf0f1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
-                                        <strong>Resposta ${i + 1}:</strong><br>
-                                        <strong>ID:</strong> ${r.id}<br>
-                                        <strong>Empresa:</strong> ${r.nomeEmpresa}<br>
-                                        <strong>Entrevistado:</strong> ${r.nome}<br>
-                                        <strong>Data:</strong> ${new Date(r.dataEntrevista).toLocaleString('pt-BR')}<br>
-                                        <strong>Produto Principal:</strong> ${r.produtoPrincipal}
-                                    </div>
-                                `;
-                            });
-                            
-                            container.innerHTML = html;
-                        }
-                    };
-                };
-                
-                request.onerror = function() {
-                    container.innerHTML = `
-                        <div class="status warning">
-                            ⚠️ Erro ao acessar os dados. Banco ainda não foi criado.
-                        </div>
-                    `;
-                };
-            } catch (error) {
-                container.innerHTML = `<p>Erro: ${error.message}</p>`;
-            }
-        }
-
         // Mostrar JSON completo
-        async function showRawData() {
+        async function showRawDataRDS() {
             const container = document.getElementById('data-container');
+            const loadingStatus = document.getElementById('loading-status');
             
             try {
-                const request = indexedDB.open('PLI2050_Database', 1);
+                loadingStatus.style.display = 'block';
+                const response = await window.CoreAPI.get('/api/pesquisas/listar?limit=1000');
+                loadingStatus.style.display = 'none';
                 
-                request.onsuccess = function(event) {
-                    const db = event.target.result;
-                    const transaction = db.transaction(['respostas'], 'readonly');
-                    const objectStore = transaction.objectStore('respostas');
-                    const getAllRequest = objectStore.getAll();
-                    
-                    getAllRequest.onsuccess = function() {
-                        const respostas = getAllRequest.result;
-                        const json = JSON.stringify(respostas, null, 2);
-                        
-                        container.innerHTML = `
-                            <h3>JSON Completo:</h3>
-                            <div class="data-viewer">${json}</div>
-                        `;
-                    };
-                };
+                const json = JSON.stringify(response, null, 2);
+                
+                container.innerHTML = `
+                    <h3>JSON Completo (View v_pesquisas_completa):</h3>
+                    <div class="data-viewer">${json}</div>
+                `;
+                
             } catch (error) {
-                container.innerHTML = `<p>Erro: ${error.message}</p>`;
+                loadingStatus.style.display = 'none';
+                container.innerHTML = `<div class="status warning">❌ Erro: ${error.message}</div>`;
             }
         }
 
-        // Calcular tamanho
-        async function calculateSize() {
-            const container = document.getElementById('data-container');
-            
+        // Exportar para CSV
+        async function exportToCSV() {
             try {
-                const request = indexedDB.open('PLI2050_Database', 1);
+                const response = await window.CoreAPI.get('/api/pesquisas/listar?limit=1000');
                 
-                request.onsuccess = function(event) {
-                    const db = event.target.result;
-                    const transaction = db.transaction(['respostas'], 'readonly');
-                    const objectStore = transaction.objectStore('respostas');
-                    const getAllRequest = objectStore.getAll();
-                    
-                    getAllRequest.onsuccess = function() {
-                        const respostas = getAllRequest.result;
-                        const json = JSON.stringify(respostas);
-                        const sizeInBytes = new Blob([json]).size;
-                        const sizeInKB = (sizeInBytes / 1024).toFixed(2);
-                        const sizeInMB = (sizeInBytes / 1024 / 1024).toFixed(2);
-                        
-                        container.innerHTML = `
-                            <div class="status success">
-                                <h3>📊 Tamanho dos Dados:</h3>
-                                <strong>Bytes:</strong> ${sizeInBytes.toLocaleString('pt-BR')}<br>
-                                <strong>KB:</strong> ${sizeInKB} KB<br>
-                                <strong>MB:</strong> ${sizeInMB} MB<br><br>
-                                <strong>Total de Respostas:</strong> ${respostas.length}
-                            </div>
-                        `;
-                    };
-                };
+                if (!response.pesquisas || response.pesquisas.length === 0) {
+                    alert('📭 Nenhuma pesquisa para exportar');
+                    return;
+                }
+                
+                const pesquisas = response.pesquisas;
+                
+                // Pegar todas as colunas (keys do primeiro objeto)
+                const headers = Object.keys(pesquisas[0]);
+                
+                // Criar CSV
+                let csv = headers.join(',') + '\n';
+                
+                pesquisas.forEach(p => {
+                    const row = headers.map(header => {
+                        let value = p[header];
+                        // Escapar vírgulas e aspas
+                        if (value && typeof value === 'string') {
+                            value = value.replace(/"/g, '""');
+                            if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                                value = `"${value}"`;
+                            }
+                        }
+                        return value || '';
+                    });
+                    csv += row.join(',') + '\n';
+                });
+                
+                // Download
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `PLI2050_RDS_Export_${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                alert(`✅ CSV exportado com sucesso!\n${pesquisas.length} pesquisas`);
+                
             } catch (error) {
-                container.innerHTML = `<p>Erro: ${error.message}</p>`;
+                alert(`❌ Erro ao exportar: ${error.message}`);
             }
         }
 
-        // Inicializar
-        detectBrowser();
-        showDatabaseInfo();
-        loadData();
+        // Inicializar ao carregar
+        window.addEventListener('load', () => {
+            // Aguardar core-api carregar
+            setTimeout(() => {
+                if (window.CoreAPI) {
+                    document.getElementById('api-url').textContent = window.CoreAPI.BASE_URL;
+                }
+            }, 100);
+        });
     </script>
     
     <!-- Script de Navegação -->
