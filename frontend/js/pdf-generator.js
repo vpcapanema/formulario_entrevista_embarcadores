@@ -76,9 +76,9 @@ const PDFGenerator = {
             camposCard2.push(
                 { label: 'Q6a. CNPJ', value: this._formatCNPJ(formData.cnpj) },
                 { label: 'Q6b. Razão Social', value: formData.razaoSocial },
-                { label: 'Q6c. Nome Fantasia (Receita Federal)', value: formData.nomeFantasia || 'Não informado' },
-                { label: 'Q6d. Situação Cadastral (Receita Federal)', value: formData.situacaoCadastral || 'Não informado' },
-                { label: 'Q6e. Atividade Principal CNAE (Receita Federal)', value: formData.atividadePrincipal || 'Não informado' },
+                { label: 'Q6c. Nome Fantasia (Receita Federal)', value: formData.nomeFantasiaReceita || 'Não informado' },
+                { label: 'Q6d. Situação Cadastral (Receita Federal)', value: formData.situacaoCadastralReceita || 'Não informado' },
+                { label: 'Q6e. Atividade Principal CNAE (Receita Federal)', value: formData.atividadePrincipalReceita || 'Não informado' },
                 { label: 'Q7. Município da Empresa', value: formData.municipio }
             );
             yPosition = this._addSection(doc, yPosition, 'CARD 2 - DADOS DA EMPRESA', formData, camposCard2);

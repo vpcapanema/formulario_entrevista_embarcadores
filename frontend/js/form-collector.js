@@ -360,6 +360,12 @@ const FormCollector = {
         data.municipio = this._getValue('municipio-empresa'); // Q7 - Município
         data.cnpj = this._getValue('cnpj-empresa');
         data.nomeFantasia = this._getValue('nome-fantasia');
+        
+        // ==== Q6c, Q6d, Q6e: Dados da Receita Federal (somente leitura) ====
+        data.nomeFantasiaReceita = this._getValue('nome-fantasia-receita');
+        data.situacaoCadastralReceita = this._getValue('situacao-cadastral-receita');
+        data.atividadePrincipalReceita = this._getValue('atividade-principal-receita');
+        
         data.logradouro = this._getValue('logradouro');
         data.numero = this._getValue('numero');
         data.complemento = this._getValue('complemento');
