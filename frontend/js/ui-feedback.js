@@ -151,6 +151,39 @@ const UIFeedback = {
         }
         modal.innerHTML = html;
         modal.classList.add('active');
+        
+        // Adicionar event listeners aos botões após inserir no DOM
+        this.adicionarEventListenersBotoes(modal);
+    },
+    
+    /**
+     * Adiciona event listeners aos botões do modal
+     */
+    adicionarEventListenersBotoes(modal) {
+        // Encontrar todos os botões que devem fechar o modal
+        const botoes = modal.querySelectorAll('button[onclick*="fecharFeedback"], button[onclick*="fecharModal"]');
+        
+        botoes.forEach(botao => {
+            // Remover onclick inline para evitar conflitos
+            const onclickAttr = botao.getAttribute('onclick');
+            botao.removeAttribute('onclick');
+            
+            // Adicionar event listener
+            botao.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('🖱️ Botão clicado:', botao.textContent.trim());
+                
+                // Executar ações especiais se houver
+                if (onclickAttr && onclickAttr.includes('scrollToFirstError')) {
+                    this.scrollToFirstError();
+                }
+                
+                // Fechar modal
+                this.fecharModal();
+            });
+        });
+        
+        console.log(`✅ ${botoes.length} botões configurados com event listeners`);
     },
     
     /**
