@@ -439,9 +439,7 @@ const FormCollector = {
         data.dificuldades = this._getCheckedValues('dificuldade');
         data.detalheDificuldade = this._getValue('detalhe-dificuldade');
         
-        // ==== SEÇÃO 9: Outros ====
-        data.observacoes = this._getValue('observacoes');
-        data.consentimento = this._getChecked('consentimento');
+        // ==== SEÇÃO 9: Flags e Status ====
         data.transportaCarga = true; // Sempre true (formulário é para embarcadores)
         
         console.log('📋 Dados coletados:', data);
@@ -619,12 +617,18 @@ const FormCollector = {
             
         } catch (error) {
             console.error('❌ Erro na submissão:', error);
+            console.error('📋 Detalhes completos do erro:', JSON.stringify(error, null, 2));
             UI.esconderLoading();
             
             // Tratar diferentes tipos de erro
             if (error.status) {
                 // Erro HTTP com status
-                if (error.status === 409) {
+                if (error.status === 422) {
+                    // Erro de validação do backend
+                    console.error('🔴 Erro 422 - Validação:', error.message);
+                    console.error('🔴 Data:', error.data);
+                    UI.mostrarErroBanco('Erro de validação: ' + (Array.isArray(error.message) ? error.message.join(', ') : error.message));
+                } else if (error.status === 409) {
                     UI.mostrarErroBanco('Registro duplicado: ' + error.message);
                 } else if (error.status >= 500) {
                     UI.mostrarErroBanco('Erro no servidor: ' + error.message);
