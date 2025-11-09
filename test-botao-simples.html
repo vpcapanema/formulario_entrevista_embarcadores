@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Simples de Botão Modal</title>
+    <link rel="stylesheet" href="/css/ui-feedback.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background: #f0f0f0;
+        }
+        .test-btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-btn:hover {
+            background: #45a049;
+        }
+        #debug {
+            background: white;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Direto do Botão de Fechar Modal</h1>
+    
+    <button class="test-btn" onclick="abrirModal()">1. Abrir Modal</button>
+    <button class="test-btn" onclick="testarFecharFeedback()">2. Testar fecharFeedback()</button>
+    <button class="test-btn" onclick="testarFecharModalDireto()">3. Testar UIFeedback.fecharModal()</button>
+    
+    <div id="debug"></div>
+    
+    <script src="/js/ui-feedback.js"></script>
+    
+    <script>
+        const debug = document.getElementById('debug');
+        
+        function log(msg) {
+            console.log(msg);
+            debug.textContent += msg + '\n';
+        }
+        
+        function abrirModal() {
+            log('📂 Abrindo modal de teste...');
+            
+            const html = `
+                <div class="modal-content feedback-success">
+                    <div class="modal-header">
+                        <span class="modal-icon">✅</span>
+                        <h2>Teste de Modal</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p>Este é um modal de teste. Clique no botão abaixo para fechá-lo.</p>
+                        <button onclick="fecharFeedback()" class="btn-primary">Fechar Modal</button>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof UIFeedback !== 'undefined') {
+                UIFeedback.mostrarModal(html);
+                log('✅ Modal aberto com sucesso');
+            } else {
+                log('❌ UIFeedback não está disponível');
+            }
+        }
+        
+        function testarFecharFeedback() {
+            log('\n🔍 Testando window.fecharFeedback()...');
+            log('Tipo: ' + typeof window.fecharFeedback);
+            
+            if (typeof window.fecharFeedback === 'function') {
+                log('✅ Função existe, executando...');
+                try {
+                    window.fecharFeedback();
+                    log('✅ Função executada sem erros');
+                    
+                    // Verificar se modal foi fechado
+                    const modal = document.getElementById('feedback-modal');
+                    if (modal) {
+                        log('Modal encontrado, classe active: ' + modal.classList.contains('active'));
+                    } else {
+                        log('Modal não encontrado no DOM');
+                    }
+                } catch (error) {
+                    log('❌ Erro: ' + error.message);
+                    log('Stack: ' + error.stack);
+                }
+            } else {
+                log('❌ Função não existe');
+            }
+        }
+        
+        function testarFecharModalDireto() {
+            log('\n🔍 Testando UIFeedback.fecharModal()...');
+            
+            if (typeof UIFeedback !== 'undefined' && typeof UIFeedback.fecharModal === 'function') {
+                log('✅ Função existe, executando...');
+                try {
+                    UIFeedback.fecharModal();
+                    log('✅ Função executada sem erros');
+                } catch (error) {
+                    log('❌ Erro: ' + error.message);
+                }
+            } else {
+                log('❌ UIFeedback.fecharModal não está disponível');
+            }
+        }
+        
+        // Log inicial
+        window.addEventListener('load', () => {
+            log('='.repeat(60));
+            log('DIAGNÓSTICO INICIAL');
+            log('='.repeat(60));
+            log('UIFeedback: ' + typeof UIFeedback);
+            log('window.fecharFeedback: ' + typeof window.fecharFeedback);
+            log('window.UIFeedback: ' + typeof window.UIFeedback);
+            
+            if (typeof UIFeedback !== 'undefined') {
+                log('\nMétodos do UIFeedback:');
+                log('- mostrarModal: ' + typeof UIFeedback.mostrarModal);
+                log('- fecharModal: ' + typeof UIFeedback.fecharModal);
+                log('- mostrarSucesso: ' + typeof UIFeedback.mostrarSucesso);
+            }
+            log('='.repeat(60) + '\n');
+        });
+    </script>
+</body>
+</html>
