@@ -9,6 +9,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, model_validato
 from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
+from app.utils.timezone import format_brasilia
 import re
 
 # ============================================================
@@ -235,8 +236,18 @@ class PesquisaResponse(PesquisaBase):
     id_pesquisa: int
     id_empresa: int
     id_entrevistado: int
-    data_entrevista: datetime
-    data_atualizacao: Optional[datetime] = None
+    data_entrevista: str  # Retorna formatado como dd/mm/yyyy hh:mm:ss
+    data_atualizacao: Optional[str] = None  # Retorna formatado
+    
+    @field_validator('data_entrevista', 'data_atualizacao', mode='before')
+    @classmethod
+    def format_datetime(cls, v):
+        """Formata datetime para dd/mm/yyyy hh:mm:ss no fuso de Brasília"""
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            return format_brasilia(v)
+        return v
     
     class Config:
         from_attributes = True

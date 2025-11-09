@@ -14,6 +14,7 @@ from app.database import get_db
 from app.schemas import SubmitFormData, SubmitFormResponse
 from app.models import Empresa, Entrevistado, Pesquisa, ProdutoTransportado
 from datetime import datetime
+from app.utils.timezone import now_brasilia
 import logging
 
 router = APIRouter(prefix="/api", tags=["submit"])
@@ -137,6 +138,7 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
             id_entrevistado=entrevistado.id_entrevistado,
             tipo_responsavel=data.tipoResponsavel,
             id_responsavel=id_responsavel,  # Usando valor calculado
+            data_entrevista=now_brasilia(),  # Timestamp com timezone de Brasília (UTC-3)
             
             # Produto
             produto_principal=data.produtoPrincipal,
