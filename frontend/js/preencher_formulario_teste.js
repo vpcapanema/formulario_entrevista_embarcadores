@@ -1,288 +1,573 @@
 /**/**
 
- * ═══════════════════════════════════════════════════════════ * ═══════════════════════════════════════════════════════════
+ * PREENCHIMENTO AUTOMÁTICO DE TESTE - FORMULÁRIO COMPLETO
 
- * 🧪 PREENCHIMENTO AUTOMÁTICO DE TESTE - FORMULÁRIO COMPLETO * 🧪 PREENCHIMENTO AUTOMÁTICO DE TESTE - FORMULÁRIO COMPLETO
+ * VERSÃO: 5.0 - Atualizado para nova estrutura backend/migration * ═══════════════════════════════════════════════════════════
 
- * ═══════════════════════════════════════════════════════════ * ═══════════════════════════════════════════════════════════
+ * 
 
- *  * 
+ * Este script preenche TODOS os campos do formulário (8 cards completos) * 🧪 PREENCHIMENTO AUTOMÁTICO DE TESTE - FORMULÁRIO COMPLETO
 
- * VERSÃO: 5.0 - Atualizado para nova estrutura backend/migration * VERSÃO: 5.0 - Atualizado para nova estrutura backend/migration
+ * 
 
- *  * 
+ * CARDS: * ═══════════════════════════════════════════════════════════
 
- * Este script preenche TODOS os campos do formulário (8 cards completos) * Este script preenche TODOS os campos do formulário (8 cards completos)
+ * 0. Responsável pelo Preenchimento
 
- *  * 
+ * 1. Dados do Entrevistado * 
 
- * CARDS: * CARDS:
+ * 2. Dados da Empresa
 
- * 0. Responsável pelo Preenchimento * 0. Responsável pelo Preenchimento
+ * 3. Produtos Transportados * VERSÃO: 5.0 - Atualizado para nova estrutura backend/migration
+
+ * 4. Caracterização do Produto Principal
+
+ * 5. Características do Transporte *  * 
+
+ * 6. Fatores de Decisão Modal
+
+ * 7. Análise Estratégica * Este script preenche TODOS os campos do formulário (8 cards completos) * Este script preenche TODOS os campos do formulário (8 cards completos)
+
+ * 8. Dificuldades em Relação à Logística Geral
+
+ */ *  * 
+
+
+
+console.log('\n============================================================'); * CARDS: * CARDS:
+
+console.log('PREENCHIMENTO AUTOMÁTICO - VERSÃO 5.0');
+
+console.log('TODOS os 8 cards + dados válidos conforme migration'); * 0. Responsável pelo Preenchimento * 0. Responsável pelo Preenchimento
+
+console.log('============================================================\n');
 
  * 1. Dados do Entrevistado * 1. Dados do Entrevistado
 
- * 2. Dados da Empresa * 2. Dados da Empresa
+async function preencherFormularioCompletoTeste() {
 
- * 3. Produtos Transportados * 3. Produtos Transportados
+    try { * 2. Dados da Empresa * 2. Dados da Empresa
 
- * 4. Caracterização do Produto Principal * 4. Caracterização do Produto Principal
+        console.log('Iniciando preenchimento automático V5.0...\n');
 
- * 5. Características do Transporte * 5. Características do Transporte
+         * 3. Produtos Transportados * 3. Produtos Transportados
 
- * 6. Fatores de Decisão Modal * 6. Fatores de Decisão Modal
+        const setField = (id, value) => {
 
- * 7. Análise Estratégica * 7. Análise Estratégica
+            const field = document.getElementById(id); * 4. Caracterização do Produto Principal * 4. Caracterização do Produto Principal
 
- * 8. Dificuldades em Relação à Logística Geral * 8. Dificuldades em Relação à Logística Geral
+            if (field) {
 
- */ */
+                field.value = value; * 5. Características do Transporte * 5. Características do Transporte
 
+                field.dispatchEvent(new Event('input', { bubbles: true }));
 
+                field.dispatchEvent(new Event('change', { bubbles: true })); * 6. Fatores de Decisão Modal * 6. Fatores de Decisão Modal
 
-console.log('\n════════════════════════════════════════════════════════════');console.log('\n════════════════════════════════════════════════════════════');
+                field.classList.remove('invalid');
 
-console.log('🧪 PREENCHIMENTO AUTOMÁTICO - VERSÃO 5.0');console.log('🧪 PREENCHIMENTO AUTOMÁTICO - VERSÃO 5.0');
+                 * 7. Análise Estratégica * 7. Análise Estratégica
 
-console.log('📊 TODOS os 8 cards + dados válidos conforme migration');console.log('📊 TODOS os 8 cards + dados válidos conforme migration');
+                if (field.value !== value && !['SELECT', 'TEXTAREA'].includes(field.tagName)) {
 
-console.log('════════════════════════════════════════════════════════════\n');console.log('════════════════════════════════════════════════════════════\n');
+                    console.warn(`Campo ${id}: esperado "${value}", atual "${field.value}"`); * 8. Dificuldades em Relação à Logística Geral * 8. Dificuldades em Relação à Logística Geral
 
+                } else {
 
+                    console.log(`OK: ${id} = "${value}"`); */ */
 
-async function preencherFormularioCompletoTeste() {async function preencherFormularioCompletoTeste() {
+                }
 
-    try {    try {
+                return true;
 
-        console.log('📋 Iniciando preenchimento automático V5.0...\n');        console.log('📋 Iniciando preenchimento automático V5.0...\n');
+            }
 
-                
+            console.warn(`ERRO: Campo NÃO encontrado: ${id}`);console.log('\n════════════════════════════════════════════════════════════');console.log('\n════════════════════════════════════════════════════════════');
 
-        const setField = (id, value) => {        const setField = (id, value) => {
+            return false;
 
-            const field = document.getElementById(id);            const field = document.getElementById(id);
+        };console.log('🧪 PREENCHIMENTO AUTOMÁTICO - VERSÃO 5.0');console.log('🧪 PREENCHIMENTO AUTOMÁTICO - VERSÃO 5.0');
 
-            if (field) {            if (field) {
+        
 
-                field.value = value;                field.value = value;
+        const setCheckbox = (name, values) => {console.log('📊 TODOS os 8 cards + dados válidos conforme migration');console.log('📊 TODOS os 8 cards + dados válidos conforme migration');
 
-                field.dispatchEvent(new Event('input', { bubbles: true }));                field.dispatchEvent(new Event('input', { bubbles: true }));
+            const allCheckboxes = document.querySelectorAll(`input[name="${name}"]`);
 
-                field.dispatchEvent(new Event('change', { bubbles: true }));                field.dispatchEvent(new Event('change', { bubbles: true }));
+            allCheckboxes.forEach(cb => cb.checked = false);console.log('════════════════════════════════════════════════════════════\n');console.log('════════════════════════════════════════════════════════════\n');
 
-                field.classList.remove('invalid');                field.classList.remove('invalid');
+            if (!Array.isArray(values)) values = [values];
 
-                                
+            let count = 0;
 
-                if (field.value !== value && !['SELECT', 'TEXTAREA'].includes(field.tagName)) {                if (field.value !== value && !['SELECT', 'TEXTAREA'].includes(field.tagName)) {
+            values.forEach(value => {
 
-                    console.warn(`⚠️ ${id}: esperado "${value}", atual "${field.value}"`);                    console.warn(`⚠️ ${id}: esperado "${value}", atual "${field.value}"`);
+                const checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);async function preencherFormularioCompletoTeste() {async function preencherFormularioCompletoTeste() {
 
-                } else {                } else {
+                if (checkbox) {
 
-                    console.log(`✓ ${id} = "${value}"`);                    console.log(`✓ ${id} = "${value}"`);
+                    checkbox.checked = true;    try {    try {
 
-                }                }
+                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
 
-                return true;                return true;
+                    console.log(`OK: Checkbox ${name}[] = "${value}"`);        console.log('📋 Iniciando preenchimento automático V5.0...\n');        console.log('📋 Iniciando preenchimento automático V5.0...\n');
 
-            }            }
+                    count++;
 
-            console.warn(`⚠️ Campo NÃO encontrado: ${id}`);            console.warn(`⚠️ Campo NÃO encontrado: ${id}`);
+                } else {                
 
-            return false;            return false;
+                    console.warn(`ERRO: Checkbox não encontrado: ${name}="${value}"`);
 
-        };        };
+                }        const setField = (id, value) => {        const setField = (id, value) => {
 
-                
+            });
 
-        const setCheckbox = (name, values) => {        const setCheckbox = (name, values) => {
+            return count;            const field = document.getElementById(id);            const field = document.getElementById(id);
 
-            const allCheckboxes = document.querySelectorAll(`input[name="${name}"]`);            const allCheckboxes = document.querySelectorAll(`input[name="${name}"]`);
+        };
 
-            allCheckboxes.forEach(cb => cb.checked = false);            allCheckboxes.forEach(cb => cb.checked = false);
+                    if (field) {            if (field) {
 
-            if (!Array.isArray(values)) values = [values];            if (!Array.isArray(values)) values = [values];
+        const setRadio = (name, value) => {
 
-            let count = 0;            let count = 0;
+            const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);                field.value = value;                field.value = value;
 
-            values.forEach(value => {            values.forEach(value => {
+            if (radio) {
 
-                const checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);                const checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);
+                radio.checked = true;                field.dispatchEvent(new Event('input', { bubbles: true }));                field.dispatchEvent(new Event('input', { bubbles: true }));
 
-                if (checkbox) {                if (checkbox) {
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
 
-                    checkbox.checked = true;                    checkbox.checked = true;
+                console.log(`OK: Radio ${name} = "${value}"`);                field.dispatchEvent(new Event('change', { bubbles: true }));                field.dispatchEvent(new Event('change', { bubbles: true }));
 
-                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
 
-                    console.log(`✓ Checkbox ${name}[] = "${value}"`);                    console.log(`✓ Checkbox ${name}[] = "${value}"`);
+            }                field.classList.remove('invalid');                field.classList.remove('invalid');
 
-                    count++;                    count++;
+            console.warn(`ERRO: Radio NÃO encontrado: ${name}="${value}"`);
 
-                } else {                } else {
+            return false;                                
 
-                    console.warn(`⚠️ Checkbox não encontrado: ${name}="${value}"`);                    console.warn(`⚠️ Checkbox não encontrado: ${name}="${value}"`);
+        };
 
-                }                }
+                        if (field.value !== value && !['SELECT', 'TEXTAREA'].includes(field.tagName)) {                if (field.value !== value && !['SELECT', 'TEXTAREA'].includes(field.tagName)) {
 
-            });            });
+        const aguardar = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-            return count;            return count;
+                            console.warn(`⚠️ ${id}: esperado "${value}", atual "${field.value}"`);                    console.warn(`⚠️ ${id}: esperado "${value}", atual "${field.value}"`);
 
-        };        };
+        const aguardarSelect = async (id, maxTentativas = 30) => {
 
-                
+            for (let i = 0; i < maxTentativas; i++) {                } else {                } else {
 
-        const setRadio = (name, value) => {        const setRadio = (name, value) => {
+                const select = document.getElementById(id);
 
-            const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);            const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+                if (select && select.options.length > 1) {                    console.log(`✓ ${id} = "${value}"`);                    console.log(`✓ ${id} = "${value}"`);
 
-            if (radio) {            if (radio) {
+                    console.log(`OK: Select ${id} pronto (${select.options.length} opções)`);
 
-                radio.checked = true;                radio.checked = true;
+                    return true;                }                }
 
-                radio.dispatchEvent(new Event('change', { bubbles: true }));                radio.dispatchEvent(new Event('change', { bubbles: true }));
+                }
 
-                console.log(`✓ Radio ${name} = "${value}"`);                console.log(`✓ Radio ${name} = "${value}"`);
+                await aguardar(200);                return true;                return true;
 
-                return true;                return true;
+            }
 
-            }            }
+            console.warn(`TIMEOUT: Select ${id} não populado`);            }            }
 
-            console.warn(`⚠️ Radio NÃO encontrado: ${name}="${value}"`);            console.warn(`⚠️ Radio NÃO encontrado: ${name}="${value}"`);
+            return false;
 
-            return false;            return false;
+        };            console.warn(`⚠️ Campo NÃO encontrado: ${id}`);            console.warn(`⚠️ Campo NÃO encontrado: ${id}`);
 
-        };        };
+        
 
-                
+        // CARD 0: Responsável pelo Preenchimento            return false;            return false;
 
-        const aguardar = (ms) => new Promise(resolve => setTimeout(resolve, ms));        const aguardar = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        console.log('\nCARD 0: Responsável pelo Preenchimento');
 
-                
+        setRadio('tipo-responsavel', 'entrevistado');        };        };
 
-        const aguardarSelect = async (id, maxTentativas = 30) => {        const aguardarSelect = async (id, maxTentativas = 30) => {
+        console.log('Card 0 completo\n');
 
-            for (let i = 0; i < maxTentativas; i++) {            for (let i = 0; i < maxTentativas; i++) {
+                        
 
-                const select = document.getElementById(id);                const select = document.getElementById(id);
+        // CARD 1: Dados do Entrevistado
 
-                if (select && select.options.length > 1) {                if (select && select.options.length > 1) {
+        console.log('CARD 1: Dados do Entrevistado');        const setCheckbox = (name, values) => {        const setCheckbox = (name, values) => {
 
-                    console.log(`✓ Select ${id} pronto (${select.options.length} opções)`);                    console.log(`✓ Select ${id} pronto (${select.options.length} opções)`);
+        setField('nome', 'Maria Fernanda Costa Silva');
 
-                    return true;                    return true;
+                    const allCheckboxes = document.querySelectorAll(`input[name="${name}"]`);            const allCheckboxes = document.querySelectorAll(`input[name="${name}"]`);
 
-                }                }
+        await aguardarSelect('funcao');
 
-                await aguardar(200);                await aguardar(200);
+        setField('funcao', '1');            allCheckboxes.forEach(cb => cb.checked = false);            allCheckboxes.forEach(cb => cb.checked = false);
 
-            }            }
+        
 
-            console.warn(`⚠️ Timeout: Select ${id} não populado`);            console.warn(`⚠️ Timeout: Select ${id} não populado`);
+        setField('telefone', '11987654321');            if (!Array.isArray(values)) values = [values];            if (!Array.isArray(values)) values = [values];
 
-            return false;            return false;
+        setField('email', 'maria.costa@logistica-teste.com.br');
 
-        };        };
+        console.log('Card 1 completo\n');            let count = 0;            let count = 0;
 
-                
+        
 
-        // ============================================================        // ============================================================
+        // CARD 2: Dados da Empresa            values.forEach(value => {            values.forEach(value => {
 
-        // CARD 0: Responsável pelo Preenchimento        // CARD 0: Responsável pelo Preenchimento
+        console.log('CARD 2: Dados da Empresa');
 
-        // ============================================================        // ============================================================
+        setField('tipo-empresa', 'embarcador');                const checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);                const checkbox = document.querySelector(`input[name="${name}"][value="${value}"]`);
 
-        console.log('\n📝 CARD 0: Responsável pelo Preenchimento');        console.log('\n📝 CARD 0: Responsável pelo Preenchimento');
+        
 
-        setRadio('tipo-responsavel', 'entrevistado');        setRadio('tipo-responsavel', 'entrevistado');
+        setField('cnpj-empresa', '11222333000181');                if (checkbox) {                if (checkbox) {
 
-        console.log('✅ Card 0 completo\n');        console.log('✅ Card 0 completo\n');
+        console.log('Aguardando API CNPJ processar (3s)...');
 
-                
+        await aguardar(3000);                    checkbox.checked = true;                    checkbox.checked = true;
 
-        // ============================================================        // ============================================================
+        
 
-        // CARD 1: Dados do Entrevistado        // CARD 1: Dados do Entrevistado
+        const razaoField = document.getElementById('razao-social');                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
 
-        // ============================================================        // ============================================================
+        if (!razaoField || !razaoField.value) {
 
-        console.log('📝 CARD 1: Dados do Entrevistado');        console.log('📝 CARD 1: Dados do Entrevistado');
+            console.log('Preenchendo campos manualmente (API não respondeu)');                    console.log(`✓ Checkbox ${name}[] = "${value}"`);                    console.log(`✓ Checkbox ${name}[] = "${value}"`);
 
-        setField('nome', 'Maria Fernanda Costa Silva');        setField('nome', 'Maria Fernanda Costa Silva');
+            setField('razao-social', 'Transportadora Log Moderna LTDA');
 
-                
+        }                    count++;                    count++;
 
-        await aguardarSelect('funcao');        await aguardarSelect('funcao');
+        
 
-        setField('funcao', '1'); // Gerente de Logística        setField('funcao', '1'); // Gerente de Logística
+        const municipioField = document.getElementById('municipio-empresa');                } else {                } else {
 
-                
+        if (!municipioField || !municipioField.value) {
 
-        setField('telefone', '11987654321');        setField('telefone', '11987654321');
+            setField('municipio-empresa', 'São Paulo');                    console.warn(`⚠️ Checkbox não encontrado: ${name}="${value}"`);                    console.warn(`⚠️ Checkbox não encontrado: ${name}="${value}"`);
 
-        setField('email', 'maria.costa@logistica-teste.com.br');        setField('email', 'maria.costa@logistica-teste.com.br');
+        }
 
-        console.log('✅ Card 1 completo\n');        console.log('✅ Card 1 completo\n');
+                        }                }
 
-                
+        setField('nome-fantasia', 'Log Moderna');
 
-        // ============================================================        // ============================================================
+        setField('logradouro', 'Av. Paulista');            });            });
 
-        // CARD 2: Dados da Empresa        // CARD 2: Dados da Empresa
+        setField('numero', '1500');
 
-        // ============================================================        // ============================================================
+        setField('complemento', 'Torre A');            return count;            return count;
 
-        console.log('📝 CARD 2: Dados da Empresa');        console.log('📝 CARD 2: Dados da Empresa');
+        setField('bairro', 'Bela Vista');
 
-        setField('tipo-empresa', 'embarcador');        setField('tipo-empresa', 'embarcador');
+        setField('cep', '01310200');        };        };
 
-                
+        console.log('Card 2 completo\n');
 
-        // CNPJ válido - será processado pela API        // CNPJ válido - será processado pela API
+                        
 
-        setField('cnpj-empresa', '11222333000181');        setField('cnpj-empresa', '11222333000181');
+        // CARD 3: Produtos Transportados
 
-        console.log('🔍 Aguardando API CNPJ processar (3s)...');        console.log('🔍 Aguardando API CNPJ processar (3s)...');
+        console.log('CARD 3: Produtos Transportados');        const setRadio = (name, value) => {        const setRadio = (name, value) => {
 
-        await aguardar(3000);        await aguardar(3000);
+        const tbodyField = document.getElementById('produtos-tbody');
 
-                
+        if (tbodyField && tbodyField.children.length === 0) {            const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);            const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
 
-        // Verificar se API preencheu, senão preencher manualmente        // Verificar se API preencheu, senão preencher manualmente
+            const btnAddField = document.querySelector('button[onclick*="addProdutoRow"]') || 
 
-        const razao = document.getElementById('razao-social');        const razao = document.getElementById('razao-social');
+                          document.querySelector('.btn-add-produto');            if (radio) {            if (radio) {
 
-        if (!razao || !razao.value) {        if (!razao || !razao.value) {
+            if (btnAddField) {
 
-            console.log('📝 Preenchendo campos manualmente (API não respondeu)');            console.log('📝 Preenchendo campos manualmente (API não respondeu)');
+                btnAddField.click();                radio.checked = true;                radio.checked = true;
 
-            setField('razao-social', 'Transportadora Log Moderna LTDA');            setField('razao-social', 'Transportadora Log Moderna LTDA');
+                await aguardar(200);
 
-        }        }
+            }                radio.dispatchEvent(new Event('change', { bubbles: true }));                radio.dispatchEvent(new Event('change', { bubbles: true }));
 
-                
+        }
 
-        const municipio = document.getElementById('municipio-empresa');        const municipio = document.getElementById('municipio-empresa');
+                        console.log(`✓ Radio ${name} = "${value}"`);                console.log(`✓ Radio ${name} = "${value}"`);
 
-        if (!municipio || !municipio.value) {        if (!municipio || !municipio.value) {
+        setField('produto-carga-1', 'Açúcar Refinado');
 
-            setField('municipio-empresa', 'São Paulo');            setField('municipio-empresa', 'São Paulo');
+        setField('produto-movimentacao-1', '120000');                return true;                return true;
 
-        }        }
+        setField('produto-origem-1', 'Piracicaba');
 
-                
+        setField('produto-destino-1', 'Santos');            }            }
 
-        // Campos opcionais de endereço        // Campos opcionais de endereço
+        setField('produto-distancia-1', '180.5');
 
-        setField('nome-fantasia', 'Log Moderna');        setField('nome-fantasia', 'Log Moderna');
+        setField('produto-modalidade-1', 'rodoviario');            console.warn(`⚠️ Radio NÃO encontrado: ${name}="${value}"`);            console.warn(`⚠️ Radio NÃO encontrado: ${name}="${value}"`);
 
-        setField('logradouro', 'Av. Paulista');        setField('logradouro', 'Av. Paulista');
+        setField('produto-acondicionamento-1', 'big-bag');
 
-        setField('numero', '1500');        setField('numero', '1500');
+        console.log('Card 3 completo\n');            return false;            return false;
 
-        setField('complemento', 'Torre A');        setField('complemento', 'Torre A');
+        
+
+        // CARD 4: Caracterização do Produto Principal        };        };
+
+        console.log('CARD 4: Caracterização do Produto Principal');
+
+        setField('produto-principal', 'Açúcar Refinado');                
+
+        setField('agrupamento-produto', 'agricultura');
+
+        console.log('Card 4 completo\n');        const aguardar = (ms) => new Promise(resolve => setTimeout(resolve, ms));        const aguardar = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        
+
+        // CARD 5: Características do Transporte                
+
+        console.log('CARD 5: Características do Transporte');
+
+        setField('tipo-transporte', 'exportacao');        const aguardarSelect = async (id, maxTentativas = 30) => {        const aguardarSelect = async (id, maxTentativas = 30) => {
+
+        
+
+        await aguardarSelect('origem-pais');            for (let i = 0; i < maxTentativas; i++) {            for (let i = 0; i < maxTentativas; i++) {
+
+        setField('origem-pais', '31');
+
+        await aguardar(500);                const select = document.getElementById(id);                const select = document.getElementById(id);
+
+        await aguardarSelect('origem-estado');
+
+        setField('origem-estado', 'SP');                if (select && select.options.length > 1) {                if (select && select.options.length > 1) {
+
+        await aguardar(500);
+
+        await aguardarSelect('origem-municipio');                    console.log(`✓ Select ${id} pronto (${select.options.length} opções)`);                    console.log(`✓ Select ${id} pronto (${select.options.length} opções)`);
+
+        setField('origem-municipio', '3538709');
+
+                            return true;                    return true;
+
+        setField('destino-pais', '31');
+
+        await aguardar(500);                }                }
+
+        await aguardarSelect('destino-estado');
+
+        setField('destino-estado', 'SP');                await aguardar(200);                await aguardar(200);
+
+        await aguardar(500);
+
+        await aguardarSelect('destino-municipio');            }            }
+
+        setField('destino-municipio', '3548500');
+
+                    console.warn(`⚠️ Timeout: Select ${id} não populado`);            console.warn(`⚠️ Timeout: Select ${id} não populado`);
+
+        setField('distancia', '180.5');
+
+        setRadio('tem-paradas', 'sim');            return false;            return false;
+
+        await aguardar(200);
+
+        setField('num-paradas', '1');        };        };
+
+        
+
+        setCheckbox('modo', ['rodoviario']);                
+
+        await aguardar(200);
+
+        setField('config-veiculo', 'cavalo-mecanico-carreta');        // ============================================================        // ============================================================
+
+        
+
+        setField('capacidade-utilizada', '92.5');        // CARD 0: Responsável pelo Preenchimento        // CARD 0: Responsável pelo Preenchimento
+
+        setField('peso-carga', '32000');
+
+        setField('unidade-peso', 'kg');        // ============================================================        // ============================================================
+
+        
+
+        setField('custo-transporte', '6500.00');        console.log('\n📝 CARD 0: Responsável pelo Preenchimento');        console.log('\n📝 CARD 0: Responsável pelo Preenchimento');
+
+        setField('valor-carga', '280000.00');
+
+                setRadio('tipo-responsavel', 'entrevistado');        setRadio('tipo-responsavel', 'entrevistado');
+
+        setField('tipo-embalagem', 'big-bag');
+
+        setRadio('carga-perigosa', 'nao');        console.log('✅ Card 0 completo\n');        console.log('✅ Card 0 completo\n');
+
+        
+
+        setField('tempo-dias', '0');                
+
+        setField('tempo-horas', '4');
+
+        setField('tempo-minutos', '30');        // ============================================================        // ============================================================
+
+        
+
+        setField('frequencia', 'diaria');        // CARD 1: Dados do Entrevistado        // CARD 1: Dados do Entrevistado
+
+        await aguardar(200);
+
+        setField('frequencia-diaria', '3.5');        // ============================================================        // ============================================================
+
+        
+
+        console.log('Card 5 completo\n');        console.log('📝 CARD 1: Dados do Entrevistado');        console.log('📝 CARD 1: Dados do Entrevistado');
+
+        
+
+        // CARD 6: Fatores de Decisão Modal        setField('nome', 'Maria Fernanda Costa Silva');        setField('nome', 'Maria Fernanda Costa Silva');
+
+        console.log('CARD 6: Fatores de Decisão Modal');
+
+        setRadio('importancia-custo', 'muito-importante');                
+
+        setField('variacao-custo', '18.0');
+
+        setRadio('importancia-tempo', 'muito-importante');        await aguardarSelect('funcao');        await aguardarSelect('funcao');
+
+        setField('variacao-tempo', '15.0');
+
+        setRadio('importancia-confiabilidade', 'muito-importante');        setField('funcao', '1'); // Gerente de Logística        setField('funcao', '1'); // Gerente de Logística
+
+        setField('variacao-confiabilidade', '8.0');
+
+        setRadio('importancia-seguranca', 'importante');                
+
+        setField('variacao-seguranca', '10.0');
+
+        setRadio('importancia-capacidade', 'importante');        setField('telefone', '11987654321');        setField('telefone', '11987654321');
+
+        setField('variacao-capacidade', '12.0');
+
+        console.log('Card 6 completo\n');        setField('email', 'maria.costa@logistica-teste.com.br');        setField('email', 'maria.costa@logistica-teste.com.br');
+
+        
+
+        // CARD 7: Análise Estratégica        console.log('✅ Card 1 completo\n');        console.log('✅ Card 1 completo\n');
+
+        console.log('CARD 7: Análise Estratégica');
+
+        setField('tipo-cadeia', 'just-in-time');                
+
+        setCheckbox('modal-alternativo', ['ferroviario']);
+
+        setField('fator-adicional', 'Proximidade com o porto de Santos é crucial para exportação');        // ============================================================        // ============================================================
+
+        console.log('Card 7 completo\n');
+
+                // CARD 2: Dados da Empresa        // CARD 2: Dados da Empresa
+
+        // CARD 8: Dificuldades
+
+        console.log('CARD 8: Dificuldades');        // ============================================================        // ============================================================
+
+        setCheckbox('dificuldade', ['infraestrutura', 'custo', 'tempo']);
+
+        setField('detalhe-dificuldade', 'Congestionamentos na Via Anchieta e Rodovia dos Imigrantes. Necessidade de janelas de entrega específicas no porto.');        console.log('📝 CARD 2: Dados da Empresa');        console.log('📝 CARD 2: Dados da Empresa');
+
+        console.log('Card 8 completo\n');
+
+                setField('tipo-empresa', 'embarcador');        setField('tipo-empresa', 'embarcador');
+
+        const consentimentoField = document.getElementById('consentimento');
+
+        if (consentimentoField) {                
+
+            consentimentoField.checked = true;
+
+            consentimentoField.dispatchEvent(new Event('change', { bubbles: true }));        // CNPJ válido - será processado pela API        // CNPJ válido - será processado pela API
+
+            console.log('OK: consentimento = true');
+
+        }        setField('cnpj-empresa', '11222333000181');        setField('cnpj-empresa', '11222333000181');
+
+        
+
+        setField('observacoes', 'Formulário preenchido automaticamente para teste - V5.0');        console.log('🔍 Aguardando API CNPJ processar (3s)...');        console.log('🔍 Aguardando API CNPJ processar (3s)...');
+
+        
+
+        console.log('\n============================================================');        await aguardar(3000);        await aguardar(3000);
+
+        console.log('PREENCHIMENTO COMPLETO - V5.0');
+
+        console.log('============================================================');                
+
+        console.log('\nTODOS os 8 cards preenchidos');
+
+        console.log('Dados válidos conforme migration + backend');        // Verificar se API preencheu, senão preencher manualmente        // Verificar se API preencheu, senão preencher manualmente
+
+        console.log('\nPRÓXIMO PASSO:');
+
+        console.log('   Role a página e revise os dados');        const razao = document.getElementById('razao-social');        const razao = document.getElementById('razao-social');
+
+        console.log('   Clique em "Salvar Respostas"');
+
+        console.log('\n============================================================\n');        if (!razao || !razao.value) {        if (!razao || !razao.value) {
+
+        
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });            console.log('📝 Preenchendo campos manualmente (API não respondeu)');            console.log('📝 Preenchendo campos manualmente (API não respondeu)');
+
+        
+
+        alert('Formulário preenchido completamente!\n\n' +            setField('razao-social', 'Transportadora Log Moderna LTDA');            setField('razao-social', 'Transportadora Log Moderna LTDA');
+
+              '8 Cards preenchidos:\n' +
+
+              '• Responsável: Entrevistado\n' +        }        }
+
+              '• Entrevistado: Maria Costa\n' +
+
+              '• Empresa: Log Moderna (CNPJ válido)\n' +                
+
+              '• Produto: Açúcar (120k ton/ano)\n' +
+
+              '• Rota: Piracicaba - Santos (180km)\n' +        const municipio = document.getElementById('municipio-empresa');        const municipio = document.getElementById('municipio-empresa');
+
+              '• Modal: Rodoviário (Carreta)\n' +
+
+              '• Tempo: 4h30min, 3.5 viagens/dia\n' +        if (!municipio || !municipio.value) {        if (!municipio || !municipio.value) {
+
+              '• Estratégia: Just-in-time\n\n' +
+
+              'Todos os campos obrigatórios OK!\n\n' +            setField('municipio-empresa', 'São Paulo');            setField('municipio-empresa', 'São Paulo');
+
+              'Clique em "Salvar Respostas"!');
+
+                }        }
+
+    } catch (error) {
+
+        console.error('\nERRO:', error);                
+
+        console.error('Stack:', error.stack);
+
+        alert('Erro ao preencher: ' + error.message + '\n\nVeja console (F12).');        // Campos opcionais de endereço        // Campos opcionais de endereço
+
+    }
+
+}        setField('nome-fantasia', 'Log Moderna');        setField('nome-fantasia', 'Log Moderna');
+
+
+
+window.preencherFormularioCompletoTeste = preencherFormularioCompletoTeste;        setField('logradouro', 'Av. Paulista');        setField('logradouro', 'Av. Paulista');
+
+
+
+console.log('Script V5.0 carregado!');        setField('numero', '1500');        setField('numero', '1500');
+
+console.log('Execute: preencherFormularioCompletoTeste()');
+
+console.log('Ou clique: Preencher Formulário Completo de Teste');        setField('complemento', 'Torre A');        setField('complemento', 'Torre A');
+
 
         setField('bairro', 'Bela Vista');        setField('bairro', 'Bela Vista');
 
@@ -610,7 +895,7 @@ async function preencherFormularioCompletoTeste() {async function preencherFormu
 
               '🎯 Todos os campos obrigatórios OK!\n\n' +              '🎯 Todos os campos obrigatórios OK!\n\n' +
 
-              '👉 Clique em "💾 Salvar Respostas"!');              '👉 Clique em "💾 Salvar Respostas"!');
+              '👉 Clique em "💾 Salvar Respostas"!');)             '👉 Clique em "💾 Salvar Respostas"!');
 
                 
 
