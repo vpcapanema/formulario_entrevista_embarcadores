@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste CORS - PLI 2050</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Teste de CORS - API PLI 2050</h1>
+    
+    <div class="test-box">
+        <h2>Teste 1: Health Check</h2>
+        <p>Testando conexão básica com a API</p>
+        <button onclick="testHealth()">▶️ Testar Health</button>
+        <div id="health-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Teste 2: CNPJ API (com CORS)</h2>
+        <p>Testando endpoint que precisa de CORS configurado</p>
+        <button onclick="testCNPJ()">▶️ Testar CNPJ</button>
+        <div id="cnpj-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Teste 3: Preflight (OPTIONS)</h2>
+        <p>Testando requisição preflight do CORS</p>
+        <button onclick="testPreflight()">▶️ Testar Preflight</button>
+        <div id="preflight-result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://formulario-entrevista-embarcadores.onrender.com';
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Testando...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        ✅ Sucesso!<br>
+                        Status: ${response.status}<br>
+                        Resposta: ${JSON.stringify(data, null, 2)}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ Erro: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testCNPJ() {
+            const resultDiv = document.getElementById('cnpj-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Testando CNPJ 57286005000140...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/external/cnpj/57286005000140`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // Verificar headers CORS
+                const corsHeader = response.headers.get('Access-Control-Allow-Origin');
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        ✅ Sucesso!<br>
+                        Status: ${response.status}<br>
+                        CORS Header: ${corsHeader || 'NÃO ENCONTRADO'}<br>
+                        Empresa: ${data.razao_social}<br>
+                        Município: ${data.municipio}/${data.uf}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ Erro CORS: ${error.message}<br><br>
+                        Isso significa que o CORS ainda não está configurado corretamente no Render.<br>
+                        Aguarde 2-3 minutos após salvar as variáveis de ambiente e tente novamente.
+                    </div>
+                `;
+            }
+        }
+
+        async function testPreflight() {
+            const resultDiv = document.getElementById('preflight-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Testando requisição OPTIONS...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/external/cnpj/57286005000140`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'content-type'
+                    }
+                });
+                
+                const allowOrigin = response.headers.get('Access-Control-Allow-Origin');
+                const allowMethods = response.headers.get('Access-Control-Allow-Methods');
+                const allowHeaders = response.headers.get('Access-Control-Allow-Headers');
+                
+                resultDiv.innerHTML = `
+                    <div class="result ${allowOrigin ? 'success' : 'error'}">
+                        ${allowOrigin ? '✅' : '❌'} Preflight Response<br>
+                        Status: ${response.status}<br>
+                        Allow-Origin: ${allowOrigin || 'NÃO CONFIGURADO'}<br>
+                        Allow-Methods: ${allowMethods || 'NÃO CONFIGURADO'}<br>
+                        Allow-Headers: ${allowHeaders || 'NÃO CONFIGURADO'}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ Erro: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Informações da página
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔍 Testando CORS de:', window.location.origin);
+            console.log('📡 API Target:', API_URL);
+        });
+    </script>
+</body>
+</html>
