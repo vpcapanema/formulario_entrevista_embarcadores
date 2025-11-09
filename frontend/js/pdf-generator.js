@@ -116,7 +116,11 @@ const PDFGenerator = {
                 console.log('✅ PDF gerado via Blob:', nomeArquivo);
             }
             
-            return nomeArquivo;
+            // Retorna nome do arquivo e documento para download manual
+            return {
+                nomeArquivo: nomeArquivo,
+                pdfDoc: doc
+            };
             
         } catch (error) {
             console.error('❌ Erro ao gerar PDF:', error);

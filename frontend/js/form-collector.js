@@ -600,16 +600,16 @@ const FormCollector = {
             
             // Verificar sucesso
             if (response.success) {
-                // Gerar PDF estilizado
-                const nomeArquivo = window.PDFGenerator.generatePDF(formData, response);
+                // Gerar PDF estilizado e armazenar para download manual
+                const pdfResult = window.PDFGenerator.generatePDF(formData, response);
                 
-                // Mostrar sucesso
-                UI.mostrarSucesso(formData.razaoSocial || formData.nomeEmpresa, nomeArquivo);
+                // Mostrar sucesso com botão de download
+                UI.mostrarSucesso(formData.razaoSocial || formData.nomeEmpresa, pdfResult.nomeArquivo, pdfResult.pdfDoc);
                 
-                // Aguardar 3s e resetar formulário
+                // Aguardar 5s e resetar formulário (aumentado de 3s para 5s)
                 setTimeout(() => {
                     UI.resetForm();
-                }, 3000);
+                }, 5000);
             } else {
                 // Erro retornado pelo backend
                 UI.mostrarErroBanco(response.message || 'Erro desconhecido');

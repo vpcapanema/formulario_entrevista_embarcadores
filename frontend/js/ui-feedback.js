@@ -38,12 +38,18 @@ const UIFeedback = {
                             <p>📄 <strong>Relatório PDF gerado:</strong> ${arquivo}</p>
                             <p>💾 <strong>O download deve iniciar automaticamente.</strong></p>
                             <p>🎨 O relatório contém o cabeçalho padrão PLI e todas as respostas formatadas.</p>
-                            <p style="margin-top: 10px; padding: 10px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
-                                ⚠️ <strong>Download não iniciou?</strong> Verifique se o navegador bloqueou popups/downloads. 
-                                O PDF foi gerado com sucesso - você pode tentar novamente ou clicar em "OK" para continuar.
+                            <p style="margin-top: 15px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+                                ⚠️ <strong>Download não iniciou?</strong> Clique no botão abaixo para fazer o download manualmente.
                             </p>
                         </div>
-                        <button onclick="fecharFeedback()" class="btn-primary">OK, Entendi</button>
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button onclick="UIFeedback.downloadPDFManual()" class="btn-primary" style="background: #059669; flex: 1;">
+                                📥 Baixar PDF Agora
+                            </button>
+                            <button onclick="fecharFeedback()" class="btn-secondary" style="flex: 1;">
+                                OK, Entendi
+                            </button>
+                        </div>
                     </div>
                 `
             }
@@ -252,7 +258,10 @@ const UIFeedback = {
     /**
      * Exibe mensagem de sucesso
      */
-    mostrarSucesso(nomeEmpresa, arquivo) {
+    mostrarSucesso(nomeEmpresa, arquivo, pdfDoc) {
+        // Armazenar PDF para download manual
+        window._pdfGerado = { nomeArquivo: arquivo, pdfDoc: pdfDoc };
+        
         this.mostrarModal(this.MENSAGENS.sucesso.salvamento.corpo(nomeEmpresa, arquivo));
     },
     
@@ -535,6 +544,25 @@ window.showPage = function(pageId) {
         setTimeout(() => window.PageRespostas.init(), 100);
     } else if (pageId === 'analytics' && window.PageAnalytics) {
         setTimeout(() => window.PageAnalytics.init(), 100);
+    }
+};
+
+/**
+ * Faz download manual do PDF gerado
+ */
+UIFeedback.downloadPDFManual = function() {
+    if (window._pdfGerado && window._pdfGerado.pdfDoc) {
+        console.log('📥 Iniciando download manual do PDF...');
+        try {
+            window._pdfGerado.pdfDoc.save(window._pdfGerado.nomeArquivo);
+            console.log('✅ PDF baixado manualmente:', window._pdfGerado.nomeArquivo);
+        } catch (error) {
+            console.error('❌ Erro ao baixar PDF:', error);
+            alert('Erro ao baixar PDF. Tente novamente ou entre em contato com o suporte.');
+        }
+    } else {
+        console.error('❌ PDF não disponível para download');
+        alert('PDF não disponível. Por favor, envie o formulário novamente.');
     }
 };
 
