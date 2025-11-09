@@ -537,6 +537,19 @@ const FormCollector = {
             // Coletar dados
             const formData = this.collectData();
             
+            // Validação adicional: configVeiculo obrigatório se rodoviário marcado
+            if (formData.modos && formData.modos.includes('rodoviario')) {
+                if (!formData.configVeiculo || formData.configVeiculo === '') {
+                    UI.mostrarErroValidacao(
+                        'O campo "Configuração do veículo rodoviário" é obrigatório quando o modo rodoviário está selecionado.',
+                        [{ field: 'config-veiculo', message: 'Selecione uma configuração' }]
+                    );
+                    // Scroll para o campo
+                    document.getElementById('config-veiculo')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+            }
+            
             // Mostrar loading
             UI.mostrarLoading('Enviando dados para o servidor...');
             
