@@ -1080,9 +1080,9 @@ td {
     display: flex;
 }
 
-.feedback-success,
-.feedback-warning,
-.feedback-error {
+/* Wrapper para conteúdo + botão X */
+.modal-content-wrapper {
+    position: relative;
     background: white;
     padding: 2rem;
     border-radius: 12px;
@@ -1094,6 +1094,52 @@ td {
     overflow-y: auto;
 }
 
+/* Botão X de fechar */
+.modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+    font-size: 24px;
+    line-height: 1;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    padding: 0;
+}
+
+.modal-close-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    transform: rotate(90deg);
+}
+
+.modal-close-btn:active {
+    transform: rotate(90deg) scale(0.95);
+}
+
+.feedback-success,
+.feedback-warning,
+.feedback-error {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    max-width: 100%;
+    width: 100%;
+    box-shadow: none;
+    animation: none;
+    max-height: none;
+    overflow-y: visible;
+}
+
 .feedback-icon {
     font-size: 4rem;
     text-align: center;
@@ -1102,6 +1148,7 @@ td {
 
 .feedback-success { 
     border-left: 6px solid #28a745; 
+    padding-left: 1rem;
 }
 
 .feedback-success h3 {
@@ -1110,6 +1157,7 @@ td {
 
 .feedback-warning { 
     border-left: 6px solid #ffc107; 
+    padding-left: 1rem;
 }
 
 .feedback-warning h3 {
@@ -1118,6 +1166,7 @@ td {
 
 .feedback-error { 
     border-left: 6px solid #dc3545; 
+    padding-left: 1rem;
 }
 
 .feedback-error h3 {

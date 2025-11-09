@@ -152,7 +152,14 @@ const UIFeedback = {
         
         // Garantir que o modal está visível
         modal.style.display = 'flex';
-        modal.innerHTML = html;
+        
+        // Adicionar botão X de fechar + conteúdo
+        modal.innerHTML = `
+            <div class="modal-content-wrapper">
+                <button class="modal-close-btn" title="Fechar (ESC)">✕</button>
+                ${html}
+            </div>
+        `;
         
         // Adicionar classe active após pequeno delay para animação
         setTimeout(() => {
@@ -161,6 +168,34 @@ const UIFeedback = {
         
         // Adicionar event listeners aos botões após inserir no DOM
         this.adicionarEventListenersBotoes(modal);
+        
+        // Event listener para o botão X
+        const closeBtn = modal.querySelector('.modal-close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('✕ Botão X clicado - fechando modal');
+                this.fecharModal();
+            });
+        }
+        
+        // Event listener para ESC key
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                console.log('⌨️ ESC pressionado - fechando modal');
+                this.fecharModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+        
+        // Event listener para clicar fora do modal
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                console.log('🖱️ Clique fora do modal - fechando');
+                this.fecharModal();
+            }
+        });
     },
     
     /**
