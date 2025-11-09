@@ -39,7 +39,7 @@ const UIFeedback = {
                             <p>💾 O download começará automaticamente em instantes.</p>
                             <p>🎨 O relatório contém o cabeçalho padrão PLI e todas as respostas formatadas.</p>
                         </div>
-                        <button onclick="UIFeedback.fecharModal()" class="btn-primary">OK, Entendi</button>
+                        <button onclick="fecharFeedback()" class="btn-primary">OK, Entendi</button>
                     </div>
                 `
             }
@@ -61,7 +61,7 @@ const UIFeedback = {
                                 <li>Tente salvar novamente</li>
                             </ul>
                         </div>
-                        <button onclick="UIFeedback.fecharModal(); UIFeedback.scrollToFirstError()" class="btn-primary">Ver Primeiro Erro</button>
+                        <button onclick="fecharFeedback(); UIFeedback.scrollToFirstError()" class="btn-primary">Ver Primeiro Erro</button>
                     </div>
                 `
             },
@@ -126,9 +126,9 @@ const UIFeedback = {
                                 <summary>🔧 Detalhes técnicos (para suporte)</summary>
                                 <pre>${JSON.stringify(erro, null, 2)}</pre>
                             </details>
-                            <button onclick="UIFeedback.fecharModal()" class="btn-primary">Fechar</button>
+                            <button onclick="fecharFeedback()" class="btn-primary">Fechar</button>
                         </div>
-                    `;
+                    `
                 }
             }
         }

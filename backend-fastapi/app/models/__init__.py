@@ -102,7 +102,7 @@ class Empresa(Base):
             "tipo_empresa IN ('embarcador', 'transportador', 'operador', 'outro')",
             name="check_tipo_empresa"
         ),
-        Index("idx_empresas_nome", "nome_empresa"),
+        Index("idx_empresas_razao_social", "razao_social"),
         Index("idx_empresas_cnpj", "cnpj"),
         Index("idx_empresas_municipio", "municipio"),
         Index("idx_empresas_tipo", "tipo_empresa"),
@@ -110,17 +110,16 @@ class Empresa(Base):
     )
     
     id_empresa = Column(Integer, primary_key=True, index=True)
-    nome_empresa = Column(String(255), nullable=False)
+    razao_social = Column(String(255), nullable=False)  # Campo renomeado conforme migration 20251108
     tipo_empresa = Column(String(50), nullable=False)
     outro_tipo = Column(String(255))
     municipio = Column(String(255), nullable=False)
     estado = Column(String(100))
-    cnpj = Column(String(18), unique=True)
+    cnpj = Column(String(14), unique=True)  # Apenas dígitos (14 chars) conforme migration
     data_cadastro = Column(TIMESTAMP(timezone=True), server_default=func.now())
     data_atualizacao = Column(TIMESTAMP(timezone=True))
     
-    # Campos adicionais CNPJ
-    razao_social = Column(String(255))
+    # Campos adicionais da Receita Federal
     nome_fantasia = Column(String(255))
     telefone = Column(String(20))
     email = Column(String(255))
@@ -130,7 +129,7 @@ class Empresa(Base):
     complemento = Column(String(100))
     bairro = Column(String(100))
     cep = Column(String(8))
-    cnpj_digits = Column(String(14), unique=True)
+    cnpj_digits = Column(String(14), unique=True)  # DEPRECATED: cnpj já é 14 dígitos após migration
     
     # Relationships
     entrevistados = relationship("Entrevistado", back_populates="empresa", cascade="all, delete-orphan")

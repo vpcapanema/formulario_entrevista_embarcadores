@@ -537,17 +537,56 @@ const FormCollector = {
             // Coletar dados
             const formData = this.collectData();
             
-            // Validação adicional: configVeiculo obrigatório se rodoviário marcado
+            // ===== VALIDAÇÕES CONDICIONAIS (conforme backend @model_validator) =====
+            
+            // 1. configVeiculo obrigatório se rodoviário marcado
             if (formData.modos && formData.modos.includes('rodoviario')) {
                 if (!formData.configVeiculo || formData.configVeiculo === '') {
                     UI.mostrarErroValidacao(
                         'O campo "Configuração do veículo rodoviário" é obrigatório quando o modo rodoviário está selecionado.',
                         [{ field: 'config-veiculo', message: 'Selecione uma configuração' }]
                     );
-                    // Scroll para o campo
                     document.getElementById('config-veiculo')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return;
                 }
+            }
+            
+            // 2. numParadas obrigatório se temParadas = 'sim'
+            if (formData.temParadas === 'sim') {
+                if (!formData.numParadas || formData.numParadas === '') {
+                    UI.mostrarErroValidacao(
+                        'O campo "Número de paradas" é obrigatório quando você indicou que há paradas no percurso.',
+                        [{ field: 'num-paradas', message: 'Selecione o número de paradas' }]
+                    );
+                    document.getElementById('num-paradas')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+            }
+            
+            // 3. outroTipo obrigatório se tipoEmpresa = 'outro'
+            if (formData.tipoEmpresa === 'outro') {
+                if (!formData.outroTipo || formData.outroTipo.trim() === '') {
+                    UI.mostrarErroValidacao(
+                        'O campo "Especificar outro tipo de empresa" é obrigatório quando você selecionou "Outro".',
+                        [{ field: 'outro-tipo', message: 'Especifique o tipo de empresa' }]
+                    );
+                    document.getElementById('outro-tipo')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+            }
+            
+            // 4. Tempo total deve ser maior que zero
+            const tempoDias = parseInt(formData.tempoDias) || 0;
+            const tempoHoras = parseInt(formData.tempoHoras) || 0;
+            const tempoMinutos = parseInt(formData.tempoMinutos) || 0;
+            
+            if (tempoDias === 0 && tempoHoras === 0 && tempoMinutos === 0) {
+                UI.mostrarErroValidacao(
+                    'O tempo de transporte deve ser maior que zero. Informe pelo menos dias, horas ou minutos.',
+                    [{ field: 'tempo-dias', message: 'Tempo total não pode ser zero' }]
+                );
+                document.getElementById('tempo-dias')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
             }
             
             // Mostrar loading

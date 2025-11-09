@@ -44,58 +44,60 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
         # ETAPA 1: EMPRESA (UPSERT NATIVO - PostgreSQL)
         # ====================================================
         
-        # Preparar CNPJ (remover formatação)
-        cnpj_digits = None
+        # Preparar CNPJ (remover formatação) - após migration, cnpj já é VARCHAR(14)
+        cnpj_clean = None
         if data.cnpj:
-            cnpj_digits = data.cnpj.replace('.', '').replace('/', '').replace('-', '')
+            cnpj_clean = data.cnpj.replace('.', '').replace('/', '').replace('-', '')
+        
+        # Preparar CEP (remover formatação) - banco aceita VARCHAR(8) apenas dígitos
+        cep_clean = None
+        if data.cep:
+            cep_clean = data.cep.replace('-', '').replace('.', '')
         
         # ✅ OTIMIZAÇÃO: UPSERT nativo PostgreSQL (1 query ao invés de 2)
         # INSERT ... ON CONFLICT DO UPDATE
         stmt = insert(Empresa).values(
-            nome_empresa=data.nomeEmpresa,
+            razao_social=data.nomeEmpresa,  # Backend recebe nomeEmpresa, mas salva em razao_social
             tipo_empresa=data.tipoEmpresa,
             outro_tipo=data.outroTipo,
             municipio=data.municipio,
-            cnpj=data.cnpj,
-            cnpj_digits=cnpj_digits,
-            razao_social=data.razaoSocial,
+            cnpj=cnpj_clean,  # Agora cnpj é VARCHAR(14) sem formatação
             nome_fantasia=data.nomeFantasia,
             logradouro=data.logradouro,
             numero=data.numero,
             complemento=data.complemento,
             bairro=data.bairro,
-            cep=data.cep,
+            cep=cep_clean,  # CEP sem formatação (apenas 8 dígitos)
             data_cadastro=func.now()
         )
         
         # Se CNPJ já existe, atualiza os dados
-        if cnpj_digits:
+        if cnpj_clean:
             stmt = stmt.on_conflict_do_update(
-                index_elements=['cnpj_digits'],  # Coluna de conflito (UNIQUE constraint)
+                index_elements=['cnpj'],  # Após migration, unique constraint está em cnpj
                 set_={
-                    'nome_empresa': data.nomeEmpresa,
+                    'razao_social': data.nomeEmpresa,
                     'tipo_empresa': data.tipoEmpresa,
                     'outro_tipo': data.outroTipo,
                     'municipio': data.municipio,
-                    'razao_social': data.razaoSocial,
                     'nome_fantasia': data.nomeFantasia,
                     'logradouro': data.logradouro,
                     'numero': data.numero,
                     'complemento': data.complemento,
                     'bairro': data.bairro,
-                    'cep': data.cep,
+                    'cep': cep_clean,
                     'data_atualizacao': func.now()
                 }
             )
         
         # Executa UPSERT e retorna id_empresa
-        stmt = stmt.returning(Empresa.id_empresa, Empresa.nome_empresa)
+        stmt = stmt.returning(Empresa.id_empresa, Empresa.razao_social)
         result = db.execute(stmt)
         empresa_row = result.fetchone()
         id_empresa = empresa_row[0]
-        nome_empresa = empresa_row[1]
+        razao_social = empresa_row[1]
         
-        logger.info(f"✅ Empresa UPSERT: {id_empresa} - {nome_empresa} (CNPJ: {cnpj_digits or 'N/A'})")
+        logger.info(f"✅ Empresa UPSERT: {id_empresa} - {razao_social} (CNPJ: {cnpj_clean or 'N/A'})")
         
         # ====================================================
         # ETAPA 2: ENTREVISTADO
@@ -256,7 +258,7 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
             success=True,
             message="Pesquisa salva com sucesso!",
             data={
-                "empresa": nome_empresa,
+                "empresa": razao_social,
                 "entrevistado": entrevistado.nome,
                 "produto_principal": pesquisa.produto_principal,
                 "origem": f"{pesquisa.origem_municipio}/{pesquisa.origem_estado}",

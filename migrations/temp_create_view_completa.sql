@@ -2,13 +2,54 @@ DROP VIEW IF EXISTS formulario_embarcadores.v_pesquisas_completa CASCADE;
 
 CREATE VIEW formulario_embarcadores.v_pesquisas_completa AS
 SELECT 
-    -- APENAS ID_PESQUISA (ID unico visivel)
+    -- 1. ID DA PESQUISA
     p.id_pesquisa,
     
-    -- DADOS DA PESQUISA (SEM os IDs de relacionamento)
+    -- 2. NOME DO RESPONSAVEL (condicional baseado em tipo_responsavel)
+    CASE 
+        WHEN p.tipo_responsavel = 'entrevistador' THEN entv.nome_completo
+        WHEN p.tipo_responsavel = 'entrevistado' THEN ent.nome
+        ELSE NULL
+    END AS responsavel_nome,
+    
+    -- 3. SE TIPO = ENTREVISTADOR: Todas colunas de ENTREVISTADORES + INSTITUICOES
+    CASE WHEN p.tipo_responsavel = 'entrevistador' THEN entv.nome_completo ELSE NULL END AS entrevistador_nome_completo,
+    CASE WHEN p.tipo_responsavel = 'entrevistador' THEN entv.email ELSE NULL END AS entrevistador_email,
+    CASE WHEN p.tipo_responsavel = 'entrevistador' THEN inst.nome_instituicao ELSE NULL END AS instituicao_nome,
+    CASE WHEN p.tipo_responsavel = 'entrevistador' THEN inst.tipo_instituicao ELSE NULL END AS instituicao_tipo,
+    CASE WHEN p.tipo_responsavel = 'entrevistador' THEN inst.cnpj ELSE NULL END AS instituicao_cnpj,
+    
+    -- 4. DADOS DO ENTREVISTADO (todas as colunas)
+    ent.nome AS entrevistado_nome,
+    ent.funcao AS entrevistado_funcao,
+    ent.telefone AS entrevistado_telefone,
+    ent.email AS entrevistado_email,
+    ent.principal AS entrevistado_principal,
+    ent.data_cadastro AS entrevistado_data_cadastro,
+    ent.data_atualizacao AS entrevistado_data_atualizacao,
+    
+    -- 5. DADOS DA EMPRESA (todas as colunas)
+    e.tipo_empresa AS empresa_tipo,
+    e.outro_tipo AS empresa_outro_tipo,
+    e.razao_social AS empresa_razao_social,
+    e.nome_fantasia AS empresa_nome_fantasia,
+    e.cnpj AS empresa_cnpj,
+    e.telefone AS empresa_telefone,
+    e.email AS empresa_email,
+    e.municipio AS empresa_municipio,
+    e.estado AS empresa_estado,
+    e.logradouro AS empresa_logradouro,
+    e.numero AS empresa_numero,
+    e.complemento AS empresa_complemento,
+    e.bairro AS empresa_bairro,
+    e.cep AS empresa_cep,
+    e.data_cadastro AS empresa_data_cadastro,
+    e.data_atualizacao AS empresa_data_atualizacao,
+    
+    -- 6. DEMAIS CAMPOS DA TABELA PESQUISAS
     p.tipo_responsavel,
     p.data_entrevista,
-    p.data_atualizacao,
+    p.data_atualizacao AS pesquisa_data_atualizacao,
     p.status,
     p.produto_principal,
     p.agrupamento_produto,
@@ -51,43 +92,7 @@ SELECT
     p.fator_adicional,
     p.dificuldades,
     p.detalhe_dificuldade,
-    p.observacoes,
-    
-    -- DADOS DA EMPRESA (todos os campos, SEM IDs)
-    e.tipo_empresa AS emp_tipo_empresa,
-    e.outro_tipo AS emp_outro_tipo,
-    e.razao_social AS emp_razao_social,
-    e.nome_fantasia AS emp_nome_fantasia,
-    e.cnpj AS emp_cnpj,
-    e.telefone AS emp_telefone,
-    e.email AS emp_email,
-    e.municipio AS emp_municipio,
-    e.estado AS emp_estado,
-    e.logradouro AS emp_logradouro,
-    e.numero AS emp_numero,
-    e.complemento AS emp_complemento,
-    e.bairro AS emp_bairro,
-    e.cep AS emp_cep,
-    e.data_cadastro AS emp_data_cadastro,
-    e.data_atualizacao AS emp_data_atualizacao,
-    
-    -- DADOS DO ENTREVISTADO (todos os campos, SEM IDs)
-    ent.nome AS ent_nome,
-    ent.funcao AS ent_funcao,
-    ent.telefone AS ent_telefone,
-    ent.email AS ent_email,
-    ent.principal AS ent_principal,
-    ent.data_cadastro AS ent_data_cadastro,
-    ent.data_atualizacao AS ent_data_atualizacao,
-    
-    -- DADOS DO ENTREVISTADOR (todos os campos, SEM IDs - NULL se tipo_responsavel != 'entrevistador')
-    entv.nome_completo AS entv_nome_completo,
-    entv.email AS entv_email,
-    
-    -- DADOS DA INSTITUICAO (todos os campos, SEM IDs - NULL se tipo_responsavel != 'entrevistador')
-    inst.nome_instituicao AS inst_nome_instituicao,
-    inst.tipo_instituicao AS inst_tipo_instituicao,
-    inst.cnpj AS inst_cnpj
+    p.observacoes
     
 FROM formulario_embarcadores.pesquisas p
 INNER JOIN formulario_embarcadores.empresas e 
