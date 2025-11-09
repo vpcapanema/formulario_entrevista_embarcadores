@@ -190,17 +190,38 @@ const FormValidator = {
         for (const fieldId in this.fieldValidators) {
             const field = document.getElementById(fieldId);
             if (field) {
+                // onBlur: Valida APENAS FORMATO (não valida obrigatório)
                 field.addEventListener('blur', (e) => {
                     console.log(`🔍 Validando formato do campo: ${fieldId}`);
-                    // onBlur: Valida APENAS FORMATO (não valida obrigatório)
                     this.validateFieldFormat(fieldId);
                 });
 
-                // Também adiciona listener onChange para selects
+                // Validação em TEMPO REAL para SELECTs: Imediatamente após seleção
                 if (field.tagName === 'SELECT') {
                     field.addEventListener('change', (e) => {
-                        console.log(`🔍 Validando formato do select: ${fieldId}`);
-                        // onChange: Valida APENAS FORMATO (não valida obrigatório)
+                        console.log(`⚡ Validação instantânea do select: ${fieldId}`);
+                        this.validateFieldFormat(fieldId);
+                    });
+                }
+
+                // Validação em TEMPO REAL para INPUTs: Após 3 caracteres digitados
+                if (field.tagName === 'INPUT' && (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number')) {
+                    field.addEventListener('input', (e) => {
+                        const value = field.value.trim();
+                        if (value.length >= 3) {
+                            console.log(`⚡ Validação instantânea (3+ chars) do campo: ${fieldId}`);
+                            this.validateFieldFormat(fieldId);
+                        } else if (value.length === 0) {
+                            // Limpa validação quando campo é esvaziado
+                            this.clearValidation(fieldId);
+                        }
+                    });
+                }
+
+                // Validação em TEMPO REAL para RADIO BUTTONS: Imediatamente ao marcar
+                if (field.tagName === 'INPUT' && field.type === 'radio') {
+                    field.addEventListener('change', (e) => {
+                        console.log(`⚡ Validação instantânea do radio: ${field.name}`);
                         this.validateFieldFormat(fieldId);
                     });
                 }
@@ -216,12 +237,12 @@ const FormValidator = {
             console.warn(`⚠️ ${listenersSkipped.length} campos sem listener:`, listenersSkipped);
         }
 
-        // Adiciona listeners para grupos de checkboxes
+        // Validação INSTANTÂNEA para grupos de checkboxes: Imediatamente ao marcar/desmarcar
         for (const groupName in this.checkboxGroups) {
             const checkboxes = document.querySelectorAll(`input[name="${groupName}"]`);
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', () => {
-                    // Checkboxes: Valida APENAS FORMATO (não valida obrigatório no blur)
+                    console.log(`⚡ Validação instantânea do checkbox group: ${groupName}`);
                     this.validateCheckboxGroupFormat(groupName);
                 });
             });
