@@ -149,8 +149,15 @@ const UIFeedback = {
             modal.className = 'modal-overlay';
             document.body.appendChild(modal);
         }
+        
+        // Garantir que o modal está visível
+        modal.style.display = 'flex';
         modal.innerHTML = html;
-        modal.classList.add('active');
+        
+        // Adicionar classe active após pequeno delay para animação
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
         
         // Adicionar event listeners aos botões após inserir no DOM
         this.adicionarEventListenersBotoes(modal);
@@ -193,6 +200,13 @@ const UIFeedback = {
         const modal = document.getElementById('feedback-modal');
         if (modal) {
             modal.classList.remove('active');
+            // Remover o modal do DOM após animação
+            setTimeout(() => {
+                if (modal && !modal.classList.contains('active')) {
+                    modal.style.display = 'none';
+                    modal.innerHTML = ''; // Limpar conteúdo
+                }
+            }, 300); // Tempo da animação CSS
         }
     },
     
