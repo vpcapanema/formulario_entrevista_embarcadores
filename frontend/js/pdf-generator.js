@@ -269,10 +269,14 @@ const PDFGenerator = {
     
     /**
      * Adiciona uma seção com campos
+     * ✅ MELHORADO: Quebra automática de linha para labels E valores
      */
     _addSection(doc, yPosition, titulo, formData, campos) {
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
+        const margemEsquerda = 20;
+        const margemDireita = 15;
+        const larguraDisponivel = pageWidth - margemEsquerda - margemDireita;
         
         // Verificar se precisa de nova página
         if (yPosition > pageHeight - 60) {
@@ -291,29 +295,45 @@ const PDFGenerator = {
         yPosition += 12;
         
         // Campos
-        doc.setTextColor(31, 41, 55); // text color
         doc.setFontSize(9);
         
         campos.forEach(campo => {
-            // Verificar quebra de página
-            if (yPosition > pageHeight - 30) {
+            // Verificar quebra de página ANTES de adicionar o campo
+            const estimativaAltura = 15; // Altura estimada para evitar cortar campos
+            if (yPosition > pageHeight - estimativaAltura) {
                 doc.addPage();
                 yPosition = 20;
             }
             
-            // Label
+            // ===== LABEL (PERGUNTA) =====
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(107, 114, 128); // textLight
-            doc.text(`${campo.label}:`, 20, yPosition);
+            doc.setTextColor(107, 114, 128); // textLight (cinza)
             
-            // Valor
+            // Quebrar label em múltiplas linhas se necessário (40% da largura)
+            const larguraLabel = larguraDisponivel * 0.4;
+            const labelSplit = doc.splitTextToSize(`${campo.label}:`, larguraLabel);
+            
+            // Renderizar label
+            doc.text(labelSplit, margemEsquerda, yPosition);
+            const alturaLabel = labelSplit.length * 4;
+            
+            // ===== VALOR (RESPOSTA) =====
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(31, 41, 55); // text
-            const valor = campo.value || 'Não informado';
-            const valorSplit = doc.splitTextToSize(String(valor), pageWidth - 90);
-            doc.text(valorSplit, 75, yPosition);
+            doc.setTextColor(31, 41, 55); // text (preto)
             
-            yPosition += Math.max(6, valorSplit.length * 5);
+            // Quebrar valor em múltiplas linhas (55% da largura)
+            const valor = campo.value || 'Não informado';
+            const larguraValor = larguraDisponivel * 0.55;
+            const xValor = margemEsquerda + larguraLabel + 5; // 5mm de espaço entre label e valor
+            const valorSplit = doc.splitTextToSize(String(valor), larguraValor);
+            
+            // Renderizar valor
+            doc.text(valorSplit, xValor, yPosition);
+            const alturaValor = valorSplit.length * 4;
+            
+            // Avançar Y pela maior altura (label ou valor)
+            const alturaMaxima = Math.max(alturaLabel, alturaValor);
+            yPosition += alturaMaxima + 2; // +2mm de espaçamento entre campos
         });
         
         return yPosition + 5;

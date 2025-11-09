@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PDF Vazio - PLI 2050</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="frontend/js/pdf-generator.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #1e40af;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .info-box li {
+            margin: 5px 0;
+            color: #374151;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        #status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        #status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 Gerador de PDF de Teste</h1>
+        <p class="subtitle">PLI 2050 - Relatório com Campos Vazios</p>
+        
+        <div class="info-box">
+            <h3>ℹ️ O que será gerado:</h3>
+            <ul>
+                <li><strong>Card 0:</strong> Responsável pelo preenchimento (2 campos)</li>
+                <li><strong>Card 1:</strong> Dados do entrevistado (5 campos)</li>
+                <li><strong>Card 2:</strong> Dados da empresa (8 campos + Receita Federal)</li>
+                <li><strong>Card 3:</strong> Produtos transportados (tabela vazia)</li>
+                <li><strong>Card 4:</strong> Produto principal (3 campos)</li>
+                <li><strong>Card 5:</strong> Características do transporte (18 campos)</li>
+                <li><strong>Card 6:</strong> Fatores de decisão modal (10 campos)</li>
+                <li><strong>Card 7:</strong> Análise estratégica (3 campos)</li>
+                <li><strong>Card 8:</strong> Dificuldades logísticas (2 campos)</li>
+            </ul>
+            <p><strong>Total: 55+ campos</strong> - Todos os campos condicionais estarão visíveis com valor "Não informado"</p>
+        </div>
+        
+        <button class="btn" onclick="gerarPDFVazio()">📥 Gerar PDF de Teste Vazio</button>
+        <button class="btn" onclick="gerarPDFComDadosMinimos()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">📝 Gerar PDF com Dados Mínimos</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function mostrarStatus(mensagem, tipo) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = mensagem;
+            statusDiv.className = tipo;
+            statusDiv.style.display = 'block';
+            
+            if (tipo === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function gerarPDFVazio() {
+            try {
+                console.log('🧪 Gerando PDF de teste VAZIO...');
+                
+                // FormData completamente vazio
+                const formData = {
+                    // Card 0
+                    tipoResponsavel: null,
+                    idEntrevistador: null,
+                    
+                    // Card 1
+                    nome: null,
+                    funcao: null,
+                    outraFuncao: null,
+                    telefone: null,
+                    email: null,
+                    
+                    // Card 2
+                    tipoEmpresa: null,
+                    outroTipo: null,
+                    cnpj: null,
+                    razaoSocial: null,
+                    nomeFantasia: null,
+                    situacaoCadastral: null,
+                    atividadePrincipal: null,
+                    municipio: null,
+                    
+                    // Card 3
+                    produtos: [],
+                    
+                    // Card 4
+                    produtoPrincipal: null,
+                    agrupamentoProduto: null,
+                    outroProduto: null,
+                    
+                    // Card 5
+                    tipoTransporte: null,
+                    origemPais: null,
+                    origemEstado: null,
+                    origemMunicipio: null,
+                    destinoPais: null,
+                    destinoEstado: null,
+                    destinoMunicipio: null,
+                    distancia: null,
+                    temParadas: null,
+                    numParadas: null,
+                    numParadasExato: null,
+                    modos: [],
+                    configVeiculo: null,
+                    capacidadeUtilizada: null,
+                    pesoCarga: null,
+                    unidadePeso: null,
+                    custoTransporte: null,
+                    valorCarga: null,
+                    tipoEmbalagem: null,
+                    cargaPerigosa: null,
+                    tempoDias: null,
+                    tempoHoras: null,
+                    tempoMinutos: null,
+                    frequencia: null,
+                    frequenciaDiaria: null,
+                    frequenciaOutra: null,
+                    
+                    // Card 6
+                    importanciaCusto: null,
+                    variacaoCusto: null,
+                    importanciaTempo: null,
+                    variacaoTempo: null,
+                    importanciaConfiabilidade: null,
+                    variacaoConfiabilidade: null,
+                    importanciaSeguranca: null,
+                    variacaoSeguranca: null,
+                    importanciaCapacidade: null,
+                    variacaoCapacidade: null,
+                    
+                    // Card 7
+                    tipoCadeia: null,
+                    modaisAlternativos: [],
+                    fatorAdicional: null,
+                    
+                    // Card 8
+                    dificuldades: [],
+                    detalheDificuldade: null
+                };
+                
+                const response = {
+                    id_pesquisa: 'TESTE_VAZIO',
+                    id_empresa: 0,
+                    id_entrevistado: 0
+                };
+                
+                const resultado = window.PDFGenerator.generatePDF(formData, response);
+                
+                mostrarStatus(`✅ PDF "${resultado.nomeArquivo}" gerado com sucesso! Verifique sua pasta de Downloads.`, 'success');
+                console.log('✅ PDF de teste vazio gerado:', resultado.nomeArquivo);
+                
+            } catch (error) {
+                console.error('❌ Erro ao gerar PDF:', error);
+                mostrarStatus(`❌ Erro ao gerar PDF: ${error.message}`, 'error');
+            }
+        }
+
+        function gerarPDFComDadosMinimos() {
+            try {
+                console.log('🧪 Gerando PDF de teste com DADOS MÍNIMOS...');
+                
+                // FormData com dados mínimos para visualizar formatação
+                const formData = {
+                    // Card 0
+                    tipoResponsavel: 'entrevistado',
+                    idEntrevistador: null,
+                    
+                    // Card 1
+                    nome: 'João da Silva',
+                    funcao: 'Gerente de Logística',
+                    outraFuncao: null,
+                    telefone: '(11) 98765-4321',
+                    email: 'joao.silva@exemplo.com.br',
+                    
+                    // Card 2
+                    tipoEmpresa: 'embarcador',
+                    outroTipo: null,
+                    cnpj: '11222333000181',
+                    razaoSocial: 'Exemplo Transportes Ltda',
+                    nomeFantasia: 'Exemplo Trans',
+                    situacaoCadastral: 'ATIVA',
+                    atividadePrincipal: '4930-2/02 - Transporte rodoviário de carga',
+                    municipio: 'São Paulo',
+                    
+                    // Card 3
+                    produtos: [
+                        {
+                            carga: 'Soja em grão',
+                            movimentacao: 50000,
+                            origem: 'Ribeirão Preto - SP',
+                            destino: 'Santos - SP',
+                            distancia: 450,
+                            modalidade: 'Rodoviário',
+                            acondicionamento: 'Granel sólido'
+                        },
+                        {
+                            carga: 'Açúcar refinado',
+                            movimentacao: 30000,
+                            origem: 'Araraquara - SP',
+                            destino: 'Santos - SP',
+                            distancia: 380,
+                            modalidade: 'Rodoviário',
+                            acondicionamento: 'Ensacado'
+                        }
+                    ],
+                    
+                    // Card 4
+                    produtoPrincipal: 'Soja em grão',
+                    agrupamentoProduto: 'soja',
+                    outroProduto: null,
+                    
+                    // Card 5
+                    tipoTransporte: 'exportacao',
+                    origemPais: 'Brasil',
+                    origemEstado: 'São Paulo',
+                    origemMunicipio: 'Ribeirão Preto',
+                    destinoPais: 'Brasil',
+                    destinoEstado: 'São Paulo',
+                    destinoMunicipio: 'Santos',
+                    distancia: 450,
+                    temParadas: 'sim',
+                    numParadas: '2',
+                    numParadasExato: null,
+                    modos: ['rodoviario'],
+                    configVeiculo: 'semirreboque',
+                    capacidadeUtilizada: 85.5,
+                    pesoCarga: 30,
+                    unidadePeso: 'toneladas',
+                    custoTransporte: 12500,
+                    valorCarga: 180000,
+                    tipoEmbalagem: 'granel-solido',
+                    cargaPerigosa: 'nao',
+                    tempoDias: 0,
+                    tempoHoras: 8,
+                    tempoMinutos: 30,
+                    frequencia: 'mais-1x-semana',
+                    frequenciaDiaria: null,
+                    frequenciaOutra: null,
+                    
+                    // Card 6
+                    importanciaCusto: 'alta',
+                    variacaoCusto: 15,
+                    importanciaTempo: 'media',
+                    variacaoTempo: 20,
+                    importanciaConfiabilidade: 'muito-alta',
+                    variacaoConfiabilidade: 10,
+                    importanciaSeguranca: 'alta',
+                    variacaoSeguranca: 12,
+                    importanciaCapacidade: 'media',
+                    variacaoCapacidade: 25,
+                    
+                    // Card 7
+                    tipoCadeia: 'suprimento',
+                    modaisAlternativos: ['ferrovia', 'cabotagem'],
+                    fatorAdicional: 'A infraestrutura ferroviária precisa de melhorias significativas na região.',
+                    
+                    // Card 8
+                    dificuldades: ['infra-rodoviaria', 'infra-ferroviaria', 'acessos-portos'],
+                    detalheDificuldade: 'As principais dificuldades incluem o estado precário das rodovias estaduais, a falta de ramais ferroviários para as unidades de produção, e os congestionamentos frequentes nos acessos ao Porto de Santos.'
+                };
+                
+                const response = {
+                    id_pesquisa: 'TESTE_DADOS_MINIMOS',
+                    id_empresa: 1,
+                    id_entrevistado: 1
+                };
+                
+                const resultado = window.PDFGenerator.generatePDF(formData, response);
+                
+                mostrarStatus(`✅ PDF "${resultado.nomeArquivo}" gerado com sucesso! Verifique sua pasta de Downloads.`, 'success');
+                console.log('✅ PDF de teste com dados mínimos gerado:', resultado.nomeArquivo);
+                
+            } catch (error) {
+                console.error('❌ Erro ao gerar PDF:', error);
+                mostrarStatus(`❌ Erro ao gerar PDF: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
