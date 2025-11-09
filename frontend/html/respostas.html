@@ -814,6 +814,275 @@
             'qtd_produtos': 'outros'
         };
 
+        // Mapeamentos de valores codificados para textos legíveis
+        const mapeamentoValores = {
+            // Países (ISO Alpha-2)
+            pais: {
+                'BR': 'Brasil',
+                'US': 'Estados Unidos',
+                'AR': 'Argentina',
+                'CL': 'Chile',
+                'UY': 'Uruguai',
+                'PY': 'Paraguai',
+                'CN': 'China',
+                'DE': 'Alemanha',
+                'FR': 'França',
+                'IT': 'Itália',
+                'ES': 'Espanha',
+                'GB': 'Reino Unido',
+                'JP': 'Japão',
+                'MX': 'México',
+                'CO': 'Colômbia',
+                'PE': 'Peru',
+                'BO': 'Bolívia',
+                'VE': 'Venezuela'
+            },
+            
+            // Estados brasileiros (UF)
+            estado: {
+                'SP': 'São Paulo',
+                'RJ': 'Rio de Janeiro',
+                'MG': 'Minas Gerais',
+                'ES': 'Espírito Santo',
+                'PR': 'Paraná',
+                'SC': 'Santa Catarina',
+                'RS': 'Rio Grande do Sul',
+                'BA': 'Bahia',
+                'SE': 'Sergipe',
+                'AL': 'Alagoas',
+                'PE': 'Pernambuco',
+                'PB': 'Paraíba',
+                'RN': 'Rio Grande do Norte',
+                'CE': 'Ceará',
+                'PI': 'Piauí',
+                'MA': 'Maranhão',
+                'PA': 'Pará',
+                'AP': 'Amapá',
+                'RR': 'Roraima',
+                'AM': 'Amazonas',
+                'AC': 'Acre',
+                'RO': 'Rondônia',
+                'TO': 'Tocantins',
+                'MT': 'Mato Grosso',
+                'MS': 'Mato Grosso do Sul',
+                'GO': 'Goiás',
+                'DF': 'Distrito Federal'
+            },
+            
+            // Tipo de empresa
+            tipo_empresa: {
+                'embarcador': 'Embarcador (dono da carga)',
+                'transportador': 'Transportador',
+                'ambos': 'Ambos (Embarcador e Transportador)',
+                'outro': 'Outro'
+            },
+            
+            // Tipo de transporte
+            tipo_transporte: {
+                'importacao': 'Importação',
+                'exportacao': 'Exportação',
+                'local': 'Local (dentro do Estado)',
+                'nacional': 'Nacional (entre Estados)',
+                'internacional': 'Internacional'
+            },
+            
+            // Frequência de transporte
+            frequencia: {
+                'diaria': 'Diária',
+                'mais-1x-semana': 'Mais de 1x por semana',
+                'semanal': 'Semanal',
+                'quinzenal': 'Quinzenal',
+                'mensal': 'Mensal',
+                'bimestral': 'Bimestral',
+                'trimestral': 'Trimestral',
+                'semestral': 'Semestral',
+                'anual': 'Anual',
+                'eventual': 'Eventual'
+            },
+            
+            // Importância dos fatores
+            importancia: {
+                'muito-alta': 'Muito Alta',
+                'alta': 'Alta',
+                'media': 'Média',
+                'baixa': 'Baixa',
+                'muito-baixa': 'Muito Baixa'
+            },
+            
+            // Variação dos fatores
+            variacao: {
+                'aumentou-muito': 'Aumentou muito',
+                'aumentou': 'Aumentou',
+                'estavel': 'Estável',
+                'diminuiu': 'Diminuiu',
+                'diminuiu-muito': 'Diminuiu muito',
+                'nao-sei': 'Não sei / Não se aplica'
+            },
+            
+            // Tipo de cadeia logística
+            tipo_cadeia: {
+                'porta-porta': 'Porta a Porta',
+                'porto-porta': 'Porto a Porta',
+                'porto-porto': 'Porto a Porto',
+                'porta-porto': 'Porta a Porto',
+                'outra': 'Outra configuração'
+            },
+            
+            // Sim/Não
+            simNao: {
+                'sim': 'Sim',
+                'nao': 'Não',
+                's': 'Sim',
+                'n': 'Não',
+                'true': 'Sim',
+                'false': 'Não',
+                '1': 'Sim',
+                '0': 'Não'
+            },
+            
+            // Modais de transporte
+            modais: {
+                'rodoviario': 'Rodoviário',
+                'ferroviario': 'Ferroviário',
+                'aquaviario': 'Aquaviário',
+                'aereo': 'Aéreo',
+                'dutoviario': 'Dutoviário',
+                'multimodal': 'Multimodal'
+            },
+            
+            // Configuração de veículo
+            config_veiculo: {
+                'truck': 'Truck',
+                'toco': 'Toco',
+                'carreta': 'Carreta',
+                'bitrem': 'Bitrem',
+                'rodotrem': 'Rodotrem',
+                'outro': 'Outro'
+            },
+            
+            // Tipo de carga
+            tipo_carga: {
+                'geral': 'Carga Geral',
+                'granel-solido': 'Granel Sólido',
+                'granel-liquido': 'Granel Líquido',
+                'conteiner': 'Contêiner',
+                'refrigerada': 'Refrigerada',
+                'perigosa': 'Perigosa',
+                'outro': 'Outro'
+            },
+            
+            // Tipo de embalagem
+            tipo_embalagem: {
+                'sacaria': 'Sacaria',
+                'big-bag': 'Big Bag',
+                'palete': 'Palete',
+                'conteiner': 'Contêiner',
+                'granel': 'Granel',
+                'caixa': 'Caixa',
+                'engradado': 'Engradado',
+                'outro': 'Outro'
+            }
+        };
+
+        /**
+         * Formata um valor codificado para texto legível
+         * @param {string} campo - Nome do campo
+         * @param {any} valor - Valor a ser formatado
+         * @returns {string} - Valor formatado
+         */
+        function formatarValor(campo, valor) {
+            if (valor === null || valor === undefined || valor === '') {
+                return '-';
+            }
+            
+            // Converter para string para comparação
+            const valorStr = String(valor).toLowerCase().trim();
+            
+            // País (origem_pais, destino_pais)
+            if (campo.includes('pais')) {
+                return mapeamentoValores.pais[valor.toUpperCase()] || valor;
+            }
+            
+            // Estado (origem_estado, destino_estado)
+            if (campo.includes('estado') && !campo.includes('municipio')) {
+                return mapeamentoValores.estado[valor.toUpperCase()] || valor;
+            }
+            
+            // Tipo de empresa
+            if (campo === 'tipo_empresa') {
+                return mapeamentoValores.tipo_empresa[valorStr] || valor;
+            }
+            
+            // Tipo de transporte
+            if (campo === 'tipo_transporte') {
+                return mapeamentoValores.tipo_transporte[valorStr] || valor;
+            }
+            
+            // Frequência
+            if (campo === 'frequencia') {
+                return mapeamentoValores.frequencia[valorStr] || valor;
+            }
+            
+            // Importância (importancia_custo, importancia_tempo, etc.)
+            if (campo.startsWith('importancia_')) {
+                return mapeamentoValores.importancia[valorStr] || valor;
+            }
+            
+            // Variação (variacao_custo, variacao_tempo, etc.)
+            if (campo.startsWith('variacao_')) {
+                return mapeamentoValores.variacao[valorStr] || valor;
+            }
+            
+            // Tipo de cadeia
+            if (campo === 'tipo_cadeia') {
+                return mapeamentoValores.tipo_cadeia[valorStr] || valor;
+            }
+            
+            // Campos sim/não
+            if (campo === 'carga_perigosa' || campo === 'tem_paradas' || 
+                campo === 'possui_armazem' || campo === 'uso_tecnologia') {
+                return mapeamentoValores.simNao[valorStr] || valor;
+            }
+            
+            // Modais (pode ser array ou string separada por vírgula)
+            if (campo === 'modais' || campo === 'modais_alternativos') {
+                if (Array.isArray(valor)) {
+                    return valor.map(m => mapeamentoValores.modais[m.toLowerCase()] || m).join(', ');
+                } else if (typeof valor === 'string' && valor.includes(',')) {
+                    return valor.split(',').map(m => 
+                        mapeamentoValores.modais[m.trim().toLowerCase()] || m.trim()
+                    ).join(', ');
+                } else {
+                    return mapeamentoValores.modais[valorStr] || valor;
+                }
+            }
+            
+            // Configuração de veículo
+            if (campo === 'config_veiculo') {
+                return mapeamentoValores.config_veiculo[valorStr] || valor;
+            }
+            
+            // Tipo de carga
+            if (campo === 'tipo_carga') {
+                return mapeamentoValores.tipo_carga[valorStr] || valor;
+            }
+            
+            // Tipo de embalagem
+            if (campo === 'tipo_embalagem') {
+                return mapeamentoValores.tipo_embalagem[valorStr] || valor;
+            }
+            
+            // Dificuldades (pode ser array)
+            if (campo === 'dificuldades') {
+                if (Array.isArray(valor)) {
+                    return valor.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join('; ');
+                }
+            }
+            
+            // Retorna valor original se não houver mapeamento
+            return valor;
+        }
+
         function renderizarTabela() {
             const wrapper = document.getElementById('table-wrapper');
             if (dadosFiltrados.length === 0) {
@@ -850,7 +1119,14 @@
                     if (valor === null || valor === undefined || valor === '') {
                         valor = '-';
                     } else if (Array.isArray(valor)) {
-                        valor = valor.join(', ');
+                        // Arrays: aplicar formatação se for campo de modais
+                        if (campo === 'modais' || campo === 'modais_alternativos') {
+                            valor = formatarValor(campo, valor);
+                        } else if (campo === 'dificuldades') {
+                            valor = formatarValor(campo, valor);
+                        } else {
+                            valor = valor.join(', ');
+                        }
                     } else if (campo.includes('data_')) {
                         try {
                             valor = new Date(valor).toLocaleDateString('pt-BR');
@@ -865,14 +1141,21 @@
                             }
                         } catch(e) {}
                     } else if (campo === 'distancia' || campo.includes('variacao')) {
-                        try {
-                            const num = parseFloat(valor);
-                            if (!isNaN(num)) {
-                                valor = num.toFixed(2);
-                            }
-                        } catch(e) {}
+                        // Distância em km, variação aplicar formatação de valor
+                        if (campo === 'distancia') {
+                            try {
+                                const num = parseFloat(valor);
+                                if (!isNaN(num)) {
+                                    valor = num.toFixed(2) + ' km';
+                                }
+                            } catch(e) {}
+                        } else {
+                            // Variação: formatar código para texto
+                            valor = formatarValor(campo, valor);
+                        }
                     } else {
-                        valor = String(valor);
+                        // Aplicar formatação de valores codificados
+                        valor = formatarValor(campo, String(valor));
                     }
                     
                     // Badge para status
