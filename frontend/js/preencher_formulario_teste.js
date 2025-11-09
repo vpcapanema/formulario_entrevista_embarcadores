@@ -30,7 +30,7 @@ function preencherFormularioCompletoTeste() {
     // CARD 2 - Dados da Empresa
     const tipoEmpresaSelect = document.getElementById('tipo-empresa');
     if (tipoEmpresaSelect.options.length > 1) tipoEmpresaSelect.selectedIndex = 1;
-    document.getElementById('cnpj-empresa').value = '12345678000190';
+    document.getElementById('cnpj-empresa').value = '11222333000181'; // CNPJ válido para teste
     document.getElementById('razao-social').value = 'EMPRESA TESTE LTDA V7';
     document.getElementById('municipio-empresa').value = 'São Paulo';
 
