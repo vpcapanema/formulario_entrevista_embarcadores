@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * FORM-VALIDATOR - Motor de Validação Visual
+ * FORM-VALIDATOR - Motor de Validação Visual INSTANTÂNEA
  * ============================================================================
  * 
  * CAMPOS VALIDADOS (66 campos mapeados para colunas PostgreSQL):
@@ -34,11 +34,17 @@
  * - modais_alternativos[] → modais alternativos (opcional)
  * 
  * Responsável por:
- * 1. Validação onBlur (ao sair do campo) - APENAS FORMATO
+ * 1. Validação INSTANTÂNEA (onChange/onInput após 3 chars) - APENAS FORMATO
  * 2. Validação onSubmit (ao salvar) - FORMATO + OBRIGATÓRIO
  * 3. Gerenciar classes CSS (required-empty, invalid-format, valid-input)
  * 4. Exibir mensagens de validação
  * 5. Scroll automático para primeiro erro
+ * 
+ * LÓGICA DE DISPARO:
+ * - SELECTs: onChange imediato
+ * - INPUTs/TEXTAREAs: onInput após 3 caracteres
+ * - RADIO/CHECKBOXes: onChange imediato
+ * - SUBMIT: Validação completa (formato + obrigatório)
  */
 
 const FormValidator = {
@@ -181,7 +187,8 @@ const FormValidator = {
     },
 
     /**
-     * Adiciona listeners onBlur em todos os campos
+     * Adiciona listeners de validação instantânea em TODOS os campos
+     * VALIDAÇÃO AUTOMÁTICA: onChange (SELECTs) ou onInput após 3 chars (INPUTs)
      */
     attachBlurListeners: function() {
         let listenersAdded = 0;
@@ -190,26 +197,24 @@ const FormValidator = {
         for (const fieldId in this.fieldValidators) {
             const field = document.getElementById(fieldId);
             if (field) {
-                // onBlur: Valida APENAS FORMATO (não valida obrigatório)
-                field.addEventListener('blur', (e) => {
-                    console.log(`🔍 Validando formato do campo: ${fieldId}`);
-                    this.validateFieldFormat(fieldId);
-                });
-
-                // Validação em TEMPO REAL para SELECTs: Imediatamente após seleção
+                // ============================================================
+                // VALIDAÇÃO INSTANTÂNEA PARA TODOS OS TIPOS DE CAMPO
+                // ============================================================
+                
+                // 1. SELECTs: Validação IMEDIATA ao selecionar opção
                 if (field.tagName === 'SELECT') {
                     field.addEventListener('change', (e) => {
-                        console.log(`⚡ Validação instantânea do select: ${fieldId}`);
+                        console.log(`⚡ Validação instantânea (onChange) do campo: ${fieldId}`);
                         this.validateFieldFormat(fieldId);
                     });
                 }
-
-                // Validação em TEMPO REAL para INPUTs: Após 3 caracteres digitados
-                if (field.tagName === 'INPUT' && (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number')) {
+                
+                // 2. INPUTs (text, email, tel, number): Validação após 3 caracteres
+                else if (field.tagName === 'INPUT' && (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number')) {
                     field.addEventListener('input', (e) => {
                         const value = field.value.trim();
                         if (value.length >= 3) {
-                            console.log(`⚡ Validação instantânea (3+ chars) do campo: ${fieldId}`);
+                            console.log(`⚡ Validação instantânea (onInput 3+ chars) do campo: ${fieldId}`);
                             this.validateFieldFormat(fieldId);
                         } else if (value.length === 0) {
                             // Limpa validação quando campo é esvaziado
@@ -217,12 +222,25 @@ const FormValidator = {
                         }
                     });
                 }
-
-                // Validação em TEMPO REAL para RADIO BUTTONS: Imediatamente ao marcar
-                if (field.tagName === 'INPUT' && field.type === 'radio') {
+                
+                // 3. RADIO BUTTONS: Validação IMEDIATA ao marcar
+                else if (field.tagName === 'INPUT' && field.type === 'radio') {
                     field.addEventListener('change', (e) => {
-                        console.log(`⚡ Validação instantânea do radio: ${field.name}`);
+                        console.log(`⚡ Validação instantânea (onChange) do radio: ${field.name}`);
                         this.validateFieldFormat(fieldId);
+                    });
+                }
+                
+                // 4. TEXTAREAS: Validação após 3 caracteres
+                else if (field.tagName === 'TEXTAREA') {
+                    field.addEventListener('input', (e) => {
+                        const value = field.value.trim();
+                        if (value.length >= 3) {
+                            console.log(`⚡ Validação instantânea (onInput 3+ chars) do textarea: ${fieldId}`);
+                            this.validateFieldFormat(fieldId);
+                        } else if (value.length === 0) {
+                            this.clearValidation(fieldId);
+                        }
                     });
                 }
                 
@@ -232,7 +250,7 @@ const FormValidator = {
             }
         }
         
-        console.log(`✅ ${listenersAdded} listeners de validação adicionados`);
+        console.log(`✅ ${listenersAdded} listeners de validação INSTANTÂNEA adicionados`);
         if (listenersSkipped.length > 0) {
             console.warn(`⚠️ ${listenersSkipped.length} campos sem listener:`, listenersSkipped);
         }
@@ -242,7 +260,7 @@ const FormValidator = {
             const checkboxes = document.querySelectorAll(`input[name="${groupName}"]`);
             checkboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', () => {
-                    console.log(`⚡ Validação instantânea do checkbox group: ${groupName}`);
+                    console.log(`⚡ Validação instantânea (onChange) do checkbox group: ${groupName}`);
                     this.validateCheckboxGroupFormat(groupName);
                 });
             });
@@ -274,8 +292,9 @@ const FormValidator = {
     },
 
     /**
-     * Valida APENAS FORMATO do campo (onBlur/onChange)
+     * Valida APENAS FORMATO do campo (onChange/onInput)
      * NÃO verifica se campo obrigatório está vazio
+     * Chamada por: onChange (SELECTs/RADIO) ou onInput após 3 chars (INPUTs/TEXTAREAs)
      */
     validateFieldFormat: function(fieldId) {
         const field = document.getElementById(fieldId);
