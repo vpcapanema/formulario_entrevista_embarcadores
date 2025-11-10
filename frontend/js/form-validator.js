@@ -148,7 +148,8 @@ const FormValidator = {
     },
 
     /**
-     * Grupos de checkboxes obrigatórios (pelo menos 1 deve ser selecionado)
+     * Grupos de checkboxes (todos mostram validação visual)
+     * Apenas 'modo' é obrigatório, mas todos mostram feedback verde quando marcados
      */
     checkboxGroups: {
         'modo': { 
@@ -156,8 +157,19 @@ const FormValidator = {
             required: true, 
             label: 'Modos de Transporte',
             min: 1 
+        },
+        'modal-alternativo': {
+            name: 'modal-alternativo',
+            required: false,
+            label: 'Modais Alternativos',
+            min: 0  // Opcional, mas mostra validação visual
+        },
+        'dificuldade': {
+            name: 'dificuldade',
+            required: false,
+            label: 'Dificuldades no Transporte',
+            min: 0  // Opcional, mas mostra validação visual
         }
-        // 'modal-alternativo' e 'dificuldade' são opcionais
     },
 
     /**
@@ -418,6 +430,7 @@ const FormValidator = {
     /**
      * Valida formato de grupo de checkboxes (onChange em tempo real)
      * Aplica validação visual instantânea ao marcar/desmarcar
+     * SEMPRE mostra feedback verde quando houver itens marcados (obrigatório ou opcional)
      */
     validateCheckboxGroupFormat: function(groupName) {
         const config = this.checkboxGroups[groupName];
@@ -435,14 +448,16 @@ const FormValidator = {
         // Remove validação anterior
         this.removeCheckboxGroupValidation(groupName);
 
-        // Se não é obrigatório e nenhum está marcado, apenas limpa validação
-        if (!config.required && checked.length === 0) {
+        // Se nenhum item está marcado
+        if (checked.length === 0) {
             container.classList.remove('checkbox-group-error', 'checkbox-group-success');
+            // Se é obrigatório e está vazio, não mostra nada (só vai mostrar erro no submit)
+            // Se é opcional e está vazio, também não mostra nada
             return true;
         }
 
-        // Se tem itens marcados mas ainda não atingiu o mínimo
-        if (checked.length > 0 && checked.length < config.min) {
+        // Se tem itens marcados mas é obrigatório e ainda não atingiu o mínimo
+        if (config.required && checked.length < config.min) {
             container.classList.remove('checkbox-group-success');
             container.classList.add('checkbox-group-error');
             
@@ -465,8 +480,9 @@ const FormValidator = {
             return false;
         }
 
-        // Se atingiu o mínimo, mostra sucesso
-        if (checked.length >= config.min) {
+        // Se tem pelo menos 1 item marcado (independente de ser obrigatório ou opcional)
+        // SEMPRE mostra sucesso visual
+        if (checked.length > 0) {
             container.classList.remove('checkbox-group-error');
             container.classList.add('checkbox-group-success');
             
