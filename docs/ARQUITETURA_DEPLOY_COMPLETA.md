@@ -1,6 +1,379 @@
-# Arquitetura e Deploy - Sistema PLI 2050
+# Arquitetura e Deploy - Full-Stack Web Application
 
-## 📋 Visão Geral da Arquitetura
+> **Documentação para Agentes de IA e Desenvolvedores**  
+> Este documento explica a arquitetura de 3 camadas (Frontend + Backend + Database) usando GitHub Pages, Render.com e banco de dados remoto.
+>
+> **📌 Caso de Estudo**: Sistema PLI 2050 (Plano de Logística e Investimentos - SP)  
+> **🔄 Template Genérico**: Pode ser adaptado para qualquer aplicação web full-stack
+
+---
+
+## 🌍 PARTE 1: ARQUITETURA GENÉRICA (Para Qualquer Aplicação)
+
+### Visão Geral da Arquitetura de 3 Camadas
+
+Esta arquitetura é aplicável a **qualquer aplicação web full-stack** que precise de:
+- ✅ Frontend estático (HTML, CSS, JS)
+- ✅ Backend API REST (Node.js, Python, Ruby, Go, etc.)
+- ✅ Banco de dados remoto (PostgreSQL, MySQL, MongoDB, etc.)
+- ✅ Deploy gratuito ou low-cost
+- ✅ Escalabilidade e separação de responsabilidades
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CAMADA 1: FRONTEND                        │
+│                   (GitHub Pages - GRÁTIS)                    │
+│                                                              │
+│  📱 Interface do Usuário:                                    │
+│     • HTML5 (estrutura)                                      │
+│     • CSS3 (estilos)                                         │
+│     • JavaScript Vanilla ou Framework (React, Vue, etc.)     │
+│     • Bibliotecas: Chart.js, jsPDF, etc.                    │
+│                                                              │
+│  🔒 Limitações:                                              │
+│     • Apenas arquivos estáticos                              │
+│     • Não executa código server-side                         │
+│     • Não pode acessar banco diretamente                     │
+│                                                              │
+│  ✅ Vantagens:                                               │
+│     • Gratuito e ilimitado                                   │
+│     • CDN global automático                                  │
+│     • HTTPS automático                                       │
+│     • Deploy via git push                                    │
+└──────────────────┬───────────────────────────────────────────┘
+                   │
+                   │ HTTPS Requests (fetch API)
+                   │ GET /api/users, POST /api/submit, etc.
+                   │
+┌──────────────────▼───────────────────────────────────────────┐
+│                    CAMADA 2: BACKEND                         │
+│                 (Render.com ou similar)                      │
+│                                                              │
+│  🔧 Servidor API REST:                                       │
+│     • Node.js/Express, Python/FastAPI, Ruby/Rails, Go, etc.  │
+│     • Endpoints JSON                                         │
+│     • Autenticação (JWT, OAuth, etc.)                        │
+│     • Validação server-side                                  │
+│     • Business logic                                         │
+│     • CORS configurado                                       │
+│                                                              │
+│  💰 Opções de Hosting:                                       │
+│     • Render.com (750h/mês grátis)                           │
+│     • Railway.app ($5 crédito inicial)                       │
+│     • Fly.io (3 VMs grátis)                                  │
+│     • Heroku (planos pagos)                                  │
+│     • AWS Lambda (serverless)                                │
+│                                                              │
+│  ⚙️ Features Comuns:                                         │
+│     • Auto-deploy via GitHub                                 │
+│     • Variáveis de ambiente                                  │
+│     • Logs e monitoring                                      │
+│     • SSL/HTTPS automático                                   │
+└──────────────────┬───────────────────────────────────────────┘
+                   │
+                   │ SQL/NoSQL Queries
+                   │ SELECT, INSERT, UPDATE, DELETE
+                   │
+┌──────────────────▼───────────────────────────────────────────┐
+│                    CAMADA 3: DATABASE                        │
+│              (AWS RDS, MongoDB Atlas, etc.)                  │
+│                                                              │
+│  🗄️ Banco de Dados Remoto:                                  │
+│     • PostgreSQL (AWS RDS, Supabase, Neon)                   │
+│     • MySQL (AWS RDS, PlanetScale)                           │
+│     • MongoDB (MongoDB Atlas)                                │
+│     • Redis (Upstash, Redis Cloud)                           │
+│                                                              │
+│  💾 Armazenamento:                                           │
+│     • Dados persistentes                                     │
+│     • Backups automáticos                                    │
+│     • Replicação e failover                                  │
+│                                                              │
+│  💰 Opções Gratuitas:                                        │
+│     • Supabase (500MB PostgreSQL)                            │
+│     • MongoDB Atlas (512MB)                                  │
+│     • Neon (3GB PostgreSQL)                                  │
+│     • PlanetScale (5GB MySQL)                                │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Fluxo de Dados Universal
+
+```
+1. Usuário acessa → github.io/seu-repo/
+   ↓
+2. HTML/CSS/JS carregam no navegador
+   ↓
+3. JavaScript faz fetch() para Backend API
+   ↓
+4. Backend valida, processa, consulta banco
+   ↓
+5. Banco retorna dados
+   ↓
+6. Backend retorna JSON para Frontend
+   ↓
+7. JavaScript renderiza dados na tela
+```
+
+---
+
+## �️ GUIA GENÉRICO: Como Adaptar para Sua Aplicação
+
+### Checklist de Adaptação
+
+#### 1. Frontend (GitHub Pages)
+
+**Estrutura Obrigatória:**
+```
+seu-repositorio/
+├── index.html              ← DEVE estar na RAIZ (página inicial)
+├── about.html              ← Outras páginas (opcional, na raiz ou subpasta)
+├── css/
+│   └── styles.css
+├── js/
+│   ├── api-client.js       ← Cliente HTTP (adaptar URLs)
+│   └── app.js              ← Lógica da aplicação
+└── assets/
+    └── images/
+```
+
+**api-client.js Genérico (copiar e adaptar):**
+```javascript
+class APIClient {
+    constructor() {
+        // ALTERAR ESTAS URLs PARA SEU BACKEND
+        this.PRODUCTION_URL = 'https://seu-backend.onrender.com';
+        this.DEVELOPMENT_URL = 'http://localhost:3000'; // ou 8000, 5000, etc.
+        
+        // Auto-detecção (NÃO alterar)
+        this.BASE_URL = this.detectEnvironment();
+        console.log('🔗 API URL:', this.BASE_URL);
+    }
+    
+    detectEnvironment() {
+        const hostname = window.location.hostname;
+        
+        if (hostname.includes('github.io')) {
+            return this.PRODUCTION_URL;
+        }
+        
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return this.DEVELOPMENT_URL;
+        }
+        
+        return this.PRODUCTION_URL;
+    }
+    
+    async get(endpoint) {
+        const response = await fetch(`${this.BASE_URL}${endpoint}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    }
+    
+    async post(endpoint, data) {
+        const response = await fetch(`${this.BASE_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    }
+}
+
+window.API = new APIClient();
+```
+
+**Uso no HTML:**
+```html
+<script src="js/api-client.js"></script>
+<script>
+    // Automaticamente usa URL correta (localhost ou produção)
+    async function loadData() {
+        const data = await window.API.get('/api/items');
+        console.log(data);
+    }
+</script>
+```
+
+#### 2. Backend (Render.com)
+
+**Estrutura Mínima (Node.js/Express):**
+```
+backend/
+├── server.js              ← Entry point
+├── package.json           ← Dependências
+├── .env.example           ← Template de variáveis (commitar)
+├── .env                   ← Valores reais (NÃO commitar)
+└── routes/
+    └── api.js
+```
+
+**server.js Genérico (Node.js/Express):**
+```javascript
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// CORS - CRÍTICO PARA GITHUB PAGES
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+app.use(cors({ origin: allowedOrigins }));
+
+app.use(express.json());
+
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK' });
+});
+
+// Suas rotas aqui
+app.get('/api/items', async (req, res) => {
+    // Consultar banco, processar, retornar JSON
+    res.json({ items: [] });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on port ${PORT}`);
+});
+```
+
+**package.json:**
+```json
+{
+  "name": "seu-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "pg": "^8.11.0"
+  }
+}
+```
+
+**Estrutura Mínima (Python/FastAPI):**
+```
+backend/
+├── main.py                ← Entry point
+├── requirements.txt       ← Dependências
+├── .env.example
+└── app/
+    └── routers/
+```
+
+**main.py Genérico (Python/FastAPI):**
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import os
+
+app = FastAPI()
+
+# CORS - CRÍTICO PARA GITHUB PAGES
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+def health():
+    return {"status": "OK"}
+
+@app.get("/api/items")
+def get_items():
+    # Consultar banco, processar, retornar JSON
+    return {"items": []}
+```
+
+**requirements.txt:**
+```
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-dotenv==1.0.0
+psycopg2-binary==2.9.9
+```
+
+#### 3. Configuração no Render.com
+
+**Passo a Passo Universal:**
+
+1. **Criar conta**: https://dashboard.render.com/
+2. **New → Web Service**
+3. **Conectar repositório GitHub**
+4. **Configurações (adaptar para sua app):**
+   ```
+   Name: seu-backend
+   Region: Oregon (ou mais próximo)
+   Branch: main
+   Root Directory: backend/        ← Se backend em subpasta
+   Runtime: Node / Python 3
+   Build Command:
+     - Node: npm install
+     - Python: pip install -r requirements.txt
+   Start Command:
+     - Node: npm start (ou node server.js)
+     - Python: uvicorn main:app --host 0.0.0.0 --port $PORT
+   ```
+
+5. **Environment Variables (CRÍTICO):**
+   ```
+   ALLOWED_ORIGINS=https://seu-usuario.github.io,http://localhost:3000
+   DATABASE_URL=postgresql://user:pass@host:5432/dbname
+   JWT_SECRET=seu-secret-aqui
+   NODE_ENV=production
+   ```
+
+6. **Deploy → Aguardar 5-10 minutos**
+
+7. **Testar:**
+   ```
+   https://seu-backend.onrender.com/health
+   → Deve retornar: {"status": "OK"}
+   ```
+
+#### 4. Banco de Dados (Opções)
+
+**PostgreSQL (Supabase - GRÁTIS):**
+```
+1. Criar conta: https://supabase.com
+2. New Project → Escolher região
+3. Copiar connection string
+4. Adicionar no Render como DATABASE_URL
+```
+
+**PostgreSQL (Neon - GRÁTIS):**
+```
+1. Criar conta: https://neon.tech
+2. Create Project
+3. Copiar connection string
+4. Adicionar no Render
+```
+
+**MongoDB (Atlas - GRÁTIS):**
+```
+1. Criar conta: https://www.mongodb.com/cloud/atlas
+2. Create Free Cluster
+3. Database Access → Add User
+4. Network Access → Add IP (0.0.0.0/0 para aceitar de qualquer lugar)
+5. Copiar connection string
+6. Adicionar no Render como MONGODB_URI
+```
+
+---
+
+## 📱 PARTE 2: CASO DE ESTUDO - Sistema PLI 2050
+
+### Visão Geral do Sistema PLI 2050
 
 O sistema PLI 2050 é uma aplicação **web full-stack** com arquitetura de **3 camadas**:
 
