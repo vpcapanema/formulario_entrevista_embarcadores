@@ -1,0 +1,39 @@
+/* ==========================================
+   VISUALIZADOR DE DADOS - ESTILOS ESPECÍFICOS
+   ========================================== */
+
+/* Loading Status */
+.loading-status {
+    display: none;
+    padding: 1rem;
+    background: #d1ecf1;
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+
+.loading-status.show {
+    display: block;
+}
+
+/* Pesquisa Card */
+.pesquisa-card {
+    background: #ecf0f1;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+}
+
+/* Data Viewer (JSON) */
+.data-viewer {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 1rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 600px;
+    overflow-y: auto;
+}

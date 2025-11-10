@@ -10,75 +10,7 @@
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
     <link rel="stylesheet" href="../css/index.css?v=20251107">
     <link rel="stylesheet" href="../css/pages.css?v=20251107">
-    <style>
-        /* Estilos específicos do visualizador */
-        .info-box {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .info-box h2 {
-            color: #3498db;
-            margin-top: 0;
-        }
-        .status {
-            padding: 1rem;
-            border-radius: 4px;
-            margin: 1rem 0;
-        }
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        .data-viewer {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 1rem;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-        }
-        button {
-            background: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        button:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
-        }
-        .warning {
-            background: #fff3cd;
-            color: #856404;
-            padding: 1rem;
-            border-radius: 4px;
-            border: 1px solid #ffeeba;
-            margin: 1rem 0;
-        }
-        #loading-status {
-            display: none;
-            padding: 1rem;
-            background: #d1ecf1;
-            border-radius: 4px;
-            margin-top: 1rem;
-        }
-    </style>
+    <link rel="stylesheet" href="../css/visualizador.css?v=20251109">
 </head>
 <body>
     <!-- Navegação -->
@@ -130,8 +62,8 @@
         <h2>💾 Dados da View v_pesquisas_completa</h2>
         <button onclick="loadDataFromRDS()">🔄 Carregar Dados do RDS</button>
         <button onclick="showRawDataRDS()">📄 Ver JSON Completo</button>
-        <button onclick="exportToCSV()">� Exportar CSV</button>
-        <div id="loading-status" style="display: none; padding: 1rem; background: #d1ecf1; border-radius: 4px; margin-top: 1rem;">
+        <button onclick="exportToCSV()">📥 Exportar CSV</button>
+        <div id="loading-status" class="loading-status">
             <strong>⏳ Carregando dados do RDS...</strong>
         </div>
         <div id="data-container"></div>
@@ -167,13 +99,13 @@
             const loadingStatus = document.getElementById('loading-status');
             
             try {
-                loadingStatus.style.display = 'block';
+                loadingStatus.classList.add('show');
                 container.innerHTML = '';
                 
                 console.log('📡 Buscando dados do RDS...');
                 const response = await window.CoreAPI.get('/api/pesquisas/listar?limit=1000');
                 
-                loadingStatus.style.display = 'none';
+                loadingStatus.classList.remove('show');
                 
                 if (!response.pesquisas || response.pesquisas.length === 0) {
                     container.innerHTML = `
@@ -196,7 +128,7 @@
                 
                 pesquisas.forEach((p, i) => {
                     html += `
-                        <div style="background: #ecf0f1; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                        <div class="pesquisa-card">
                             <strong>Pesquisa ${i + 1}:</strong><br>
                             <strong>ID:</strong> ${p.id_pesquisa}<br>
                             <strong>Empresa:</strong> ${p.razao_social || p.nome_empresa}<br>
@@ -214,7 +146,7 @@
                 console.log('✅ Dados carregados:', pesquisas.length);
                 
             } catch (error) {
-                loadingStatus.style.display = 'none';
+                loadingStatus.classList.remove('show');
                 console.error('❌ Erro ao carregar dados:', error);
                 container.innerHTML = `
                     <div class="status warning">
@@ -236,9 +168,9 @@
             const loadingStatus = document.getElementById('loading-status');
             
             try {
-                loadingStatus.style.display = 'block';
+                loadingStatus.classList.add('show');
                 const response = await window.CoreAPI.get('/api/pesquisas/listar?limit=1000');
-                loadingStatus.style.display = 'none';
+                loadingStatus.classList.remove('show');
                 
                 const json = JSON.stringify(response, null, 2);
                 
@@ -248,7 +180,7 @@
                 `;
                 
             } catch (error) {
-                loadingStatus.style.display = 'none';
+                loadingStatus.classList.remove('show');
                 container.innerHTML = `<div class="status warning">❌ Erro: ${error.message}</div>`;
             }
         }
@@ -264,8 +196,6 @@
                 }
                 
                 const pesquisas = response.pesquisas;
-                
-                // Pegar todas as colunas (keys do primeiro objeto)
                 const headers = Object.keys(pesquisas[0]);
                 
                 // Criar CSV
