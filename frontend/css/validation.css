@@ -72,7 +72,7 @@ textarea.invalid-format:focus {
 }
 
 /* ============================================================================
-   CHECKBOXES - GRUPO COM ERRO
+   CHECKBOXES - GRUPO COM ERRO E SUCESSO
    ============================================================================ */
 
 .checkbox-group-error {
@@ -85,6 +85,18 @@ textarea.invalid-format:focus {
 
 .checkbox-group-error label {
     color: #991b1b;
+}
+
+.checkbox-group-success {
+    padding: 1rem;
+    background-color: #f0fdf4;
+    border: 2px solid #10b981;
+    border-radius: 8px;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.checkbox-group-success label {
+    color: #065f46;
 }
 
 /* ============================================================================

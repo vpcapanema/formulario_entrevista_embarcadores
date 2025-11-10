@@ -415,14 +415,77 @@ const FormValidator = {
     /**
      * Valida APENAS FORMATO de grupo de checkboxes (onChange)
      */
+    /**
+     * Valida formato de grupo de checkboxes (onChange em tempo real)
+     * Aplica validação visual instantânea ao marcar/desmarcar
+     */
     validateCheckboxGroupFormat: function(groupName) {
-        // No caso de checkboxes, formato é sempre válido
-        // Apenas limpa validação anterior
-        const container = document.querySelector(`input[name="${groupName}"]`)?.closest('.checkbox-group');
-        if (container) {
-            container.classList.remove('checkbox-group-error');
-            this.removeCheckboxGroupMessage(groupName);
+        const config = this.checkboxGroups[groupName];
+        if (!config) {
+            console.warn(`Grupo de checkbox ${groupName} não configurado`);
+            return true;
         }
+
+        const checkboxes = document.querySelectorAll(`input[name="${groupName}"]`);
+        const checked = Array.from(checkboxes).filter(cb => cb.checked);
+        const container = document.querySelector(`input[name="${groupName}"]`)?.closest('.form-group, .checkbox-group');
+        
+        if (!container) return true;
+
+        // Remove validação anterior
+        this.removeCheckboxGroupValidation(groupName);
+
+        // Se não é obrigatório e nenhum está marcado, apenas limpa validação
+        if (!config.required && checked.length === 0) {
+            container.classList.remove('checkbox-group-error', 'checkbox-group-success');
+            return true;
+        }
+
+        // Se tem itens marcados mas ainda não atingiu o mínimo
+        if (checked.length > 0 && checked.length < config.min) {
+            container.classList.remove('checkbox-group-success');
+            container.classList.add('checkbox-group-error');
+            
+            // Mensagem de feedback em tempo real
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'validation-message warning';
+            messageDiv.id = `validation-msg-${groupName}`;
+            messageDiv.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-alert-circle">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <div class="validation-message-content">
+                    <span class="validation-badge warning">Selecione mais opções</span>
+                    <div class="validation-message-title">${checked.length}/${config.min} selecionado(s)</div>
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            return false;
+        }
+
+        // Se atingiu o mínimo, mostra sucesso
+        if (checked.length >= config.min) {
+            container.classList.remove('checkbox-group-error');
+            container.classList.add('checkbox-group-success');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'validation-message success';
+            messageDiv.id = `validation-msg-${groupName}`;
+            messageDiv.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-check-circle">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <div class="validation-message-content">
+                    <span class="validation-badge success">✓ ${checked.length} selecionado(s)</span>
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            return true;
+        }
+
         return true;
     },
 
