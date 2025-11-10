@@ -43,17 +43,19 @@ const IntegrationCNPJ = {
             return;
         }
         
-        // Evento: Quando usuário terminar de digitar CNPJ (blur)
-        // Dispara automaticamente ao sair do campo
-        cnpjInput.addEventListener('blur', async (e) => {
-            const cnpj = e.target.value;
+        // Evento: Consulta automática após digitar 14 dígitos (CNPJ completo)
+        // Dispara automaticamente enquanto usuário digita
+        cnpjInput.addEventListener('input', async (e) => {
+            const cnpj = e.target.value.replace(/\D/g, ''); // Remove formatação
             
-            if (cnpj && cnpj.length >= 14) {
+            // Quando atingir 14 dígitos (CNPJ completo), consultar automaticamente
+            if (cnpj.length === 14) {
+                console.log('🔍 CNPJ completo digitado, consultando automaticamente...');
                 await this.consultarEPreencherDados(cnpj);
             }
         });
         
-        console.log('✅ IntegrationCNPJ inicializado (consulta automática ao terminar de digitar)');
+        console.log('✅ IntegrationCNPJ inicializado (consulta automática após 14 dígitos)');
     },
     
     // ============================================================

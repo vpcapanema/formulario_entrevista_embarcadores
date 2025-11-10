@@ -213,8 +213,10 @@ const FormValidator = {
                 else if (field.tagName === 'INPUT' && (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number')) {
                     field.addEventListener('input', (e) => {
                         const value = field.value.trim();
-                        if (value.length >= 3) {
-                            console.log(`⚡ Validação instantânea (onInput 3+ chars) do campo: ${fieldId}`);
+                        // Para type="number", validar imediatamente se tiver algum valor
+                        const minLength = field.type === 'number' ? 1 : 3;
+                        if (value.length >= minLength) {
+                            console.log(`⚡ Validação instantânea (onInput ${minLength}+ chars) do campo: ${fieldId}`);
                             this.validateFieldFormat(fieldId);
                         } else if (value.length === 0) {
                             // Limpa validação quando campo é esvaziado
