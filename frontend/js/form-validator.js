@@ -131,7 +131,7 @@ const FormValidator = {
         'importancia-seguranca': { validator: 'select', required: true },
         'variacao-seguranca': { validator: 'numeric', required: true, min: 0, max: 100 },
         'importancia-capacidade': { validator: 'select', required: true },
-        'variacao-capacidade': { validator: 'numeric', required: true, min: 0, max: 100 },
+        'variacao-capacidade': { validator: 'numeric', required: true, min: 0 },
         
         // ========================================
         // BLOCO 9: CADEIA LOGÍSTICA (3 campos)
