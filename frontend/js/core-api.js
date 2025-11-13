@@ -201,10 +201,10 @@ const CoreAPI = {
     },
     
     /**
-     * Carrega entrevistadores ativos direto do banco de dados
+     * Carrega entrevistadores ativos (2 registros)
      */
     async getEntrevistadores() {
-        return this.get('/api/entrevistadores');
+        return this.loadJSONFast('entrevistadores.json');
     },
     
     /**
