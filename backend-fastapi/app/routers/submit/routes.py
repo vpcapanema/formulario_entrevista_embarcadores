@@ -146,6 +146,7 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
             produto_principal=data.produtoPrincipal,
             agrupamento_produto=data.agrupamentoProduto,
             outro_produto=data.outroProduto,
+            observacoes_produto_principal=data.observacoesProdutoPrincipal,
 
             # Transporte
             tipo_transporte=data.tipoTransporte,

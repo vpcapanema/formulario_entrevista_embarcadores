@@ -381,6 +381,7 @@ const FormCollector = {
         if (data.agrupamentoProduto === 'outro-produto') {
             data.outroProduto = this._getValue('outro-produto');
         }
+        data.observacoesProdutoPrincipal = this._getValue('observacoes-produto-principal');
         
         // ==== SEÇÃO 5: Características do Transporte ====
         data.tipoTransporte = this._getValue('tipo-transporte');

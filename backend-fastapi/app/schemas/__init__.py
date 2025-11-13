@@ -126,6 +126,7 @@ class PesquisaBase(BaseModel):
     produto_principal: str
     agrupamento_produto: str
     outro_produto: Optional[str] = None
+    observacoes_produto_principal: Optional[str] = None
 
     # Transporte
     tipo_transporte: str = Field(..., pattern="^(importacao|exportacao|local|nao-sei)$")
@@ -155,7 +156,7 @@ class PesquisaBase(BaseModel):
     modal_terciario: Optional[str] = None
 
     # Capacidade e Peso
-    capacidade_utilizada: Optional[Decimal] = Field(None, ge=0, le=100)
+    capacidade_utilizada: Optional[Decimal] = Field(None, ge=0)
     peso_carga: Decimal
     unidade_peso: str
 
@@ -185,15 +186,15 @@ class PesquisaBase(BaseModel):
 
     # Importâncias
     importancia_custo: str
-    variacao_custo: Decimal
+    variacao_custo: Decimal = Field(..., ge=0)
     importancia_tempo: str
-    variacao_tempo: Decimal
+    variacao_tempo: Decimal = Field(..., ge=0)
     importancia_confiabilidade: str
-    variacao_confiabilidade: Decimal
+    variacao_confiabilidade: Decimal = Field(..., ge=0)
     importancia_seguranca: str
-    variacao_seguranca: Decimal
+    variacao_seguranca: Decimal = Field(..., ge=0)
     importancia_capacidade: str
-    variacao_capacidade: Decimal
+    variacao_capacidade: Decimal = Field(..., ge=0)
 
     # Estratégia
     tipo_cadeia: str
@@ -488,9 +489,9 @@ class SubmitFormData(BaseModel):
     @field_validator('capacidadeUtilizada')
     @classmethod
     def validate_capacidade(cls, v):
-        """Valida que capacidade está entre 0 e 100%"""
-        if v is not None and (v < 0 or v > 100):
-            raise ValueError('Capacidade utilizada deve estar entre 0% e 100%')
+        """Valida que capacidade é não-negativa"""
+        if v is not None and v < 0:
+            raise ValueError('Capacidade utilizada deve ser maior ou igual a 0%')
         return v
 
     @field_validator('numParadas')

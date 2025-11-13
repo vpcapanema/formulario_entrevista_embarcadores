@@ -244,6 +244,7 @@ class Pesquisa(Base):
     produto_principal = Column(String(255), nullable=False)
     agrupamento_produto = Column(String(100), nullable=False)
     outro_produto = Column(String(255))
+    observacoes_produto_principal = Column(Text)
 
     # Transporte
     tipo_transporte = Column(String(50), nullable=False)

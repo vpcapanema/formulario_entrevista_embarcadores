@@ -100,6 +100,9 @@ const PDFGenerator = {
             if (formData.agrupamentoProduto === 'outro-produto') {
                 camposCard4.push({ label: 'Q10b. Outro Produto (especificado)', value: formData.outroProduto });
             }
+            if (formData.observacoesProdutoPrincipal) {
+                camposCard4.push({ label: 'Q18. Observações sobre o Transporte do Produto Principal', value: formData.observacoesProdutoPrincipal });
+            }
             yPosition = this._addSection(doc, yPosition, 'CARD 4 - PRODUTO PRINCIPAL', formData, camposCard4);
             
             // ===== CARD 5: CARACTERÍSTICAS DO TRANSPORTE =====
