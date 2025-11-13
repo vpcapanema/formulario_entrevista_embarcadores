@@ -123,13 +123,13 @@ const FormValidator = {
         // BLOCO 8: IMPORTÂNCIA DOS FATORES (10 campos)
         // ========================================
         'importancia-custo': { validator: 'select', required: true },
-        'variacao-custo': { validator: 'numeric', required: true, min: 0, max: 100 },
+        'variacao-custo': { validator: 'numeric', required: true, min: 0},
         'importancia-tempo': { validator: 'select', required: true },
-        'variacao-tempo': { validator: 'numeric', required: true, min: 0, max: 100 },
+        'variacao-tempo': { validator: 'numeric', required: true, min: 0 },
         'importancia-confiabilidade': { validator: 'select', required: true },
-        'variacao-confiabilidade': { validator: 'numeric', required: true, min: 0, max: 100 },
+        'variacao-confiabilidade': { validator: 'numeric', required: true, min: 0 },
         'importancia-seguranca': { validator: 'select', required: true },
-        'variacao-seguranca': { validator: 'numeric', required: true, min: 0, max: 100 },
+        'variacao-seguranca': { validator: 'numeric', required: true, min: 0},
         'importancia-capacidade': { validator: 'select', required: true },
         'variacao-capacidade': { validator: 'numeric', required: true, min: 0 },
         

@@ -192,6 +192,7 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
             frequencia=data.frequencia,
             frequencia_diaria=data.frequenciaDiaria,
             frequencia_outra=data.frequenciaOutra,
+            observacoes_sazonalidade=data.observacoesSazonalidade,
 
             # Importâncias
             importancia_custo=data.importanciaCusto,

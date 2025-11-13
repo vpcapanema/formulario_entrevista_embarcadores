@@ -137,10 +137,13 @@ const PDFGenerator = {
                 { label: 'Q27. Frequência de Deslocamento', value: formData.frequencia || 'Não informado' }
             );
             if (formData.frequencia === 'diaria') {
-                camposCard5.push({ label: 'Q28. Quantas vezes por dia?', value: formData.frequenciaDiaria || 'Não informado' });
+                camposCard5.push({ label: 'Quantas vezes por dia?', value: formData.frequenciaDiaria || 'Não informado' });
             }
             if (formData.frequencia === 'outra') {
-                camposCard5.push({ label: 'Q28b. Frequência Outra (especificada)', value: formData.frequenciaOutra });
+                camposCard5.push({ label: 'Frequência Outra (especificada)', value: formData.frequenciaOutra });
+            }
+            if (formData.observacoesSazonalidade) {
+                camposCard5.push({ label: 'Q28. Observações sobre Sazonalidade', value: formData.observacoesSazonalidade });
             }
             yPosition = this._addSection(doc, yPosition, 'CARD 5 - CARACTERÍSTICAS DO TRANSPORTE', formData, camposCard5);
             

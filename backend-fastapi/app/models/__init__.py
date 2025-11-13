@@ -301,6 +301,7 @@ class Pesquisa(Base):
     frequencia = Column(String(50), nullable=False)
     frequencia_diaria = Column(Numeric(4, 1))
     frequencia_outra = Column(String(255))
+    observacoes_sazonalidade = Column(Text)
 
     # Importâncias e Variações
     importancia_custo = Column(String(20), nullable=False)

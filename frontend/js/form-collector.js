@@ -424,6 +424,7 @@ const FormCollector = {
         if (data.frequencia === 'outra') {
             data.frequenciaOutra = this._getValue('frequencia-outra');
         }
+        data.observacoesSazonalidade = this._getValue('observacoes-sazonalidade');
         
         // ==== SEÇÃO 6: Fatores de Decisão ====
         data.importanciaCusto = this._getValue('importancia-custo');

@@ -183,6 +183,7 @@ class PesquisaBase(BaseModel):
     frequencia: str
     frequencia_diaria: Optional[Decimal] = Field(None, gt=0)
     frequencia_outra: Optional[str] = None
+    observacoes_sazonalidade: Optional[str] = None
 
     # Importâncias
     importancia_custo: str
@@ -354,6 +355,7 @@ class SubmitFormData(BaseModel):
     frequencia: str
     frequenciaDiaria: Optional[Decimal] = Field(None, alias="frequenciaDiaria")
     frequenciaOutra: Optional[str] = Field(None, alias="frequenciaOutra")
+    observacoesSazonalidade: Optional[str] = Field(None, alias="observacoesSazonalidade")
 
     # ---- IMPORTÂNCIAS ----
     importanciaCusto: str = Field(..., alias="importanciaCusto")
