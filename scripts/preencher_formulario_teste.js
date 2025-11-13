@@ -31,16 +31,23 @@ async function preencherFormularioCompletoTeste() {
     try {
         console.log('📋 Iniciando preenchimento automático V4.0...\n');
         
-        const setField = (id, value) => {
-            const field = document.getElementById(id);
+        const setField = (idOrName, value) => {
+            let field = document.getElementById(idOrName);
+            if (!field) {
+                // Tenta por name (retorna NodeList), seleciona primeiro elemento
+                const byName = document.getElementsByName(idOrName);
+                if (byName && byName.length > 0) {
+                    field = byName[0];
+                }
+            }
             if (field) {
                 field.value = value;
                 field.dispatchEvent(new Event('input', { bubbles: true }));
                 field.dispatchEvent(new Event('change', { bubbles: true }));
-                console.log(`✓ ${id} = "${value}"`);
+                console.log(`✓ ${idOrName} = "${value}"`);
                 return true;
             }
-            console.warn(`⚠️ Campo não encontrado: ${id}`);
+            console.warn(`⚠️ Campo não encontrado: ${idOrName}`);
             return false;
         };
         
@@ -87,7 +94,7 @@ async function preencherFormularioCompletoTeste() {
         console.log('✅ Card 2 OK\n');
         
         console.log('📝 CARD 3: Produtos Transportados');
-        const tabelaProdutos = document.getElementById('produtos-table-body');
+            const tabelaProdutos = document.getElementById('produtos-tbody');
         if (tabelaProdutos && tabelaProdutos.children.length === 0) {
             const btnAddProduto = document.querySelector('button[onclick*="addProdutoRow"]');
             if (btnAddProduto) btnAddProduto.click();
@@ -95,11 +102,42 @@ async function preencherFormularioCompletoTeste() {
         }
         setField('produto-carga-1', 'Soja em grão');
         setField('produto-movimentacao-1', '50000');
-        setField('produto-origem-1', 'Ribeirão Preto');
+        // Tenta preencher selects de origem (caso existam), senão fallback para text input
+        const origemPaisSelect = document.getElementsByName('produto-origem-pais-1')[0];
+        if (origemPaisSelect) {
+            // Seleciona Brasil se disponível, senão seleciona a primeira não vazia
+            origemPaisSelect.value = origemPaisSelect.querySelector('option[value="68"]') ? '68' : origemPaisSelect.options.length > 1 ? origemPaisSelect.options[1].value : origemPaisSelect.options[0].value;
+            origemPaisSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            await aguardar(150);
+            const origemEstadoSelect = document.getElementsByName('produto-origem-estado-1')[0];
+            if (origemEstadoSelect && origemEstadoSelect.options.length > 1) {
+                origemEstadoSelect.selectedIndex = 1;
+                origemEstadoSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        } else {
+            setField('produto-origem-text-1', 'Ribeirão Preto');
+        }
         setField('produto-destino-1', 'Santos');
+            setField('produto-destino-text-1', 'Santos');
         setField('produto-distancia-1', '450.5');
-        setField('produto-modalidade-1', 'rodoviario');
-        setField('produto-acondicionamento-1', 'Granel');
+        // Função auxiliar para selecionar múltiplas opções em SELECT por nome
+        const setSelectMultipleByName = (name, values) => {
+            const selects = document.getElementsByName(name);
+            if (!selects || selects.length === 0) {
+                console.warn(`⚠️ SELECT não encontrado por name: ${name}`);
+                return;
+            }
+            const select = selects[0];
+            if (!Array.isArray(values)) values = [values];
+            for (let i = 0; i < select.options.length; i++) {
+                select.options[i].selected = values.includes(select.options[i].value);
+            }
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+
+            setSelectMultipleByName('produto-modalidade-1[]', ['rodoviario']);
+            setField('produto-acondicionamento-1', 'granel-solido');
+            setField('produto-observacoes-1', 'Observação de teste: logística sazonal');
         console.log('✅ Card 3 OK\n');
         
         console.log('📝 CARD 4: Informações de Logística');

@@ -10,13 +10,14 @@ from datetime import datetime, timezone, timedelta
 # Timezone de Brasília (BRT = UTC-3)
 BRASILIA_TZ = timezone(timedelta(hours=-3))
 
+
 def now_brasilia() -> datetime:
     """
     Retorna datetime atual no fuso horário de Brasília.
-    
+
     Returns:
         datetime: Datetime atual com timezone UTC-3
-    
+
     Example:
         >>> now = now_brasilia()
         >>> print(now.strftime('%d/%m/%Y %H:%M:%S'))
@@ -24,17 +25,18 @@ def now_brasilia() -> datetime:
     """
     return datetime.now(BRASILIA_TZ)
 
+
 def format_brasilia(dt: datetime, formato: str = '%d/%m/%Y %H:%M:%S') -> str:
     """
     Formata datetime para string no formato brasileiro.
-    
+
     Args:
         dt: Datetime para formatar (com ou sem timezone)
         formato: String de formato (padrão: 'dd/mm/aaaa hh:mm:ss')
-    
+
     Returns:
         str: Data formatada
-    
+
     Example:
         >>> dt = now_brasilia()
         >>> format_brasilia(dt)
@@ -46,5 +48,5 @@ def format_brasilia(dt: datetime, formato: str = '%d/%m/%Y %H:%M:%S') -> str:
     else:
         # Converte para Brasília
         dt = dt.astimezone(BRASILIA_TZ)
-    
+
     return dt.strftime(formato)

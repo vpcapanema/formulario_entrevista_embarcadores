@@ -182,7 +182,7 @@ const DropdownManager = {
 
             // Brasil = id_pais 68 (conforme JSON: paises.json)
             if (idPais === 68) {
-                // MOSTRAR dropdown de estado
+                // Mostrar dropdown de estado (Brasil)
                 estadoSelect.style.display = 'block';
                 
                 // Habilitar estado (obrigatório)
@@ -200,27 +200,28 @@ const DropdownManager = {
 
                 // Município fica desabilitado até selecionar estado (mas escondido)
                 if (municipioSelect) {
-                    municipioSelect.style.display = 'none';
+                    // manter visível, mas desabilitado até selecionar estado
+                    municipioSelect.style.display = 'block';
                     this.disableDropdown(municipioSelectId, 'Primeiro selecione o estado');
                 }
             } else if (idPais) {
-                // Outro país: ESCONDER estado e município
-                estadoSelect.style.display = 'none';
+                // Outro país: manter visíveis, mas desabilitados (UX: sempre mostrar os 3 selects)
+                estadoSelect.style.display = 'block';
                 this.disableDropdown(estadoSelectId, 'País não é Brasil');
                 estadoSelect.removeAttribute('required');
                 
                 if (municipioSelect) {
-                    municipioSelect.style.display = 'none';
+                    municipioSelect.style.display = 'block';
                     this.disableDropdown(municipioSelectId, 'País não é Brasil');
                 }
             } else {
-                // Nenhum país selecionado: ESCONDER estado e município
-                estadoSelect.style.display = 'none';
+                // Nenhum país selecionado: mostrar selects, mas desabilitar (melhor UX: sempre visível)
+                estadoSelect.style.display = 'block';
                 this.disableDropdown(estadoSelectId, 'Primeiro selecione o país');
                 estadoSelect.removeAttribute('required');
                 
                 if (municipioSelect) {
-                    municipioSelect.style.display = 'none';
+                    municipioSelect.style.display = 'block';
                     this.disableDropdown(municipioSelectId, 'Primeiro selecione o país');
                 }
             }
@@ -232,7 +233,8 @@ const DropdownManager = {
                 const uf = e.target.value;
 
                 if (!uf) {
-                    municipioSelect.style.display = 'none';
+                    // Mostrar município, mas desativado até selecionar estado
+                    municipioSelect.style.display = 'block';
                     this.disableDropdown(municipioSelectId, 'Primeiro selecione o estado');
                     return;
                 }
@@ -240,7 +242,7 @@ const DropdownManager = {
                 console.log(`🔍 Carregando municípios de ${uf}...`);
 
                 try {
-                    // MOSTRAR dropdown de município
+                    // Mostrar dropdown de município e habilitar
                     municipioSelect.style.display = 'block';
                     
                     // Habilitar dropdown
@@ -255,7 +257,8 @@ const DropdownManager = {
                     console.log(`✅ ${municipios.length} municípios de ${uf} carregados`);
                 } catch (error) {
                     console.error('❌ Erro ao carregar municípios:', error);
-                    municipioSelect.style.display = 'none';
+                    // Mostrar município, mas desabilitado em caso de erro
+                    municipioSelect.style.display = 'block';
                     this.disableDropdown(municipioSelectId, 'Erro ao carregar municípios');
                 }
             });

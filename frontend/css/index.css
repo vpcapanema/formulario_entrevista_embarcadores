@@ -466,6 +466,7 @@ td {
     padding: 0.8rem;
     border-bottom: 1px solid var(--border-color);
 }
+td { vertical-align: middle; }
 
 .table-input {
     width: 100%;
@@ -497,6 +498,37 @@ td {
     width: 100%;
     font-size: 0.85rem;
     color: #000000 !important; /* Garante texto preto */
+}
+
+/* ============================================
+   PRODUTOS Q8 - Ajustes de altura e visual
+   ============================================ */
+
+/* Altura padrão por select/input (single row) usado na coluna Origem/Destino */
+.produto-origem-container, .produto-destino-container {
+    --produto-single-height: 36px; /* valor default que funciona na maioria dos dispositivos */
+}
+
+/* Força altura dos selects (estado/municipio/país) para que 3 empilhados fiquem com altura total equivalente ao multi-select */
+.produto-origem-container select,
+.produto-origem-container input,
+.produto-destino-container select,
+.produto-destino-container input {
+    height: var(--produto-single-height);
+    line-height: 1.2;
+}
+
+/* Faz o multi-select de modalidades ter altura equivalente a 3 selects empilhados */
+select.table-input[multiple] {
+    height: calc(var(--produto-single-height) * 3 + 8px);
+    min-height: calc(var(--produto-single-height) * 3 + 8px);
+    overflow-y: auto;
+}
+
+/* Ajuste para telas pequenas: reduzir altura dos selects */
+@media (max-width: 768px) {
+    .produto-origem-container, .produto-destino-container { --produto-single-height: 32px; }
+    select.table-input[multiple] { height: calc(var(--produto-single-height) * 3 + 8px); }
 }
 
 /* Options dos dropdowns de produtos - SEMPRE PRETO */

@@ -261,6 +261,7 @@ const PageRespostas = {
                                     <th>Distância (km)</th>
                                     <th>Modal</th>
                                     <th>Acondicionamento</th>
+                                    <th>Observações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -273,6 +274,7 @@ const PageRespostas = {
                                     <td class="number-cell">${p.distancia ? p.distancia.toFixed(1) : '-'}</td>
                                     <td>${p.modalidade || '-'}</td>
                                     <td>${p.acondicionamento || '-'}</td>
+                                    <td>${p.observacoes || '-'}</td>
                                 </tr>
                                 `).join('')}
                             </tbody>

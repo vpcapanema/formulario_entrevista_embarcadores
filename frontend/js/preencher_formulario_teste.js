@@ -65,24 +65,88 @@ function preencherFormularioCompletoTeste() {
     preencherCampoComValidacao('municipio-empresa', 'São Paulo', 'input');
 
     // CARD 3 - Produtos Transportados (Tabela)
-    setTimeout(() => {
+    setTimeout(async () => {
+        // Limpar e criar linha via addProdutoRow() para manter nomes corretos
         const tbody = document.getElementById('produtos-tbody');
         if (tbody) {
             tbody.innerHTML = '';
-            const produtoRow = document.createElement('tr');
-            produtoRow.innerHTML = `
-                <td><input type="text" class="table-input" name="produto[]" value="Soja em Grãos" required></td>
-                <td><input type="number" class="table-input" name="movimentacao[]" value="50000" min="0" required></td>
-                <td><input type="text" class="table-input" name="origem-prod[]" value="Ribeirão Preto" required></td>
-                <td><input type="text" class="table-input" name="destino-prod[]" value="Santos" required></td>
-                <td><input type="text" class="table-input" name="tipo-veic[]" value="Caminhão"></td>
-                <td><select class="table-select" name="unid-prod[]" required>
-                    <option value="toneladas" selected>Toneladas</option>
-                </select></td>
-                <td><input type="number" class="table-input" name="valor-prod[]" value="150000" min="0" step="0.01"></td>
-                <td><button type="button" class="btn-remove-row" onclick="removerLinhaProduto(this)">🗑️</button></td>
-            `;
-            tbody.appendChild(produtoRow);
+            // Cria linha via função global
+            if (typeof window.addProdutoRow === 'function') {
+                await window.addProdutoRow();
+            } else {
+                console.warn('addProdutoRow() não encontrada; criando linha manualmente');
+                const produtoRow = document.createElement('tr');
+                produtoRow.innerHTML = `
+                    <td><input type="text" class="table-input" name="produto-carga-1" value="Soja em Grãos" required></td>
+                    <td><input type="number" class="table-input" name="produto-movimentacao-1" value="50000" min="0" required></td>
+                    <td><input type="text" class="table-input" name="produto-origem-text-1" value="Ribeirão Preto" required></td>
+                    <td><input type="text" class="table-input" name="produto-destino-text-1" value="Santos" required></td>
+                    <td><input type="number" class="table-input" name="produto-distancia-1" value="450" min="0"></td>
+                    <td>
+                        <select name="produto-modalidade-1[]" class="table-input" multiple size="3">
+                            <option value="rodoviario" selected>Rodoviário</option>
+                            <option value="ferroviario">Ferroviário</option>
+                            <option value="hidroviario">Hidroviário</option>
+                            <option value="cabotagem">Cabotagem</option>
+                            <option value="dutoviario">Dutoviário</option>
+                            <option value="aeroviario">Aeroviário</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="produto-acondicionamento-1" class="table-input">
+                            <option value="granel-solido" selected>Granel sólido</option>
+                            <option value="paletizado">Paletizado</option>
+                            <option value="container">Container</option>
+                        </select>
+                        <input type="text" name="produto-acondicionamento-outro-1" class="table-input" placeholder="Especifique" style="display:none;">
+                    </td>
+                    <td><input type="text" name="produto-observacoes-1" class="table-input" value="Observação de teste: Expedição em paletes" placeholder="Observações"></td>
+                    <td><button type="button" class="btn-remove-row" onclick="this.closest('tr').remove()">🗑️</button></td>
+                `;
+                tbody.appendChild(produtoRow);
+            }
+
+            // Preencher valores na linha criada (se addProdutoRow existir, preencher pelos nomes índice 1)
+            setTimeout(() => {
+                const setField = (name, value) => {
+                    const el = document.getElementsByName(name)[0];
+                    if (el) {
+                        if (el.tagName === 'SELECT' && el.multiple && Array.isArray(value)) {
+                            for (let i = 0; i < el.options.length; i++) {
+                                el.options[i].selected = value.includes(el.options[i].value);
+                            }
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                        } else {
+                            el.value = value;
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    }
+                };
+
+                setField('produto-carga-1', 'Soja em Grãos');
+                setField('produto-movimentacao-1', '50000');
+                // Tentar preencher selects de origem (caso estejam presentes) - fallback para text input
+                const origemPaisEl = document.getElementsByName('produto-origem-pais-1')[0];
+                if (origemPaisEl) {
+                    origemPaisEl.value = origemPaisEl.options.length > 1 ? origemPaisEl.options[1].value : origemPaisEl.options[0].value;
+                    origemPaisEl.dispatchEvent(new Event('change', { bubbles: true }));
+                    setTimeout(() => {
+                        const origemEstadoEl = document.getElementsByName('produto-origem-estado-1')[0];
+                        if (origemEstadoEl && origemEstadoEl.options.length > 1) {
+                            origemEstadoEl.selectedIndex = 1;
+                            origemEstadoEl.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    }, 150);
+                } else {
+                    setField('produto-origem-text-1', 'Ribeirão Preto');
+                }
+                setField('produto-destino-text-1', 'Santos');
+                setField('produto-distancia-1', '450');
+                setField('produto-modalidade-1[]', ['rodoviario', 'ferroviario']);
+                setField('produto-acondicionamento-1', 'granel-solido');
+                setField('produto-observacoes-1', 'Observação de teste: logística sazonal');
+            }, 200);
         }
     }, 300);
 

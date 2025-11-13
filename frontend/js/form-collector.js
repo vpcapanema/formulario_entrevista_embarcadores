@@ -458,25 +458,49 @@ const FormCollector = {
     _collectProdutos() {
         const produtos = [];
         const rows = document.querySelectorAll('#produtos-tbody tr');
-        
+
         rows.forEach((row) => {
-            const inputs = row.querySelectorAll('input, select');
-            if (inputs.length >= 7) {
-                const produto = {
-                    carga: inputs[0].value,
-                    movimentacao: this._parseNumeric(inputs[1].value),
-                    origem: inputs[2].value,
-                    destino: inputs[3].value,
-                    distancia: this._parseNumeric(inputs[4].value),
-                    modalidade: inputs[5].value,
-                    acondicionamento: inputs[6].value
-                };
-                
-                // Só adicionar se tiver pelo menos o nome da carga
-                if (produto.carga && produto.carga.trim() !== '') {
-                    produtos.push(produto);
+            // Exemplo de id do row: produto-row-1
+            const idParts = (row.id || '').split('-');
+            const rowNum = idParts[idParts.length - 1];
+            if (!rowNum) return; // skip unexpected rows
+
+            const cargaEl = row.querySelector(`[name="produto-carga-${rowNum}"]`);
+            const movimentacaoEl = row.querySelector(`[name="produto-movimentacao-${rowNum}"]`);
+            // Prefer selects (pais/estado/municipio) over free-text input when collecting product origin/destination
+            const origemEl = row.querySelector(`[name="produto-origem-pais-${rowNum}"]`) || row.querySelector(`[name="produto-origem-text-${rowNum}"]`);
+            const destinoEl = row.querySelector(`[name="produto-destino-pais-${rowNum}"]`) || row.querySelector(`[name="produto-destino-text-${rowNum}"]`);
+            const distanciaEl = row.querySelector(`[name="produto-distancia-${rowNum}"]`);
+            const modalidadeEl = row.querySelector(`[name^="produto-modalidade-${rowNum}"]`);
+            const acondEl = row.querySelector(`[name="produto-acondicionamento-${rowNum}"]`);
+            const observacoesEl = row.querySelector(`[name="produto-observacoes-${rowNum}"]`);
+
+            const carga = cargaEl ? cargaEl.value : '';
+            if (!carga || carga.trim() === '') return;
+
+            // Modalidade (multi-select): coleta múltiplas opções e converte para string separada por vírgula
+            let modalidade = '';
+            if (modalidadeEl) {
+                if (modalidadeEl.multiple) {
+                    const selected = Array.from(modalidadeEl.selectedOptions || []).map(o => o.value).filter(v => v && v !== '');
+                    modalidade = selected.length > 0 ? selected.join(',') : '';
+                } else {
+                    modalidade = modalidadeEl.value || '';
                 }
             }
+
+            const produto = {
+                carga: carga,
+                movimentacao: movimentacaoEl ? this._parseNumeric(movimentacaoEl.value) : null,
+                origem: origemEl ? origemEl.value : '',
+                destino: destinoEl ? destinoEl.value : '',
+                distancia: distanciaEl ? this._parseNumeric(distanciaEl.value) : null,
+                modalidade: modalidade,
+                acondicionamento: acondEl ? (acondEl.value || '') : '',
+                observacoes: observacoesEl ? (observacoesEl.value || '') : ''
+            };
+
+            produtos.push(produto);
         });
         
         return produtos;
@@ -593,6 +617,20 @@ const FormCollector = {
                 return;
             }
             
+            // Gerar backup XLSX local (pré-envio) - Nativo, automático
+            try {
+                const backupFilename = `PLI2050_Resposta_BACKUP_${formData.razaoSocial || formData.nomeEmpresa || 'resposta'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                console.log(`🧾 Gerando backup XLSX (pre-send) em memória: ${backupFilename}`);
+                // Informar usuário de que um backup em memória foi gerado (console + modal opcional)
+                // Mostramos uma mensagem discreta no console; não forçamos modal para não interromper o fluxo.
+                // Gerar workbook em memória (ArrayBuffer), sem iniciar download
+                const backupAb = window.ExcelGenerator.createWorkbookArrayBuffer(formData, { success: true, statusLabel: 'BACKUP', labels: window.ExcelLabels });
+                // Armazenar backup em variável global temporária (somente em memória, sem baixar)
+                window.__lastBackupXlsx = { arrayBuffer: backupAb, filename: backupFilename };
+            } catch (err) {
+                console.error('Erro ao gerar backup XLSX (pré-envio):', err);
+            }
+
             // Mostrar loading
             UI.mostrarLoading('Enviando dados para o servidor...');
             
@@ -612,13 +650,39 @@ const FormCollector = {
                 // Mostrar sucesso com botão de download
                 UI.mostrarSucesso(formData.razaoSocial || formData.nomeEmpresa, pdfResult.nomeArquivo, pdfResult.pdfDoc);
                 
+                // Gerar Excel com marcação de sucesso (download automático)
+                try {
+                    // Inclui IDs retornados pelo backend no arquivo final
+                    const finalFormData = Object.assign({}, formData, {
+                        id_pesquisa: response.id_pesquisa,
+                        id_empresa: response.id_empresa,
+                        id_entrevistado: response.id_entrevistado
+                    });
+                    const finalFilename = `PLI2050_Resposta_${finalFormData.razaoSocial || finalFormData.nomeEmpresa || 'resposta'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    const finalAb = window.ExcelGenerator.createWorkbookArrayBuffer(finalFormData, { success: true, statusLabel: 'SUCESSO', labels: window.ExcelLabels });
+                    window.ExcelGenerator.downloadArrayBuffer(finalAb, finalFilename);
+                } catch (err) {
+                    console.error('Erro ao gerar/baixar XLSX final após sucesso:', err);
+                }
+
                 // Aguardar 5s e resetar formulário (aumentado de 3s para 5s)
                 setTimeout(() => {
                     UI.resetForm();
+                    // Limpando backup em memória
+                    try { delete window.__lastBackupXlsx; } catch (e) { window.__lastBackupXlsx = null; }
                 }, 5000);
             } else {
                 // Erro retornado pelo backend
                 UI.mostrarErroBanco(response.message || 'Erro desconhecido');
+
+                try {
+                    const errFilename = `PLI2050_Resposta_ERROR_${formData.razaoSocial || formData.nomeEmpresa || 'resposta'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    const errAb = window.ExcelGenerator.createWorkbookArrayBuffer(formData, { success: false, statusLabel: 'ERRO', errorDetails: response, labels: window.ExcelLabels });
+                    window.ExcelGenerator.downloadArrayBuffer(errAb, errFilename);
+                } catch (err) {
+                    console.error('Erro ao gerar/baixar XLSX em caso de erro do backend:', err);
+                }
+                try { delete window.__lastBackupXlsx; } catch (e) { window.__lastBackupXlsx = null; }
             }
             
         } catch (error) {
@@ -644,9 +708,25 @@ const FormCollector = {
             } else if (error.message && error.message.includes('fetch')) {
                 // Erro de conexão
                 UI.mostrarErroConexao(error.message);
+                try {
+                    const errFilename = `PLI2050_Resposta_ERROR_${formData.razaoSocial || formData.nomeEmpresa || 'resposta'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    const errAb = window.ExcelGenerator.createWorkbookArrayBuffer(formData, { success: false, statusLabel: 'ERRO', errorDetails: error.message, labels: window.ExcelLabels });
+                    window.ExcelGenerator.downloadArrayBuffer(errAb, errFilename);
+                } catch (errx) {
+                    console.error('Erro ao gerar/baixar XLSX em caso de falha de conexão:', errx);
+                }
+                try { delete window.__lastBackupXlsx; } catch (e) { window.__lastBackupXlsx = null; }
             } else {
                 // Erro genérico
                 UI.mostrarErroBanco(JSON.stringify(error));
+                try {
+                    const errFilename = `PLI2050_Resposta_ERROR_${formData.razaoSocial || formData.nomeEmpresa || 'resposta'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    const errAb = window.ExcelGenerator.createWorkbookArrayBuffer(formData, { success: false, statusLabel: 'ERRO', errorDetails: error, labels: window.ExcelLabels });
+                    window.ExcelGenerator.downloadArrayBuffer(errAb, errFilename);
+                } catch (errx) {
+                    console.error('Erro ao gerar/baixar XLSX em caso de exception:', errx);
+                }
+                try { delete window.__lastBackupXlsx; } catch (e) { window.__lastBackupXlsx = null; }
             }
         }
     }
@@ -677,13 +757,13 @@ async function addProdutoRow() {
                 <select id="produto-origem-pais-select-${currentCounter}" name="produto-origem-pais-${currentCounter}" class="table-input produto-pais-select" data-row="${currentCounter}" data-tipo="origem" required>
                     <option value="">Selecione o país...</option>
                 </select>
-                <select id="produto-origem-estado-select-${currentCounter}" name="produto-origem-estado-${currentCounter}" class="table-input produto-estado-select" data-row="${currentCounter}" data-tipo="origem" style="display:none; margin-top:4px;">
+                <select id="produto-origem-estado-select-${currentCounter}" name="produto-origem-estado-${currentCounter}" class="table-input produto-estado-select" data-row="${currentCounter}" data-tipo="origem">
                     <option value="">Selecione o estado...</option>
                 </select>
-                <select id="produto-origem-municipio-select-${currentCounter}" name="produto-origem-municipio-${currentCounter}" class="table-input produto-municipio-select" data-row="${currentCounter}" data-tipo="origem" style="display:none; margin-top:4px;">
+                <select id="produto-origem-municipio-select-${currentCounter}" name="produto-origem-municipio-${currentCounter}" class="table-input produto-municipio-select" data-row="${currentCounter}" data-tipo="origem">
                     <option value="">Município (opcional)...</option>
                 </select>
-                <input type="text" name="produto-origem-text-${currentCounter}" class="table-input produto-text-input" placeholder="Origem" style="display:none; margin-top:4px;">
+                <input type="text" name="produto-origem-text-${currentCounter}" class="table-input produto-text-input" placeholder="Origem" style="display:none;">
             </div>
         </td>
         <td>
@@ -691,19 +771,19 @@ async function addProdutoRow() {
                 <select id="produto-destino-pais-select-${currentCounter}" name="produto-destino-pais-${currentCounter}" class="table-input produto-pais-select" data-row="${currentCounter}" data-tipo="destino" required>
                     <option value="">Selecione o país...</option>
                 </select>
-                <select id="produto-destino-estado-select-${currentCounter}" name="produto-destino-estado-${currentCounter}" class="table-input produto-estado-select" data-row="${currentCounter}" data-tipo="destino" style="display:none; margin-top:4px;">
+                <select id="produto-destino-estado-select-${currentCounter}" name="produto-destino-estado-${currentCounter}" class="table-input produto-estado-select" data-row="${currentCounter}" data-tipo="destino">
                     <option value="">Selecione o estado...</option>
                 </select>
-                <select id="produto-destino-municipio-select-${currentCounter}" name="produto-destino-municipio-${currentCounter}" class="table-input produto-municipio-select" data-row="${currentCounter}" data-tipo="destino" style="display:none; margin-top:4px;">
+                <select id="produto-destino-municipio-select-${currentCounter}" name="produto-destino-municipio-${currentCounter}" class="table-input produto-municipio-select" data-row="${currentCounter}" data-tipo="destino">
                     <option value="">Município (opcional)...</option>
                 </select>
-                <input type="text" name="produto-destino-text-${currentCounter}" class="table-input produto-text-input" placeholder="Destino" style="display:none; margin-top:4px;">
+                <input type="text" name="produto-destino-text-${currentCounter}" class="table-input produto-text-input" placeholder="Destino" style="display:none;">
             </div>
         </td>
         <td><input type="number" name="produto-distancia-${currentCounter}" class="table-input" placeholder="km" min="0"></td>
         <td>
-            <select name="produto-modalidade-${currentCounter}" class="table-input">
-                <option value="">Selecione...</option>
+            <!-- Multi-select para Modalidade: permite selecionar mais de um modal -->
+            <select name="produto-modalidade-${currentCounter}[]" class="table-input" multiple size="3" title="Segure Ctrl/Cmd para selecionar múltiplos">
                 <option value="rodoviario">Rodoviário</option>
                 <option value="ferroviario">Ferroviário</option>
                 <option value="hidroviario">Hidroviário</option>
@@ -732,6 +812,7 @@ async function addProdutoRow() {
                        style="display:none;">
             </div>
         </td>
+        <td><input type="text" name="produto-observacoes-${currentCounter}" class="table-input" placeholder="Observações sobre este produto (opcional)"></td>
         <td><button type="button" class="btn-remove" onclick="removeProdutoRow('${rowId}')">🗑️</button></td>
     `;
     
@@ -739,6 +820,8 @@ async function addProdutoRow() {
     
     // Popular dropdowns via DropdownManager
     await DropdownManager.applyToProductRow(currentCounter);
+    // Ajustar altura do select de modalidades para combinar com a altura dos 3 selects de origem
+    setTimeout(() => setModalidadeHeight(currentCounter), 60);
 }
 
 /**
@@ -792,3 +875,32 @@ window.FORM = FormCollector;
 
 // Inicializar automaticamente
 FormCollector.init();
+
+/**
+ * Ajusta a altura do select multiple (Modalidade) para ficar com a mesma altura
+ * que a soma dos 3 selects empilhados da coluna Origem.
+ *
+ * @param {number} rowId - ID numérico da linha (ex: 1)
+ */
+function setModalidadeHeight(rowId) {
+    try {
+        const origemContainer = document.querySelector(`#produto-row-${rowId} .produto-origem-container`);
+        const modalidadeSelect = document.querySelector(`#produto-row-${rowId} select[name^=\"produto-modalidade-${rowId}\"]`);
+        if (!origemContainer || !modalidadeSelect) return;
+
+        const origemRect = origemContainer.getBoundingClientRect();
+        // Aplicar a altura total (removendo gap) — define o height em pixels
+        modalidadeSelect.style.height = `${Math.max(origemRect.height, 48)}px`;
+    } catch (err) {
+        console.error('Erro em setModalidadeHeight()', err);
+    }
+}
+
+// Recalcular altura ao redimensionar a janela (responsive)
+window.addEventListener('resize', () => {
+    document.querySelectorAll('#produtos-tbody tr').forEach(row => {
+        const idParts = (row.id || '').split('-');
+        const rowNum = idParts[idParts.length - 1];
+        if (rowNum) setModalidadeHeight(rowNum);
+    });
+});

@@ -369,12 +369,13 @@ const PDFGenerator = {
             p.origem || '-',
             p.destino || '-',
             p.distancia ? `${p.distancia} km` : '-',
-            p.modalidade || '-'
+            p.modalidade || '-',
+            p.observacoes || '-'
         ]);
         
         doc.autoTable({
             startY: yPosition,
-            head: [['Produto', 'Movimentação', 'Origem', 'Destino', 'Distância', 'Modal']],
+            head: [['Produto', 'Movimentação', 'Origem', 'Destino', 'Distância', 'Modal', 'Observações']],
             body: tableData,
             margin: { left: 15, right: 15 },
             theme: 'grid',
@@ -398,7 +399,8 @@ const PDFGenerator = {
                 2: { cellWidth: 35 },
                 3: { cellWidth: 35 },
                 4: { cellWidth: 20 },
-                5: { cellWidth: 20 }
+                5: { cellWidth: 20 },
+                6: { cellWidth: 40 }
             }
         });
         

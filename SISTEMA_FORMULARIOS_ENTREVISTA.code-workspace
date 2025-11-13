@@ -4,5 +4,16 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.linting.enabled": false,
+		"python.linting.pylintEnabled": false,
+		"python.analysis.diagnosticSeverityOverrides": {
+			"reportUnusedImport": "none",
+			"reportUnusedVariable": "none"
+		},
+		"[python]": {
+			"editor.rulers": [150],
+			"editor.formatOnSave": false
+		}
+	}
 }
