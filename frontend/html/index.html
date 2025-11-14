@@ -10,32 +10,17 @@
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
     
     <!-- Suprimir avisos de Tracking Prevention para CDNs -->
-    <script>
-        // Intercepta avisos de "Tracking Prevention blocked access to storage"
-        const originalWarn = console.warn;
-        console.warn = function(...args) {
-            const message = args.join(' ');
-            // Ignora avisos de tracking prevention de CDNs externos
-            if (message.includes('Tracking Prevention') && 
-                (message.includes('cdn.jsdelivr.net') || 
-                 message.includes('cdnjs.cloudflare.com'))) {
-                return; // Suprime o aviso
-            }
-            originalWarn.apply(console, args);
-        };
-    </script>
-    
     <!-- CSS Modularizado: Estilos globais -->
     <link rel="stylesheet" href="../css/index.css?v=20251107">
     <!-- CSS de Validação Visual (Tipo Híbrido) -->
     <link rel="stylesheet" href="../css/validation.css?v=20251107">
     <!-- CSS de Páginas (Respostas, Analytics, Visualizador) -->
     <link rel="stylesheet" href="../css/pages.css?v=20251107">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../vendor/chart.js/chart.umd.min.js"></script>
+    <script src="../vendor/xlsx/xlsx.full.min.js"></script>
     <script src="../js/excel-generator.js?v=20251107"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="../vendor/jspdf/jspdf.umd.min.js"></script>
+    <script src="../vendor/jspdf/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <!-- Navegação -->
@@ -490,8 +475,8 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="observacoes-produto-principal"><span class="question-number">18.</span> Alguma observação sobre o transporte do produto principal?</label>
-                                <textarea id="observacoes-produto-principal" name="observacoes-produto-principal" rows="4" placeholder="Digite aqui suas observações sobre o transporte deste produto..."></textarea>
+                                <label for="observacoes_produto_principal"><span class="question-number">18.</span> Alguma observação sobre o transporte do produto principal?</label>
+                                <textarea id="observacoes_produto_principal" name="observacoes_produto_principal" rows="4" placeholder="Digite aqui suas observações sobre o transporte deste produto..."></textarea>
                             </div>
                         </div>
                         <div class="form-row">
