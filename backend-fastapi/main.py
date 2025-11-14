@@ -152,7 +152,7 @@ if frontend_path.exists():
         if (frontend_path / "html").exists():
             app.mount(
                 "/html",
-                StaticFiles(directory=str(frontend_path / "html")),
+                StaticFiles(directory=str(frontend_path / "html"), html=True),
                 name="html"
             )
 
