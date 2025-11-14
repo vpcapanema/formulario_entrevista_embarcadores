@@ -59,7 +59,7 @@ app = FastAPI(
 allowed_origins_str = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:5500,http://127.0.0.1:5500,"
-    "http://localhost:8000,http://127.0.0.1:8000,"
+    "http://localhost:8010,http://127.0.0.1:8010,"
     "https://vpcapanema.github.io"
 )
 allowed_origins = [origin.strip() for origin in allowed_origins_str.split(',')]
@@ -234,18 +234,18 @@ async def startup_event():
     )
     logger.info("")
     logger.info("🌐 URLs Disponíveis:")
-    logger.info("   🏠 Frontend: http://localhost:8000/")
+    logger.info("   🏠 Frontend: http://localhost:8010/")
     logger.info(
-        "   📋 Formulário: http://localhost:8000/html/index.html"
+        "   📋 Formulário: http://localhost:8010/html/index.html"
     )
     logger.info(
-        "   📊 Analytics: http://localhost:8000/html/analytics.html"
+        "   📊 Analytics: http://localhost:8010/html/analytics.html"
     )
     logger.info(
-        "   📄 Respostas: http://localhost:8000/html/respostas.html"
+        "   📄 Respostas: http://localhost:8010/html/respostas.html"
     )
-    logger.info("   📚 API Docs: http://localhost:8000/docs")
-    logger.info("   🏥 Health Check: http://localhost:8000/health")
+    logger.info("   📚 API Docs: http://localhost:8010/docs")
+    logger.info("   🏥 Health Check: http://localhost:8010/health")
     logger.info("")
     logger.info("="*60)
 

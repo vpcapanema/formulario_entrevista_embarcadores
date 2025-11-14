@@ -87,12 +87,12 @@ const UIFeedback = {
                             <pre>${detalhes}</pre>
                             <p><strong>Possíveis causas:</strong></p>
                             <ul>
-                                <li>Servidor backend não está rodando (porta 8000)</li>
+                                <li>Servidor backend não está rodando (porta 8010)</li>
                                 <li>Problema na conexão com o banco de dados PostgreSQL</li>
                                 <li>Firewall bloqueando a conexão</li>
                             </ul>
                             <p><strong>Solução:</strong></p>
-                            <p>1. Verifique se o backend está rodando: <code>uvicorn main:app --reload</code></p>
+                            <p>1. Verifique se o backend está rodando: <code>uvicorn main:app --reload --port 8010</code></p>
                             <p>2. Verifique a conexão com o PostgreSQL (RDS AWS)</p>
                             <p>3. Tente novamente</p>
                         </div>
