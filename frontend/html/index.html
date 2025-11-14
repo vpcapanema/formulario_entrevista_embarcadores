@@ -11,14 +11,14 @@
     
     <!-- Suprimir avisos de Tracking Prevention para CDNs -->
     <!-- CSS Modularizado: Estilos globais -->
-    <link rel="stylesheet" href="../css/index.css?v=20251107">
+    <link rel="stylesheet" href="../css/index.css?v=20251114">
     <!-- CSS de Validação Visual (Tipo Híbrido) -->
-    <link rel="stylesheet" href="../css/validation.css?v=20251107">
+    <link rel="stylesheet" href="../css/validation.css?v=20251114">
     <!-- CSS de Páginas (Respostas, Analytics, Visualizador) -->
-    <link rel="stylesheet" href="../css/pages.css?v=20251107">
+    <link rel="stylesheet" href="../css/pages.css?v=20251114">
     <script src="../vendor/chart.js/chart.umd.min.js"></script>
     <script src="../vendor/xlsx/xlsx.full.min.js"></script>
-    <script src="../js/excel-generator.js?v=20251107"></script>
+    <script src="../js/excel-generator.js?v=20251114"></script>
     <script src="../vendor/jspdf/jspdf.umd.min.js"></script>
     <script src="../vendor/jspdf/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -141,6 +141,43 @@
                                 <input type="email" id="email" name="email" required>
                             </div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="estado-civil"><span class="question-number">5.</span> Estado Civil *</label>
+                                <select id="estado-civil" name="estado-civil" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="solteiro">Solteiro(a)</option>
+                                    <option value="casado">Casado(a)</option>
+                                    <option value="divorciado">Divorciado(a)</option>
+                                    <option value="viuvo">Viúvo(a)</option>
+                                    <option value="uniao-estavel">União Estável</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="nacionalidade"><span class="question-number">6.</span> Nacionalidade *</label>
+                                <select id="nacionalidade" name="nacionalidade" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="brasileira">Brasileira</option>
+                                    <option value="estrangeira">Estrangeira</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="uf-naturalidade"><span class="question-number">7.</span> UF de Naturalidade *</label>
+                                <select id="uf-naturalidade" name="uf-naturalidade" required>
+                                    <option value="">Carregando estados...</option>
+                                </select>
+                                <small class="field-hint">Estado onde nasceu</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="municipio-naturalidade"><span class="question-number">8.</span> Município de Naturalidade *</label>
+                                <select id="municipio-naturalidade" name="municipio-naturalidade" required disabled>
+                                    <option value="">Selecione primeiro o estado</option>
+                                </select>
+                                <small class="field-hint">Município onde nasceu</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -153,7 +190,7 @@
                     <div class="card-body">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="tipo-empresa"><span class="question-number">5.</span> A empresa é um: *</label>
+                                <label for="tipo-empresa"><span class="question-number">9.</span> A empresa é um: *</label>
                                 <select id="tipo-empresa" name="tipo-empresa" required>
                                     <option value="">Selecione...</option>
                                     <option value="embarcador">Embarcador (dono da carga)</option>
@@ -170,14 +207,14 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="cnpj-empresa"><span class="question-number">6a.</span> CNPJ *</label>
+                                <label for="cnpj-empresa"><span class="question-number">10a.</span> CNPJ *</label>
                                 <input type="text" id="cnpj-empresa" name="cnpj-empresa" required 
                                        placeholder="00.000.000/0000-00" 
                                        maxlength="18">
                                 <small class="field-hint" id="cnpj-status"></small>
                             </div>
                             <div class="form-group">
-                                <label for="razao-social"><span class="question-number">6b.</span> Nome da empresa *</label>
+                                <label for="razao-social"><span class="question-number">10b.</span> Nome da empresa *</label>
                                 <input type="text" id="razao-social" name="razao-social" required
                                        placeholder="Será preenchido automaticamente ao digitar o CNPJ">
                                 <small class="field-hint">Razão social obtida da Receita Federal</small>
@@ -187,13 +224,13 @@
                         <!-- Campos informativos da Receita Federal (somente leitura) -->
                         <div class="form-row hidden-initially" id="campos-receita-federal">
                             <div class="form-group">
-                                <label for="nome-fantasia-receita"><span class="question-number">6c.</span> Nome Fantasia</label>
+                                <label for="nome-fantasia-receita"><span class="question-number">10c.</span> Nome Fantasia</label>
                                 <input type="text" id="nome-fantasia-receita" readonly class="readonly-field"
                                        placeholder="Aguardando consulta CNPJ...">
                                 <small class="field-hint">📄 Informação da Receita Federal (não editável)</small>
                             </div>
                             <div class="form-group">
-                                <label for="situacao-cadastral-receita"><span class="question-number">6d.</span> Situação Cadastral</label>
+                                <label for="situacao-cadastral-receita"><span class="question-number">10d.</span> Situação Cadastral</label>
                                 <input type="text" id="situacao-cadastral-receita" readonly class="readonly-field"
                                        placeholder="Aguardando consulta CNPJ...">
                                 <small class="field-hint">📄 Informação da Receita Federal (não editável)</small>
@@ -201,7 +238,7 @@
                         </div>
                         <div class="form-row hidden-initially" id="campos-receita-federal-2">
                             <div class="form-group">
-                                <label for="atividade-principal-receita"><span class="question-number">6e.</span> Atividade Principal (CNAE)</label>
+                                <label for="atividade-principal-receita"><span class="question-number">10e.</span> Atividade Principal (CNAE)</label>
                                 <input type="text" id="atividade-principal-receita" readonly class="readonly-field"
                                        placeholder="Aguardando consulta CNPJ...">
                                 <small class="field-hint">📄 Informação da Receita Federal (não editável)</small>
@@ -210,7 +247,7 @@
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="municipio-empresa"><span class="question-number">7.</span> Município da(s) unidade(s) de produção *</label>
+                                <label for="municipio-empresa"><span class="question-number">11.</span> Município da(s) unidade(s) de produção *</label>
                                 <input type="text" id="municipio-empresa" name="municipio-empresa" required
                                        placeholder="Será preenchido automaticamente ao digitar o CNPJ">
                                 <small class="field-hint">Município onde a empresa está localizada</small>
@@ -790,55 +827,55 @@
     
     <!-- 🔵 CORE - Infraestrutura Base -->
     <!-- 1. CoreAPI - Comunicação HTTP + Backend FastAPI -->
-    <script src="../js/core-api.js?v=20251113"></script>
+    <script src="../js/core-api.js?v=20251114"></script>
     
     <!-- 2. CoreValidators - Validadores PostgreSQL puros -->
-    <script src="../js/core-validators.js?v=20251107"></script>
+    <script src="../js/core-validators.js?v=20251114"></script>
     
     <!-- 🟢 DROPDOWN - Gestão de Listas Cascateadas -->
     <!-- 3. DropdownManager - Motor de dropdowns (país→estado→município) -->
-    <script src="../js/dropdown-manager.js?v=20251107"></script>
+    <script src="../js/dropdown-manager.js?v=20251114"></script>
     
     <!-- 🟡 FORM - Formulário e Validação -->
     <!-- 4. FormCollector - Coleta de dados e submissão -->
-    <script src="../js/form-collector.js?v=20251107"></script>
+    <script src="../js/form-collector.js?v=20251114"></script>
     
     <!-- 5. FormValidator - Motor de validação visual (onBlur + onSubmit) -->
-    <script src="../js/form-validator.js?v=20251107"></script>
+    <script src="../js/form-validator.js?v=20251114"></script>
     
-    <!-- � PDF - Gerador de Relatórios -->
+    <!-- 📄 PDF - Gerador de Relatórios -->
     <!-- PDF Generator - Geração de relatórios estilizados -->
-    <script src="../js/pdf-generator.js?v=20251108"></script>
+    <script src="../js/pdf-generator.js?v=20251114"></script>
     
-    <!-- �🔴 UI - Interface Visual -->
+    <!-- 🔴 UI - Interface Visual -->
     <!-- 6. UIFeedback - Modais, mensagens, navegação -->
-    <script src="../js/ui-feedback.js?v=20251107"></script>
+    <script src="../js/ui-feedback.js?v=20251114"></script>
     
     <!-- 🧭 NAVBAR - Navegação entre Páginas -->
     <!-- SPA Router - DEVE carregar ANTES do navbar.js -->
-    <script src="../js/spa-router.js?v=20251108"></script>
-    <script src="../js/navbar.js?v=20251108"></script>
+    <script src="../js/spa-router.js?v=20251114"></script>
+    <script src="../js/navbar.js?v=20251114"></script>
     
-    <!-- � AUTENTICAÇÃO - Proteção de Páginas Internas -->
-    <script src="../js/auth-simple.js?v=20251108"></script>
+    <!-- 🔐 AUTENTICAÇÃO - Proteção de Páginas Internas -->
+    <script src="../js/auth-simple.js?v=20251114"></script>
     
-    <!-- �🟣 INTEGRATION - APIs Externas -->
+    <!-- 🟣 INTEGRATION - APIs Externas -->
     <!-- 7. IntegrationCNPJ - Auto-fill via Receita Federal -->
-    <script src="../js/integration-cnpj.js?v=20251107"></script>
+    <script src="../js/integration-cnpj.js?v=20251114"></script>
     
     <!-- 📊 PAGES - Páginas de Visualização -->
     <!-- 8. PageRespostas - Listagem e visualização de pesquisas -->
-    <script src="../js/page-respostas.js?v=20251107"></script>
+    <script src="../js/page-respostas.js?v=20251114"></script>
     
     <!-- 9. PageAnalytics - Gráficos e KPIs -->
-    <script src="../js/page-analytics.js?v=20251107"></script>
+    <script src="../js/page-analytics.js?v=20251114"></script>
     
     <!-- 🧪 TESTES - Script de preenchimento automático para testes -->
-    <script src="../js/preencher_formulario_teste.js?v=20251107"></script>
+    <script src="../js/preencher_formulario_teste.js?v=20251114"></script>
     
     <!-- 🧪 TESTES - Suite de testes automatizados (apenas em desenvolvimento) -->
     <!-- Descomente a linha abaixo para carregar testes no console -->
-    <!-- <script src="../js/test-suite.js?v=20251107"></script> -->
+    <!-- <script src="../js/test-suite.js?v=20251114"></script> -->
 </body>
 </html>
 

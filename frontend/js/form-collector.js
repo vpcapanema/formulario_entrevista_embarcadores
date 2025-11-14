@@ -146,6 +146,7 @@ const FormCollector = {
             await DropdownManager.applyToOrigemDestino(); // Q12, Q13
             await DropdownManager.applyToFuncao(); // Q2
             await DropdownManager.applyToEntrevistador(); // Q0
+            await DropdownManager.applyToNaturalidade(); // Q7-Q8 (Naturalidade)
             
             console.log('✅ Dropdowns carregados via DropdownManager');
         } catch (error) {
@@ -349,6 +350,10 @@ const FormCollector = {
         data.funcao = this._getValue('funcao');
         data.telefone = this._getValue('telefone');
         data.email = this._getValue('email');
+        data.estadoCivil = this._getValue('estado-civil'); // Q5
+        data.nacionalidade = this._getValue('nacionalidade'); // Q6
+        data.ufNaturalidade = this._getValue('uf-naturalidade'); // Q7
+        data.municipioNaturalidade = this._getValue('municipio-naturalidade'); // Q8
         
         // ==== SEÇÃO 2: Dados da Empresa ====
         data.tipoEmpresa = this._getValue('tipo-empresa');

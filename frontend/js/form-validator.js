@@ -49,10 +49,10 @@
 
 const FormValidator = {
     
-    // Mapeamento de campos para validadores (TODOS os 66 campos do formulário)
+    // Mapeamento de campos para validadores (TODOS os 70 campos do formulário)
     fieldValidators: {
         // ========================================
-        // BLOCO 1: DADOS DO ENTREVISTADO (8 campos)
+        // BLOCO 1: DADOS DO ENTREVISTADO (12 campos)
         // ========================================
         'id-entrevistador': { validator: 'select', required: true },
         'nome': { validator: 'varchar', required: true, maxLength: 100 },
@@ -60,6 +60,10 @@ const FormValidator = {
         'outra-funcao': { validator: 'varchar', required: false, maxLength: 100 },
         'telefone': { validator: 'telefone', required: true },
         'email': { validator: 'email', required: true },
+        'estado-civil': { validator: 'select', required: true },
+        'nacionalidade': { validator: 'select', required: true },
+        'uf-naturalidade': { validator: 'select', required: true },
+        'municipio-naturalidade': { validator: 'select', required: true },
         
         // ========================================
         // BLOCO 2: DADOS DA EMPRESA (5 campos)

@@ -113,7 +113,11 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
             telefone=data.telefone,
             email=data.email,
             email_lower=data.email.lower(),
-            principal=True  # Primeiro entrevistado é sempre principal
+            principal=True,  # Primeiro entrevistado é sempre principal
+            estado_civil=data.estadoCivil,
+            nacionalidade=data.nacionalidade,
+            uf_naturalidade=data.ufNaturalidade,
+            municipio_naturalidade=data.municipioNaturalidade
         )
         db.add(entrevistado)
         db.flush()

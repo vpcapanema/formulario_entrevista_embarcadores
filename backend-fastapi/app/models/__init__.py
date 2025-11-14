@@ -172,6 +172,12 @@ class Entrevistado(Base):
     data_cadastro = Column(TIMESTAMP(timezone=True), server_default=func.now())
     data_atualizacao = Column(TIMESTAMP(timezone=True))
     email_lower = Column(String(255))
+    
+    # Campos de naturalidade e estado civil (adicionados em 20251114)
+    estado_civil = Column(String(20))
+    nacionalidade = Column(String(20))
+    uf_naturalidade = Column(String(2))
+    municipio_naturalidade = Column(String(7))
 
     # Relationships
     empresa = relationship("Empresa", back_populates="entrevistados")

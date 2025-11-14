@@ -285,6 +285,10 @@ class SubmitFormData(BaseModel):
     funcao: str
     telefone: str
     email: EmailStr
+    estadoCivil: Optional[str] = Field(None, alias="estadoCivil")
+    nacionalidade: Optional[str] = None
+    ufNaturalidade: Optional[str] = Field(None, alias="ufNaturalidade")
+    municipioNaturalidade: Optional[str] = Field(None, alias="municipioNaturalidade")
 
     # ---- DADOS DA EMPRESA ----
     nomeEmpresa: str = Field(..., alias="nomeEmpresa")

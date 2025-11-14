@@ -365,6 +365,61 @@ const DropdownManager = {
         }
 
         console.log('✅ Q0 (Entrevistador) configurado');
+    },
+
+    /**
+     * Configura cascata de Naturalidade (Q7 UF → Q8 Município) no Card 1
+     */
+    async applyToNaturalidade() {
+        console.log('🔄 Aplicando cascata de Naturalidade (Q7-Q8)...');
+
+        const ufSelect = document.getElementById('uf-naturalidade');
+        const municipioSelect = document.getElementById('municipio-naturalidade');
+
+        if (!ufSelect || !municipioSelect) {
+            console.error('❌ Campos de naturalidade não encontrados');
+            return;
+        }
+
+        // Popular UF com estados do cache
+        if (this._cache.estados) {
+            this.populate('uf-naturalidade', this._cache.estados, 'uf', 'nome_estado');
+        }
+
+        // Configurar evento onChange do UF
+        ufSelect.addEventListener('change', async (e) => {
+            const uf = e.target.value;
+            
+            if (!uf) {
+                // Resetar município se UF for desmarcado
+                municipioSelect.disabled = true;
+                municipioSelect.innerHTML = '<option value="">Selecione primeiro o estado</option>';
+                return;
+            }
+
+            console.log(`🔍 Carregando municípios de ${uf} para naturalidade...`);
+
+            try {
+                // Desabilitar temporariamente
+                this.disableDropdown('municipio-naturalidade', 'Carregando...');
+                
+                // Carregar municípios da UF via CoreAPI
+                const municipios = await CoreAPI.getMunicipiosByUF(uf);
+                
+                // Popular dropdown (colunas: cd_mun, nm_mun conforme JSON)
+                this.populate('municipio-naturalidade', municipios, 'cd_mun', 'nm_mun');
+                
+                // Habilitar
+                municipioSelect.disabled = false;
+                
+                console.log(`✅ ${municipios.length} municípios carregados para ${uf}`);
+            } catch (error) {
+                console.error(`❌ Erro ao carregar municípios de ${uf}:`, error);
+                municipioSelect.innerHTML = '<option value="">Erro ao carregar municípios</option>';
+            }
+        });
+
+        console.log('✅ Cascata de Naturalidade (Q7-Q8) configurada');
     }
 };
 
