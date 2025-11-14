@@ -310,6 +310,7 @@ class SubmitFormData(BaseModel):
     produtoPrincipal: str = Field(..., alias="produtoPrincipal")
     agrupamentoProduto: str = Field(..., alias="agrupamentoProduto")
     outroProduto: Optional[str] = Field(None, alias="outroProduto")
+    observacoesProdutoPrincipal: Optional[str] = Field(None, alias="observacoesProdutoPrincipal")
 
     # ---- TRANSPORTE ----
     tipoTransporte: str = Field(..., alias="tipoTransporte")
