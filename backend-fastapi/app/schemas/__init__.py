@@ -93,8 +93,8 @@ class EmpresaResponse(EmpresaBase):
 class EntrevistadoBase(BaseModel):
     nome: str
     funcao: str
-    telefone: str
-    email: EmailStr
+    telefone: Optional[str] = None
+    email: Optional[EmailStr] = None
     principal: bool = False
 
 

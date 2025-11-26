@@ -110,14 +110,14 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
             id_empresa=id_empresa,
             nome=data.nome,
             funcao=data.funcao,
-            telefone=data.telefone,
-            email=data.email,
-            email_lower=data.email.lower(),
+            telefone=data.telefone if data.telefone else None,
+            email=data.email if data.email else None,
+            email_lower=(data.email.lower() if data.email else None),
             principal=True,  # Primeiro entrevistado é sempre principal
-            estado_civil=data.estadoCivil,
-            nacionalidade=data.nacionalidade,
-            uf_naturalidade=data.ufNaturalidade,
-            municipio_naturalidade=data.municipioNaturalidade
+            estado_civil=data.estadoCivil if hasattr(data, 'estadoCivil') else None,
+            nacionalidade=data.nacionalidade if hasattr(data, 'nacionalidade') else None,
+            uf_naturalidade=data.ufNaturalidade if hasattr(data, 'ufNaturalidade') else None,
+            municipio_naturalidade=data.municipioNaturalidade if hasattr(data, 'municipioNaturalidade') else None
         )
         db.add(entrevistado)
         db.flush()

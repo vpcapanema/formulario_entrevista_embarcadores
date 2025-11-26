@@ -58,12 +58,12 @@ const FormValidator = {
         'nome': { validator: 'varchar', required: true, maxLength: 100 },
         'funcao': { validator: 'select', required: true },
         'outra-funcao': { validator: 'varchar', required: false, maxLength: 100 },
-        'telefone': { validator: 'telefone', required: true },
-        'email': { validator: 'email', required: true },
-        'estado-civil': { validator: 'select', required: true },
-        'nacionalidade': { validator: 'select', required: true },
-        'uf-naturalidade': { validator: 'select', required: true },
-        'municipio-naturalidade': { validator: 'select', required: true },
+        'telefone': { validator: 'telefone', required: false },
+        'email': { validator: 'email', required: false },
+        'estado-civil': { validator: 'select', required: false },
+        'nacionalidade': { validator: 'select', required: false },
+        'uf-naturalidade': { validator: 'select', required: false },
+        'municipio-naturalidade': { validator: 'select', required: false },
         
         // ========================================
         // BLOCO 2: DADOS DA EMPRESA (5 campos)
