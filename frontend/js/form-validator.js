@@ -70,7 +70,7 @@ const FormValidator = {
         // ========================================
         'tipo-empresa': { validator: 'select', required: true },
         'outro-tipo': { validator: 'varchar', required: false, maxLength: 100 },
-        'cnpj-empresa': { validator: 'cnpj', required: true },
+        'cnpj-empresa': { validator: 'cnpj', required: false },
         'razao-social': { validator: 'varchar', required: true, maxLength: 200 },
         'municipio-empresa': { validator: 'varchar', required: true, maxLength: 100 },
         
