@@ -656,6 +656,205 @@ const AutoSave = {
     getLastSaveTime() {
         const timestamp = localStorage.getItem(this.TIMESTAMP_KEY);
         return timestamp ? new Date(timestamp) : null;
+    },
+    
+    // ============================================================
+    // EXPORTAÇÃO DE RASCUNHO
+    // ============================================================
+    
+    /**
+     * Exporta o rascunho atual para Excel
+     */
+    exportarRascunho() {
+        try {
+            // Salvar dados atuais primeiro
+            this._saveNow();
+            
+            // Coletar dados do formulário usando FormCollector se disponível
+            let formData;
+            if (window.FormCollector && typeof window.FormCollector.collectData === 'function') {
+                formData = window.FormCollector.collectData();
+            } else {
+                // Fallback: usar dados do auto-save
+                const savedData = this.getSavedData();
+                if (!savedData) {
+                    this._showExportMessage('warning', 'Nenhum dado para exportar. Preencha alguns campos primeiro.');
+                    return;
+                }
+                formData = this._convertSavedDataToFormData(savedData);
+            }
+            
+            // Verificar se há dados para exportar
+            if (!formData || Object.keys(formData).length === 0) {
+                this._showExportMessage('warning', 'Nenhum dado para exportar. Preencha alguns campos primeiro.');
+                return;
+            }
+            
+            // Gerar nome do arquivo
+            const empresa = formData.razaoSocial || formData.nomeEmpresa || 'rascunho';
+            const timestamp = new Date().toISOString().split('T')[0];
+            const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+            const filename = `PLI2050_RASCUNHO_${empresa}_${timestamp}_${hora}.xlsx`;
+            
+            // Gerar Excel usando ExcelGenerator se disponível
+            if (window.ExcelGenerator && typeof window.ExcelGenerator.createWorkbookArrayBuffer === 'function') {
+                const arrayBuffer = window.ExcelGenerator.createWorkbookArrayBuffer(formData, {
+                    success: false,
+                    statusLabel: 'RASCUNHO',
+                    labels: window.ExcelLabels
+                });
+                window.ExcelGenerator.downloadArrayBuffer(arrayBuffer, filename);
+                this._showExportMessage('success', `Rascunho exportado: ${filename}`);
+            } else {
+                // Fallback: gerar Excel básico com SheetJS
+                this._generateBasicExcel(formData, filename);
+            }
+            
+            console.log(`📥 AutoSave: Rascunho exportado como ${filename}`);
+            
+        } catch (error) {
+            console.error('❌ AutoSave: Erro ao exportar rascunho', error);
+            this._showExportMessage('error', 'Erro ao exportar rascunho. Veja o console para detalhes.');
+        }
+    },
+    
+    /**
+     * Converte dados salvos do localStorage para formato de formData
+     */
+    _convertSavedDataToFormData(savedData) {
+        const formData = {};
+        
+        // Campos simples
+        if (savedData.fields) {
+            Object.assign(formData, savedData.fields);
+        }
+        
+        // Radios
+        if (savedData.radios) {
+            Object.assign(formData, savedData.radios);
+        }
+        
+        // Selects
+        if (savedData.selects) {
+            Object.assign(formData, savedData.selects);
+        }
+        
+        // Checkboxes (converter arrays para string separada por vírgula)
+        if (savedData.checkboxes) {
+            Object.entries(savedData.checkboxes).forEach(([name, values]) => {
+                if (values && values.length > 0) {
+                    formData[name] = values.join(', ');
+                }
+            });
+        }
+        
+        // Produtos
+        if (savedData.produtos && savedData.produtos.length > 0) {
+            formData.produtos = savedData.produtos.map(p => ({
+                ...p.fields,
+                ...p.selects
+            }));
+        }
+        
+        return formData;
+    },
+    
+    /**
+     * Gera Excel básico usando SheetJS (fallback)
+     */
+    _generateBasicExcel(formData, filename) {
+        if (typeof XLSX === 'undefined') {
+            this._showExportMessage('error', 'Biblioteca XLSX não disponível.');
+            return;
+        }
+        
+        // Criar workbook
+        const wb = XLSX.utils.book_new();
+        
+        // Preparar dados para a planilha principal
+        const mainData = [];
+        const metaRow = {
+            'Status': 'RASCUNHO',
+            'Data Exportação': new Date().toLocaleString('pt-BR'),
+            'Observação': 'Este é um rascunho parcial - ainda não foi enviado ao servidor'
+        };
+        mainData.push(metaRow);
+        
+        // Adicionar campos do formulário
+        const fieldsRow = {};
+        Object.entries(formData).forEach(([key, value]) => {
+            if (key !== 'produtos' && value !== null && value !== undefined && value !== '') {
+                fieldsRow[key] = Array.isArray(value) ? value.join(', ') : value;
+            }
+        });
+        mainData.push(fieldsRow);
+        
+        // Criar sheet principal
+        const wsMain = XLSX.utils.json_to_sheet(mainData);
+        XLSX.utils.book_append_sheet(wb, wsMain, 'Rascunho');
+        
+        // Se houver produtos, criar sheet separada
+        if (formData.produtos && formData.produtos.length > 0) {
+            const wsProdutos = XLSX.utils.json_to_sheet(formData.produtos);
+            XLSX.utils.book_append_sheet(wb, wsProdutos, 'Produtos');
+        }
+        
+        // Download
+        XLSX.writeFile(wb, filename);
+        this._showExportMessage('success', `Rascunho exportado: ${filename}`);
+    },
+    
+    /**
+     * Mostra mensagem de exportação temporária
+     */
+    _showExportMessage(type, message) {
+        // Usar UIFeedback se disponível
+        if (window.UI && typeof window.UI.mostrarMensagem === 'function') {
+            window.UI.mostrarMensagem(message, type);
+            return;
+        }
+        
+        // Fallback: criar toast temporário
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10001;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        `;
+        
+        switch (type) {
+            case 'success':
+                toast.style.background = 'rgba(40, 167, 69, 0.95)';
+                toast.style.color = 'white';
+                toast.innerHTML = `✅ ${message}`;
+                break;
+            case 'warning':
+                toast.style.background = 'rgba(255, 193, 7, 0.95)';
+                toast.style.color = '#333';
+                toast.innerHTML = `⚠️ ${message}`;
+                break;
+            case 'error':
+                toast.style.background = 'rgba(220, 53, 69, 0.95)';
+                toast.style.color = 'white';
+                toast.innerHTML = `❌ ${message}`;
+                break;
+        }
+        
+        document.body.appendChild(toast);
+        
+        // Remover após 4 segundos
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
     }
 };
 
