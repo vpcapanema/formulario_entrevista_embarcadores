@@ -675,6 +675,10 @@ const FormCollector = {
                 // Aguardar 5s e resetar formulário (aumentado de 3s para 5s)
                 setTimeout(() => {
                     UI.resetForm();
+                    // Limpar auto-save local após envio bem-sucedido
+                    if (window.AutoSave) {
+                        window.AutoSave.clear();
+                    }
                     // Limpando backup em memória
                     try { delete window.__lastBackupXlsx; } catch (e) { window.__lastBackupXlsx = null; }
                 }, 5000);
