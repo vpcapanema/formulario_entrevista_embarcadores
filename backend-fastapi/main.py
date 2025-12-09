@@ -262,3 +262,26 @@ async def shutdown_event():
     """
     logger.info("⏹️  Desligando API PLI 2050...")
     logger.info("✅ API finalizada")
+
+
+# ============================================================
+# EXECUTAR SERVIDOR (se rodado como script)
+# ============================================================
+
+
+if __name__ == "__main__":
+    import uvicorn
+    
+    # Configurações
+    host = os.getenv("UVICORN_HOST", "127.0.0.1")
+    port = int(os.getenv("UVICORN_PORT", "8000"))
+    reload = os.getenv("UVICORN_RELOAD", "true").lower() == "true"
+    
+    # Rodar servidor
+    uvicorn.run(
+        "main:app",
+        host=host,
+        port=port,
+        reload=reload,
+        log_level="info"
+    )

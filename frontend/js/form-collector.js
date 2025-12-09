@@ -948,3 +948,10 @@ window.addEventListener('resize', () => {
         if (rowNum) setModalidadeHeight(rowNum);
     });
 });
+
+// Inicializar FormCollector automaticamente ao carregar a página
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => FormCollector.init());
+} else {
+    FormCollector.init();
+}
