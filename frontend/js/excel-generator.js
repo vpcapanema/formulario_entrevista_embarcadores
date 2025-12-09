@@ -24,7 +24,18 @@
             const labelMap = opts.labels || {};
             const wb = XLSX.utils.book_new();
 
-            const allKeys = Object.keys(formData).filter(k => k !== 'produtos');
+            // Ordem fixa das colunas (deve seguir a ordem das questões do formulário)
+            const FIELDS_ORDER = [
+                'tipoResponsavel', 'idResponsavel',
+                'nome', 'funcao', 'outraFuncao', 'telefone', 'email', 'estadoCivil', 'nacionalidade', 'ufNaturalidade', 'municipioNaturalidade',
+                'tipoEmpresa', 'outroTipo', 'razaoSocial', 'nomeEmpresa', 'municipio', 'cnpj', 'nomeFantasia', 'nomeFantasiaReceita', 'situacaoCadastralReceita', 'atividadePrincipalReceita', 'logradouro', 'numero', 'complemento', 'bairro', 'cep',
+                'produtoPrincipal', 'agrupamentoProduto', 'outroProduto', 'observacoesProdutoPrincipal',
+                'tipoTransporte', 'origemPais', 'origemEstado', 'origemMunicipio', 'destinoPais', 'destinoEstado', 'destinoMunicipio', 'distancia', 'temParadas', 'numParadas', 'modos', 'configVeiculo', 'capacidadeUtilizada', 'pesoCarga', 'unidadePeso', 'custoTransporte', 'valorCarga', 'tipoEmbalagem', 'cargaPerigosa', 'tempoDias', 'tempoHoras', 'tempoMinutos', 'frequencia', 'frequenciaDiaria', 'frequenciaOutra', 'observacoesSazonalidade',
+                'importanciaCusto', 'variacaoCusto', 'importanciaTempo', 'variacaoTempo', 'importanciaConfiabilidade', 'variacaoConfiabilidade', 'importanciaSeguranca', 'variacaoSeguranca', 'importanciaCapacidade', 'variacaoCapacidade',
+                'tipoCadeia', 'modaisAlternativos', 'fatorAdicional', 'dificuldades', 'detalheDificuldade',
+                'transportaCarga', 'consentimento'
+            ];
+            const allKeys = FIELDS_ORDER.filter(k => formData.hasOwnProperty(k));
             const headerRow = allKeys.map(k => labelMap[k] || k);
             const valuesRow = allKeys.map(k => {
                 let v = formData[k];
@@ -118,7 +129,18 @@
                 const wb = XLSX.utils.book_new();
 
                 // Aba 1: Dados Principais (colunas similares à view da page "respostas")
-                const allKeys = Object.keys(formData).filter(k => k !== 'produtos');
+                // Preservar a ordem das questões para gerar o arquivo
+                const FIELDS_ORDER_TOP = [
+                    'tipoResponsavel', 'idResponsavel',
+                    'nome', 'funcao', 'outraFuncao', 'telefone', 'email', 'estadoCivil', 'nacionalidade', 'ufNaturalidade', 'municipioNaturalidade',
+                    'tipoEmpresa', 'outroTipo', 'razaoSocial', 'nomeEmpresa', 'municipio', 'cnpj', 'nomeFantasia', 'nomeFantasiaReceita', 'situacaoCadastralReceita', 'atividadePrincipalReceita', 'logradouro', 'numero', 'complemento', 'bairro', 'cep',
+                    'produtoPrincipal', 'agrupamentoProduto', 'outroProduto', 'observacoesProdutoPrincipal',
+                    'tipoTransporte', 'origemPais', 'origemEstado', 'origemMunicipio', 'destinoPais', 'destinoEstado', 'destinoMunicipio', 'distancia', 'temParadas', 'numParadas', 'modos', 'configVeiculo', 'capacidadeUtilizada', 'pesoCarga', 'unidadePeso', 'custoTransporte', 'valorCarga', 'tipoEmbalagem', 'cargaPerigosa', 'tempoDias', 'tempoHoras', 'tempoMinutos', 'frequencia', 'frequenciaDiaria', 'frequenciaOutra', 'observacoesSazonalidade',
+                    'importanciaCusto', 'variacaoCusto', 'importanciaTempo', 'variacaoTempo', 'importanciaConfiabilidade', 'variacaoConfiabilidade', 'importanciaSeguranca', 'variacaoSeguranca', 'importanciaCapacidade', 'variacaoCapacidade',
+                    'tipoCadeia', 'modaisAlternativos', 'fatorAdicional', 'dificuldades', 'detalheDificuldade',
+                    'transportaCarga', 'consentimento'
+                ];
+                const allKeys = FIELDS_ORDER_TOP.filter(k => formData.hasOwnProperty(k));
                 const headerRow = allKeys.map(k => labelMap[k] || k);
                 const valuesRow = allKeys.map(k => {
                     let v = formData[k];
@@ -236,6 +258,14 @@
         destinoEstado: 'Destino - Estado',
         destinoMunicipio: 'Destino - Município',
         distancia: 'Distância (km)'
+        ,
+        // Produtos
+        carga: 'Produto - Carga',
+        movimentacao: 'Produto - Movimentação Anual',
+        // Estados/Municípios terão os mesmos labels que top-level (mantidos acima)
+        modalidade: 'Produto - Modalidade',
+        acondicionamento: 'Produto - Acondicionamento',
+        observacoes: 'Produto - Observações'
     };
     window.ExcelGenerator = ExcelGenerator;
 

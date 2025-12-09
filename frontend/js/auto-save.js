@@ -350,10 +350,10 @@ const AutoSave = {
             produtos: []
         };
         
-        // Coletar inputs de texto/número
+        // Coletar inputs de texto/número - salvar TODOS os campos (mesmo vazios)
         form.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="tel"]').forEach(input => {
-            if (input.name && input.value) {
-                data.fields[input.name] = input.value;
+            if (input.name) {
+                data.fields[input.name] = input.value == null ? '' : String(input.value);
             }
         });
         
@@ -379,15 +379,13 @@ const AutoSave = {
             }
         });
         
-        // Coletar selects
+        // Coletar selects - salvar todos (inclusive valores vazios)
         form.querySelectorAll('select').forEach(select => {
             if (select.name) {
                 if (select.multiple) {
-                    // Select múltiplo: salvar array de valores
                     data.selects[select.name] = Array.from(select.selectedOptions).map(opt => opt.value);
                 } else {
-                    // Select simples
-                    data.selects[select.name] = select.value;
+                    data.selects[select.name] = select.value == null ? '' : String(select.value);
                 }
             }
         });
@@ -409,6 +407,9 @@ const AutoSave = {
                             produto.selects[field.name] = Array.from(field.selectedOptions).map(opt => opt.value);
                         } else {
                             produto.selects[field.name] = field.value;
+                            // Salvar também o rótulo exibido no select para export (texto do option)
+                            const labelName = `${field.name}-label`;
+                            produto.fields[labelName] = (field.selectedOptions[0]?.textContent || '');
                         }
                     } else {
                         produto.fields[field.name] = field.value;
@@ -721,7 +722,7 @@ const AutoSave = {
             let formData;
             if (window.FormCollector && typeof window.FormCollector.collectData === 'function') {
                 formData = window.FormCollector.collectData();
-                // Converter códigos (ids) para nomes legíveis
+                // Converter códigos (ids) para nomes legíveis – usar somente fontes reais (DropdownManager/_cache ou CoreAPI)
                 formData = await this._convertCodesToNames(formData);
             } else {
                 // Fallback: usar dados do auto-save
@@ -737,6 +738,12 @@ const AutoSave = {
             // Verificar se há dados para exportar
             if (!formData || Object.keys(formData).length === 0) {
                 this._showExportMessage('warning', 'Nenhum dado para exportar. Preencha alguns campos primeiro.');
+                return;
+            }
+            
+            // Checar se conversion success (convertCodesToNames pode lançar se os dados nao estiverem carregados)
+            if (formData.__conversionError) {
+                this._showExportMessage('error', 'Não foi possível carregar dados auxiliares para exportar. Recarregue a página e tente novamente.');
                 return;
             }
             
@@ -776,66 +783,116 @@ const AutoSave = {
         const copy = JSON.parse(JSON.stringify(formData));
 
         // Helper functions
-        const getPaisNome = (idPais) => {
+        const getPaisNome = async (idPais) => {
+            if (!idPais) return '';
             try {
-                const cache = window.DropdownManager?._cache?.paises || [];
-                const item = cache.find(p => String(p.id_pais) === String(idPais));
-                return item ? item.nome_pais : (idPais || '');
-            } catch (err) { return idPais || ''; }
+                // Tentar usar cache do DropdownManager
+                const cache = window.DropdownManager?._cache?.paises;
+                if (cache && cache.length > 0) {
+                    const item = cache.find(p => String(p.id_pais) === String(idPais));
+                    if (item) return item.nome_pais || '';
+                }
+                // Requisitar via CoreAPI (forma 'real' de obter dados)
+                if (window.CoreAPI && typeof window.CoreAPI.getPaises === 'function') {
+                    const paises = await window.CoreAPI.getPaises();
+                    if (Array.isArray(paises)) {
+                        // Atualizar cache se disponível
+                        if (window.DropdownManager && window.DropdownManager._cache) window.DropdownManager._cache.paises = paises;
+                        const match = paises.find(p => String(p.id_pais) === String(idPais));
+                        return match ? match.nome_pais || '' : '';
+                    }
+                }
+                // Se não foi possível obter o nome, abortar export (sem fallback)
+                throw new Error('Dados de países não carregados');
+            } catch (err) {
+                throw err;
+            }
         };
 
-        const getEstadoNome = (uf) => {
+        const getEstadoNome = async (uf) => {
+            if (!uf) return '';
             try {
-                const cache = window.DropdownManager?._cache?.estados || [];
-                const item = cache.find(e => String(e.uf) === String(uf));
-                return item ? item.nome_estado : (uf || '');
-            } catch (err) { return uf || ''; }
+                const cache = window.DropdownManager?._cache?.estados;
+                if (cache && cache.length > 0) {
+                    const item = cache.find(e => String(e.uf) === String(uf));
+                    if (item) return item.nome_estado || '';
+                }
+                if (window.CoreAPI && typeof window.CoreAPI.getEstados === 'function') {
+                    const estados = await window.CoreAPI.getEstados();
+                    if (Array.isArray(estados)) {
+                        if (window.DropdownManager && window.DropdownManager._cache) window.DropdownManager._cache.estados = estados;
+                        const match = estados.find(e => String(e.uf) === String(uf));
+                        return match ? match.nome_estado || '' : '';
+                    }
+                }
+                throw new Error('Dados de estados não carregados');
+            } catch (err) { throw err; }
         };
 
         const getMunicipioNome = async (cdMun, uf) => {
             if (!cdMun) return '';
+            if (!uf) throw new Error('UF requerido para recuperar municípios');
             try {
-                // Tentar usar dropdown DOM se disponível (mais rápido)
-                const selects = document.querySelectorAll('select');
-                for (const sel of selects) {
-                    const opt = Array.from(sel.options).find(o => String(o.value) === String(cdMun));
-                    if (opt) return opt.textContent;
-                }
-
-                // Fallback: consulta CoreAPI por estado (uf)
-                if (window.CoreAPI && uf) {
+                if (window.CoreAPI && typeof window.CoreAPI.getMunicipiosByUF === 'function') {
                     const municipios = await window.CoreAPI.getMunicipiosByUF(uf);
-                    const item = municipios.find(m => String(m.cd_mun) === String(cdMun));
-                    return item ? item.nm_mun : cdMun;
+                    if (Array.isArray(municipios)) {
+                        const match = municipios.find(m => String(m.cd_mun) === String(cdMun));
+                        return match ? match.nm_mun || '' : '';
+                    }
                 }
-                return cdMun;
-            } catch (err) {
-                return cdMun;
-            }
+                throw new Error('Dados de municípios não carregados');
+            } catch (err) { throw err; }
         };
 
         // ==== Top-level fields (camelCase keys expected from FormCollector.collectData) ====
         // Sempre garantir três campos legíveis para origem/destino (preencher com '' se ausente)
-        copy.origemPais = (copy.origemPais !== undefined && copy.origemPais !== null && copy.origemPais !== '') ? getPaisNome(copy.origemPais) : '';
-        copy.destinoPais = (copy.destinoPais !== undefined && copy.destinoPais !== null && copy.destinoPais !== '') ? getPaisNome(copy.destinoPais) : '';
-        copy.origemEstado = (copy.origemEstado !== undefined && copy.origemEstado !== null && copy.origemEstado !== '') ? getEstadoNome(copy.origemEstado) : '';
-        copy.destinoEstado = (copy.destinoEstado !== undefined && copy.destinoEstado !== null && copy.destinoEstado !== '') ? getEstadoNome(copy.destinoEstado) : '';
+        try {
+            // Preserve UF codes before converting to name for top-level
+            if (copy.origemEstado !== undefined && copy.origemEstado !== null && copy.origemEstado !== '') {
+                copy.origemEstadoUf = String(copy.origemEstado);
+                copy.origemEstado = await getEstadoNome(copy.origemEstadoUf) || '';
+            } else {
+                copy.origemEstado = '';
+                copy.origemEstadoUf = '';
+            }
+            if (copy.destinoEstado !== undefined && copy.destinoEstado !== null && copy.destinoEstado !== '') {
+                copy.destinoEstadoUf = String(copy.destinoEstado);
+                copy.destinoEstado = await getEstadoNome(copy.destinoEstadoUf) || '';
+            } else {
+                copy.destinoEstado = '';
+                copy.destinoEstadoUf = '';
+            }
+            copy.origemPais = (copy.origemPais !== undefined && copy.origemPais !== null && copy.origemPais !== '') ? await getPaisNome(copy.origemPais) : '';
+            copy.destinoPais = (copy.destinoPais !== undefined && copy.destinoPais !== null && copy.destinoPais !== '') ? await getPaisNome(copy.destinoPais) : '';
+        } catch (err) {
+            console.error('AutoSave: erro ao converter codes to names (país/estado top-level)', err);
+            copy.__conversionError = true;
+        }
         copy.origemMunicipio = (copy.origemMunicipio !== undefined && copy.origemMunicipio !== null && copy.origemMunicipio !== '') ? await getMunicipioNome(copy.origemMunicipio, copy.origemEstado) : '';
         copy.destinoMunicipio = (copy.destinoMunicipio !== undefined && copy.destinoMunicipio !== null && copy.destinoMunicipio !== '') ? await getMunicipioNome(copy.destinoMunicipio, copy.destinoEstado) : '';
 
-        // Naturalidade
-        if (copy.ufNaturalidade !== undefined) copy.ufNaturalidade = getEstadoNome(copy.ufNaturalidade);
-        if (copy.municipioNaturalidade !== undefined) copy.municipioNaturalidade = await getMunicipioNome(copy.municipioNaturalidade, copy.ufNaturalidade);
+        // Naturalidade (usar sempre dados reais via API/cache)
+        if (copy.ufNaturalidade !== undefined) {
+            try {
+                copy.ufNaturalidade = await getEstadoNome(copy.ufNaturalidade) || '';
+            } catch (err) {
+                console.error('AutoSave: erro ao obter nome do estado para naturalidade', err);
+                copy.__conversionError = true;
+            }
+        }
+        if (copy.municipioNaturalidade !== undefined) {
+            try {
+                copy.municipioNaturalidade = await getMunicipioNome(copy.municipioNaturalidade, copy.ufNaturalidade) || '';
+            } catch (err) {
+                console.error('AutoSave: erro ao obter nome do municipio para naturalidade', err);
+                copy.__conversionError = true;
+            }
+        }
 
         // Empresa municipality
         if (copy.municipio !== undefined) {
-            // Encontrar UF do endereço da empresa se existir; não temos UF, então a informação do municipio pode vir como nome já
-            // Tentar mapear com seletor DOM empresa: municipio-empresa is a select containing nm_mun values
-            const select = document.getElementById('municipio-empresa');
-            if (select) {
-                const opt = Array.from(select.options).find(o => String(o.value) === String(copy.municipio));
-                if (opt) copy.municipio = opt.textContent;
-            }
+            // municipio-empresa é um campo de texto; assume-se que já contém o nome (não usar fallback)
+            copy.municipio = String(copy.municipio || '');
         }
 
         // Produtos
@@ -843,43 +900,41 @@ const AutoSave = {
             for (const p of copy.produtos) {
                 // If product contains 'origemPaisNome' or 'origemPaisCodigo' -> prefer label fields
                 // Origem - País
-                if (p.origemPaisCodigo) {
-                    p.origemPais = getPaisNome(p.origemPaisCodigo) || '';
-                } else if (p.origemPaisNome) {
-                    p.origemPais = p.origemPaisNome || '';
-                } else {
-                    p.origemPais = p.origemPais || '';
-                }
+                try {
+                    if (p.origemPaisNome && String(p.origemPaisNome).trim() !== '') p.origemPais = p.origemPaisNome || '';
+                    else if (p.origemPaisCodigo) p.origemPais = await getPaisNome(p.origemPaisCodigo) || '';
+                    else p.origemPais = p.origemPais || '';
+                } catch (err) { p.__conversionError = true; }
                 // Destino - País
-                if (p.destinoPaisCodigo) {
-                    p.destinoPais = getPaisNome(p.destinoPaisCodigo) || '';
-                } else if (p.destinoPaisNome) {
-                    p.destinoPais = p.destinoPaisNome || '';
-                } else {
-                    p.destinoPais = p.destinoPais || '';
-                }
+                try {
+                    if (p.destinoPaisNome && String(p.destinoPaisNome).trim() !== '') p.destinoPais = p.destinoPaisNome || '';
+                    else if (p.destinoPaisCodigo) p.destinoPais = await getPaisNome(p.destinoPaisCodigo) || '';
+                    else p.destinoPais = p.destinoPais || '';
+                } catch (err) { p.__conversionError = true; }
 
                 // Estados (UF)
-                if (p.origemEstadoUf) p.origemEstado = getEstadoNome(p.origemEstadoUf) || '';
-                else p.origemEstado = p.origemEstado || '';
-                if (p.destinoEstadoUf) p.destinoEstado = getEstadoNome(p.destinoEstadoUf) || '';
-                else p.destinoEstado = p.destinoEstado || '';
+                try {
+                    if (p.origemEstadoNome && String(p.origemEstadoNome).trim() !== '') p.origemEstado = p.origemEstadoNome || '';
+                    else if (p.origemEstadoUf) p.origemEstado = await getEstadoNome(p.origemEstadoUf) || '';
+                    else p.origemEstado = p.origemEstado || '';
+                } catch (err) { p.__conversionError = true; }
+                try {
+                    if (p.destinoEstadoNome && String(p.destinoEstadoNome).trim() !== '') p.destinoEstado = p.destinoEstadoNome || '';
+                    else if (p.destinoEstadoUf) p.destinoEstado = await getEstadoNome(p.destinoEstadoUf) || '';
+                    else p.destinoEstado = p.destinoEstado || '';
+                } catch (err) { p.__conversionError = true; }
 
                 // Municípios (async)
-                if (p.origemMunicipioCodigo) {
-                    p.origemMunicipio = await getMunicipioNome(p.origemMunicipioCodigo, p.origemEstadoUf) || '';
-                } else if (p.origemMunicipioNome) {
-                    p.origemMunicipio = p.origemMunicipioNome || '';
-                } else {
-                    p.origemMunicipio = p.origemMunicipio || '';
-                }
-                if (p.destinoMunicipioCodigo) {
-                    p.destinoMunicipio = await getMunicipioNome(p.destinoMunicipioCodigo, p.destinoEstadoUf) || '';
-                } else if (p.destinoMunicipioNome) {
-                    p.destinoMunicipio = p.destinoMunicipioNome || '';
-                } else {
-                    p.destinoMunicipio = p.destinoMunicipio || '';
-                }
+                try {
+                    if (p.origemMunicipioNome && String(p.origemMunicipioNome).trim() !== '') p.origemMunicipio = p.origemMunicipioNome || '';
+                    else if (p.origemMunicipioCodigo) p.origemMunicipio = await getMunicipioNome(p.origemMunicipioCodigo, p.origemEstadoUf) || '';
+                    else p.origemMunicipio = p.origemMunicipio || '';
+                } catch (err) { p.__conversionError = true; }
+                try {
+                    if (p.destinoMunicipioNome && String(p.destinoMunicipioNome).trim() !== '') p.destinoMunicipio = p.destinoMunicipioNome || '';
+                    else if (p.destinoMunicipioCodigo) p.destinoMunicipio = await getMunicipioNome(p.destinoMunicipioCodigo, p.destinoEstadoUf) || '';
+                    else p.destinoMunicipio = p.destinoMunicipio || '';
+                } catch (err) { p.__conversionError = true; }
             }
         }
 
@@ -937,7 +992,13 @@ const AutoSave = {
                         case /produto-carga/.test(base): produtoObj.carga = v; break;
                         case /produto-movimentacao/.test(base): produtoObj.movimentacao = v; break;
                         case /produto-origem-text/.test(base): produtoObj.origemText = v; break;
+                        case /produto-origem-pais-label/.test(base): produtoObj.origemPaisNome = v; break;
+                        case /produto-origem-estado-label/.test(base): produtoObj.origemEstadoNome = v; break;
+                        case /produto-origem-municipio-label/.test(base): produtoObj.origemMunicipioNome = v; break;
                         case /produto-destino-text/.test(base): produtoObj.destinoText = v; break;
+                        case /produto-destino-pais-label/.test(base): produtoObj.destinoPaisNome = v; break;
+                        case /produto-destino-estado-label/.test(base): produtoObj.destinoEstadoNome = v; break;
+                        case /produto-destino-municipio-label/.test(base): produtoObj.destinoMunicipioNome = v; break;
                         case /produto-distancia/.test(base): produtoObj.distancia = v; break;
                         case /produto-acondicionamento/.test(base): produtoObj.acondicionamento = v; break;
                         case /produto-observacoes/.test(base): produtoObj.observacoes = v; break;
@@ -950,12 +1011,12 @@ const AutoSave = {
                 Object.entries(p.selects || {}).forEach(([k, v]) => {
                     const base = k.replace(/-\d+$/, '');
                     switch (true) {
-                        case /produto-origem-pais/.test(base): produtoObj.origemPaisCodigo = v; produtoObj.origemPaisNome = (p.selects && p.selects[k] ? (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || '') : '' ); break;
-                        case /produto-origem-estado/.test(base): produtoObj.origemEstadoUf = v; produtoObj.origemEstadoNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
-                        case /produto-origem-municipio/.test(base): produtoObj.origemMunicipioCodigo = v; produtoObj.origemMunicipioNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
-                        case /produto-destino-pais/.test(base): produtoObj.destinoPaisCodigo = v; produtoObj.destinoPaisNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
-                        case /produto-destino-estado/.test(base): produtoObj.destinoEstadoUf = v; produtoObj.destinoEstadoNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
-                        case /produto-destino-municipio/.test(base): produtoObj.destinoMunicipioCodigo = v; produtoObj.destinoMunicipioNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
+                            case /produto-origem-pais/.test(base): produtoObj.origemPaisCodigo = v; break;
+                        case /produto-origem-estado/.test(base): produtoObj.origemEstadoUf = v; break;
+                        case /produto-origem-municipio/.test(base): produtoObj.origemMunicipioCodigo = v; break;
+                        case /produto-destino-pais/.test(base): produtoObj.destinoPaisCodigo = v; break;
+                        case /produto-destino-estado/.test(base): produtoObj.destinoEstadoUf = v; break;
+                        case /produto-destino-municipio/.test(base): produtoObj.destinoMunicipioCodigo = v; break;
                         case /produto-modalidade/.test(base): produtoObj.modalidade = Array.isArray(v) ? v.join(',') : v; break;
                         default:
                             produtoObj[base] = v;

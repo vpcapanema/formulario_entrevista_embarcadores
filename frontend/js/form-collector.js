@@ -489,8 +489,19 @@ const FormCollector = {
             const acondEl = row.querySelector(`[name="produto-acondicionamento-${rowNum}"]`);
             const observacoesEl = row.querySelector(`[name="produto-observacoes-${rowNum}"]`);
 
-            const carga = cargaEl ? cargaEl.value : '';
-            if (!carga || carga.trim() === '') return;
+            const carga = cargaEl ? cargaEl.value || '' : '';
+            // Incluir a linha do produto se pelo menos um campo estiver preenchido
+            const anyFilled = [
+                carga,
+                movimentacaoEl ? movimentacaoEl.value : '',
+                origemPaisSelect ? origemPaisSelect.value : (origemTextInput ? origemTextInput.value : ''),
+                destinoPaisSelect ? destinoPaisSelect.value : (destinoTextInput ? destinoTextInput.value : ''),
+                distanciaEl ? distanciaEl.value : '',
+                modalidade,
+                acondEl ? acondEl.value : '',
+                observacoesEl ? observacoesEl.value : ''
+            ].some(v => v !== null && String(v).trim() !== '');
+            if (!anyFilled) return; // ignore fully empty product rows
 
             // Modalidade (multi-select): coleta múltiplas opções e converte para string separada por vírgula
             let modalidade = '';
