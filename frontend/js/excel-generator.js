@@ -50,8 +50,24 @@
 
             const produtos = Array.isArray(formData.produtos) ? formData.produtos : [];
             if (produtos.length > 0) {
-                const produtosSheet = XLSX.utils.json_to_sheet(produtos);
-                XLSX.utils.book_append_sheet(wb, produtosSheet, 'Produtos');
+                // Determinar chaves (ordenando preferenciais)
+                const preferred = ['carga', 'movimentacao', 'origemPais', 'origemEstado', 'origemMunicipio', 'destinoPais', 'destinoEstado', 'destinoMunicipio', 'distancia', 'modalidade', 'acondicionamento', 'observacoes'];
+                const allKeys = Array.from(new Set(produtos.flatMap(p => Object.keys(p))));
+                const orderedKeys = preferred.concat(allKeys.filter(k => !preferred.includes(k)));
+                const headerLabels = orderedKeys.map(k => labelMap[k] || k);
+                // Construir rows
+                const rows = [headerLabels];
+                produtos.forEach(p => {
+                    const row = orderedKeys.map(k => {
+                        let v = p[k];
+                        if (Array.isArray(v)) return v.join(', ');
+                        if (typeof v === 'object' && v !== null) return JSON.stringify(v);
+                        return v == null ? '' : String(v);
+                    });
+                    rows.push(row);
+                });
+                const wsProdutos = XLSX.utils.aoa_to_sheet(rows);
+                XLSX.utils.book_append_sheet(wb, wsProdutos, 'Produtos');
             } else {
                 const emptySheet = XLSX.utils.aoa_to_sheet([['Nenhum produto informado']]);
                 XLSX.utils.book_append_sheet(wb, emptySheet, 'Produtos');
@@ -139,9 +155,23 @@
                 // Aba 2: Produtos (tabela)
                 const produtos = Array.isArray(formData.produtos) ? formData.produtos : [];
                 if (produtos.length > 0) {
-                    // Use json_to_sheet for table
-                    const produtosSheet = XLSX.utils.json_to_sheet(produtos);
-                    XLSX.utils.book_append_sheet(wb, produtosSheet, 'Produtos');
+                        // Build ordered header and rows using labelMap to provide readable column names
+                        const preferred = ['carga', 'movimentacao', 'origemPais', 'origemEstado', 'origemMunicipio', 'destinoPais', 'destinoEstado', 'destinoMunicipio', 'distancia', 'modalidade', 'acondicionamento', 'observacoes'];
+                        const allKeysProd = Array.from(new Set(produtos.flatMap(p => Object.keys(p))));
+                        const orderedProdKeys = preferred.concat(allKeysProd.filter(k => !preferred.includes(k)));
+                        const headerProdLabels = orderedProdKeys.map(k => labelMap[k] || k);
+                        const rowsProd = [headerProdLabels];
+                        produtos.forEach(p => {
+                            const rowProd = orderedProdKeys.map(k => {
+                                let v = p[k];
+                                if (Array.isArray(v)) return v.join(', ');
+                                if (typeof v === 'object' && v !== null) return JSON.stringify(v);
+                                return v == null ? '' : String(v);
+                            });
+                            rowsProd.push(rowProd);
+                        });
+                        const produtosSheet = XLSX.utils.aoa_to_sheet(rowsProd);
+                        XLSX.utils.book_append_sheet(wb, produtosSheet, 'Produtos');
                 } else {
                     // Even if empty, add a placeholder sheet
                     const emptySheet = XLSX.utils.aoa_to_sheet([['Nenhum produto informado']]);

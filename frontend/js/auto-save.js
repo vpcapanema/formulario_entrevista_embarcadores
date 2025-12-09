@@ -815,12 +815,13 @@ const AutoSave = {
         };
 
         // ==== Top-level fields (camelCase keys expected from FormCollector.collectData) ====
-        if (copy.origemPais !== undefined) copy.origemPais = getPaisNome(copy.origemPais);
-        if (copy.destinoPais !== undefined) copy.destinoPais = getPaisNome(copy.destinoPais);
-        if (copy.origemEstado !== undefined) copy.origemEstado = getEstadoNome(copy.origemEstado);
-        if (copy.destinoEstado !== undefined) copy.destinoEstado = getEstadoNome(copy.destinoEstado);
-        if (copy.origemMunicipio !== undefined) copy.origemMunicipio = await getMunicipioNome(copy.origemMunicipio, copy.origemEstado);
-        if (copy.destinoMunicipio !== undefined) copy.destinoMunicipio = await getMunicipioNome(copy.destinoMunicipio, copy.destinoEstado);
+        // Sempre garantir três campos legíveis para origem/destino (preencher com '' se ausente)
+        copy.origemPais = (copy.origemPais !== undefined && copy.origemPais !== null && copy.origemPais !== '') ? getPaisNome(copy.origemPais) : '';
+        copy.destinoPais = (copy.destinoPais !== undefined && copy.destinoPais !== null && copy.destinoPais !== '') ? getPaisNome(copy.destinoPais) : '';
+        copy.origemEstado = (copy.origemEstado !== undefined && copy.origemEstado !== null && copy.origemEstado !== '') ? getEstadoNome(copy.origemEstado) : '';
+        copy.destinoEstado = (copy.destinoEstado !== undefined && copy.destinoEstado !== null && copy.destinoEstado !== '') ? getEstadoNome(copy.destinoEstado) : '';
+        copy.origemMunicipio = (copy.origemMunicipio !== undefined && copy.origemMunicipio !== null && copy.origemMunicipio !== '') ? await getMunicipioNome(copy.origemMunicipio, copy.origemEstado) : '';
+        copy.destinoMunicipio = (copy.destinoMunicipio !== undefined && copy.destinoMunicipio !== null && copy.destinoMunicipio !== '') ? await getMunicipioNome(copy.destinoMunicipio, copy.destinoEstado) : '';
 
         // Naturalidade
         if (copy.ufNaturalidade !== undefined) copy.ufNaturalidade = getEstadoNome(copy.ufNaturalidade);
@@ -841,31 +842,43 @@ const AutoSave = {
         if (Array.isArray(copy.produtos)) {
             for (const p of copy.produtos) {
                 // If product contains 'origemPaisNome' or 'origemPaisCodigo' -> prefer label fields
+                // Origem - País
                 if (p.origemPaisCodigo) {
-                    p.origemPais = getPaisNome(p.origemPaisCodigo);
+                    p.origemPais = getPaisNome(p.origemPaisCodigo) || '';
                 } else if (p.origemPaisNome) {
-                    p.origemPais = p.origemPaisNome;
+                    p.origemPais = p.origemPaisNome || '';
+                } else {
+                    p.origemPais = p.origemPais || '';
                 }
+                // Destino - País
                 if (p.destinoPaisCodigo) {
-                    p.destinoPais = getPaisNome(p.destinoPaisCodigo);
+                    p.destinoPais = getPaisNome(p.destinoPaisCodigo) || '';
                 } else if (p.destinoPaisNome) {
-                    p.destinoPais = p.destinoPaisNome;
+                    p.destinoPais = p.destinoPaisNome || '';
+                } else {
+                    p.destinoPais = p.destinoPais || '';
                 }
 
                 // Estados (UF)
-                if (p.origemEstadoUf) p.origemEstado = getEstadoNome(p.origemEstadoUf);
-                if (p.destinoEstadoUf) p.destinoEstado = getEstadoNome(p.destinoEstadoUf);
+                if (p.origemEstadoUf) p.origemEstado = getEstadoNome(p.origemEstadoUf) || '';
+                else p.origemEstado = p.origemEstado || '';
+                if (p.destinoEstadoUf) p.destinoEstado = getEstadoNome(p.destinoEstadoUf) || '';
+                else p.destinoEstado = p.destinoEstado || '';
 
                 // Municípios (async)
                 if (p.origemMunicipioCodigo) {
-                    p.origemMunicipio = await getMunicipioNome(p.origemMunicipioCodigo, p.origemEstadoUf);
+                    p.origemMunicipio = await getMunicipioNome(p.origemMunicipioCodigo, p.origemEstadoUf) || '';
                 } else if (p.origemMunicipioNome) {
-                    p.origemMunicipio = p.origemMunicipioNome;
+                    p.origemMunicipio = p.origemMunicipioNome || '';
+                } else {
+                    p.origemMunicipio = p.origemMunicipio || '';
                 }
                 if (p.destinoMunicipioCodigo) {
-                    p.destinoMunicipio = await getMunicipioNome(p.destinoMunicipioCodigo, p.destinoEstadoUf);
+                    p.destinoMunicipio = await getMunicipioNome(p.destinoMunicipioCodigo, p.destinoEstadoUf) || '';
                 } else if (p.destinoMunicipioNome) {
-                    p.destinoMunicipio = p.destinoMunicipioNome;
+                    p.destinoMunicipio = p.destinoMunicipioNome || '';
+                } else {
+                    p.destinoMunicipio = p.destinoMunicipio || '';
                 }
             }
         }
