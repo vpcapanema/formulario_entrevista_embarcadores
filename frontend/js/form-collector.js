@@ -271,11 +271,11 @@ const FormCollector = {
         updateNumParadasVisibility(); // Executar na inicialização
         
         // ===== MODO RODOVIÁRIO: Mostrar configuração de veículo =====
-        const checkboxes = document.querySelectorAll('input[name="modo-transporte"]');
+        const checkboxes = document.querySelectorAll('input[name="modo"]');
         const configVeiculoContainer = document.getElementById('config-veiculo-container');
         
         const updateConfigVeiculoVisibility = () => {
-            const rodoviarioChecked = document.querySelector('input[name="modo-transporte"][value="rodoviario"]')?.checked;
+            const rodoviarioChecked = document.querySelector('input[name="modo"][value="rodoviario"]')?.checked;
             if (rodoviarioChecked) {
                 configVeiculoContainer?.classList.remove('hidden-field');
             } else {
