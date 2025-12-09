@@ -845,36 +845,34 @@ const AutoSave = {
         };
 
         // ==== Top-level fields (camelCase keys expected from FormCollector.collectData) ====
+        // Preservar códigos originais antes da conversão para nomes
+        const origemPaisCodigo = (copy.origemPais !== undefined && copy.origemPais !== null && copy.origemPais !== '') ? String(copy.origemPais) : '';
+        const destinoPaisCodigo = (copy.destinoPais !== undefined && copy.destinoPais !== null && copy.destinoPais !== '') ? String(copy.destinoPais) : '';
+        const origemEstadoCodigo = (copy.origemEstado !== undefined && copy.origemEstado !== null && copy.origemEstado !== '') ? String(copy.origemEstado) : '';
+        const destinoEstadoCodigo = (copy.destinoEstado !== undefined && copy.destinoEstado !== null && copy.destinoEstado !== '') ? String(copy.destinoEstado) : '';
+        const origemMunicipioCodigo = (copy.origemMunicipio !== undefined && copy.origemMunicipio !== null && copy.origemMunicipio !== '') ? String(copy.origemMunicipio) : '';
+        const destinoMunicipioCodigo = (copy.destinoMunicipio !== undefined && copy.destinoMunicipio !== null && copy.destinoMunicipio !== '') ? String(copy.destinoMunicipio) : '';
+
         // Sempre garantir três campos legíveis para origem/destino (preencher com '' se ausente)
         try {
-            // Preserve UF codes before converting to name for top-level
-            if (copy.origemEstado !== undefined && copy.origemEstado !== null && copy.origemEstado !== '') {
-                copy.origemEstadoUf = String(copy.origemEstado);
-                copy.origemEstado = await getEstadoNome(copy.origemEstadoUf) || '';
-            } else {
-                copy.origemEstado = '';
-                copy.origemEstadoUf = '';
-            }
-            if (copy.destinoEstado !== undefined && copy.destinoEstado !== null && copy.destinoEstado !== '') {
-                copy.destinoEstadoUf = String(copy.destinoEstado);
-                copy.destinoEstado = await getEstadoNome(copy.destinoEstadoUf) || '';
-            } else {
-                copy.destinoEstado = '';
-                copy.destinoEstadoUf = '';
-            }
-            copy.origemPais = (copy.origemPais !== undefined && copy.origemPais !== null && copy.origemPais !== '') ? await getPaisNome(copy.origemPais) : '';
-            copy.destinoPais = (copy.destinoPais !== undefined && copy.destinoPais !== null && copy.destinoPais !== '') ? await getPaisNome(copy.destinoPais) : '';
+            copy.origemEstado = origemEstadoCodigo ? await getEstadoNome(origemEstadoCodigo) || '' : '';
+            copy.destinoEstado = destinoEstadoCodigo ? await getEstadoNome(destinoEstadoCodigo) || '' : '';
+            copy.origemPais = origemPaisCodigo ? await getPaisNome(origemPaisCodigo) : '';
+            copy.destinoPais = destinoPaisCodigo ? await getPaisNome(destinoPaisCodigo) : '';
         } catch (err) {
             console.error('AutoSave: erro ao converter codes to names (país/estado top-level)', err);
             copy.__conversionError = true;
         }
-        copy.origemMunicipio = (copy.origemMunicipio !== undefined && copy.origemMunicipio !== null && copy.origemMunicipio !== '') ? await getMunicipioNome(copy.origemMunicipio, copy.origemEstado) : '';
-        copy.destinoMunicipio = (copy.destinoMunicipio !== undefined && copy.destinoMunicipio !== null && copy.destinoMunicipio !== '') ? await getMunicipioNome(copy.destinoMunicipio, copy.destinoEstado) : '';
+        copy.origemMunicipio = (origemMunicipioCodigo && origemEstadoCodigo) ? await getMunicipioNome(origemMunicipioCodigo, origemEstadoCodigo) : '';
+        copy.destinoMunicipio = (destinoMunicipioCodigo && destinoEstadoCodigo) ? await getMunicipioNome(destinoMunicipioCodigo, destinoEstadoCodigo) : '';
 
         // Naturalidade (usar sempre dados reais via API/cache)
+        const naturalidadeUfCodigo = (copy.ufNaturalidade !== undefined && copy.ufNaturalidade !== null && copy.ufNaturalidade !== '') ? String(copy.ufNaturalidade) : '';
+        const naturalidadeMunicipioCodigo = (copy.municipioNaturalidade !== undefined && copy.municipioNaturalidade !== null && copy.municipioNaturalidade !== '') ? String(copy.municipioNaturalidade) : '';
+
         if (copy.ufNaturalidade !== undefined) {
             try {
-                copy.ufNaturalidade = await getEstadoNome(copy.ufNaturalidade) || '';
+                copy.ufNaturalidade = naturalidadeUfCodigo ? await getEstadoNome(naturalidadeUfCodigo) || '' : '';
             } catch (err) {
                 console.error('AutoSave: erro ao obter nome do estado para naturalidade', err);
                 copy.__conversionError = true;
@@ -882,7 +880,7 @@ const AutoSave = {
         }
         if (copy.municipioNaturalidade !== undefined) {
             try {
-                copy.municipioNaturalidade = await getMunicipioNome(copy.municipioNaturalidade, copy.ufNaturalidade) || '';
+                copy.municipioNaturalidade = (naturalidadeMunicipioCodigo && naturalidadeUfCodigo) ? await getMunicipioNome(naturalidadeMunicipioCodigo, naturalidadeUfCodigo) || '' : '';
             } catch (err) {
                 console.error('AutoSave: erro ao obter nome do municipio para naturalidade', err);
                 copy.__conversionError = true;
@@ -898,45 +896,79 @@ const AutoSave = {
         // Produtos
         if (Array.isArray(copy.produtos)) {
             for (const p of copy.produtos) {
+                const origemPaisCodigoProduto = p.origemPaisCodigo ? String(p.origemPaisCodigo) : '';
+                const destinoPaisCodigoProduto = p.destinoPaisCodigo ? String(p.destinoPaisCodigo) : '';
+                const origemEstadoCodigoProduto = p.origemEstadoUf ? String(p.origemEstadoUf) : '';
+                const destinoEstadoCodigoProduto = p.destinoEstadoUf ? String(p.destinoEstadoUf) : '';
+                const origemMunicipioCodigoProduto = p.origemMunicipioCodigo ? String(p.origemMunicipioCodigo) : '';
+                const destinoMunicipioCodigoProduto = p.destinoMunicipioCodigo ? String(p.destinoMunicipioCodigo) : '';
+                const origemPaisNomeProduto = p.origemPaisNome ? String(p.origemPaisNome) : '';
+                const destinoPaisNomeProduto = p.destinoPaisNome ? String(p.destinoPaisNome) : '';
+                const origemEstadoNomeProduto = p.origemEstadoNome ? String(p.origemEstadoNome) : '';
+                const destinoEstadoNomeProduto = p.destinoEstadoNome ? String(p.destinoEstadoNome) : '';
+                const origemMunicipioNomeProduto = p.origemMunicipioNome ? String(p.origemMunicipioNome) : '';
+                const destinoMunicipioNomeProduto = p.destinoMunicipioNome ? String(p.destinoMunicipioNome) : '';
+
                 // If product contains 'origemPaisNome' or 'origemPaisCodigo' -> prefer label fields
                 // Origem - País
                 try {
-                    if (p.origemPaisNome && String(p.origemPaisNome).trim() !== '') p.origemPais = p.origemPaisNome || '';
-                    else if (p.origemPaisCodigo) p.origemPais = await getPaisNome(p.origemPaisCodigo) || '';
+                    if (origemPaisNomeProduto && origemPaisNomeProduto.trim() !== '') p.origemPais = origemPaisNomeProduto || '';
+                    else if (origemPaisCodigoProduto) p.origemPais = await getPaisNome(origemPaisCodigoProduto) || '';
                     else p.origemPais = p.origemPais || '';
                 } catch (err) { p.__conversionError = true; }
                 // Destino - País
                 try {
-                    if (p.destinoPaisNome && String(p.destinoPaisNome).trim() !== '') p.destinoPais = p.destinoPaisNome || '';
-                    else if (p.destinoPaisCodigo) p.destinoPais = await getPaisNome(p.destinoPaisCodigo) || '';
+                    if (destinoPaisNomeProduto && destinoPaisNomeProduto.trim() !== '') p.destinoPais = destinoPaisNomeProduto || '';
+                    else if (destinoPaisCodigoProduto) p.destinoPais = await getPaisNome(destinoPaisCodigoProduto) || '';
                     else p.destinoPais = p.destinoPais || '';
                 } catch (err) { p.__conversionError = true; }
 
                 // Estados (UF)
                 try {
-                    if (p.origemEstadoNome && String(p.origemEstadoNome).trim() !== '') p.origemEstado = p.origemEstadoNome || '';
-                    else if (p.origemEstadoUf) p.origemEstado = await getEstadoNome(p.origemEstadoUf) || '';
+                    if (origemEstadoNomeProduto && origemEstadoNomeProduto.trim() !== '') p.origemEstado = origemEstadoNomeProduto || '';
+                    else if (origemEstadoCodigoProduto) p.origemEstado = await getEstadoNome(origemEstadoCodigoProduto) || '';
                     else p.origemEstado = p.origemEstado || '';
                 } catch (err) { p.__conversionError = true; }
                 try {
-                    if (p.destinoEstadoNome && String(p.destinoEstadoNome).trim() !== '') p.destinoEstado = p.destinoEstadoNome || '';
-                    else if (p.destinoEstadoUf) p.destinoEstado = await getEstadoNome(p.destinoEstadoUf) || '';
+                    if (destinoEstadoNomeProduto && destinoEstadoNomeProduto.trim() !== '') p.destinoEstado = destinoEstadoNomeProduto || '';
+                    else if (destinoEstadoCodigoProduto) p.destinoEstado = await getEstadoNome(destinoEstadoCodigoProduto) || '';
                     else p.destinoEstado = p.destinoEstado || '';
                 } catch (err) { p.__conversionError = true; }
 
                 // Municípios (async)
                 try {
-                    if (p.origemMunicipioNome && String(p.origemMunicipioNome).trim() !== '') p.origemMunicipio = p.origemMunicipioNome || '';
-                    else if (p.origemMunicipioCodigo) p.origemMunicipio = await getMunicipioNome(p.origemMunicipioCodigo, p.origemEstadoUf) || '';
+                    if (origemMunicipioNomeProduto && origemMunicipioNomeProduto.trim() !== '') p.origemMunicipio = origemMunicipioNomeProduto || '';
+                    else if (origemMunicipioCodigoProduto && origemEstadoCodigoProduto) p.origemMunicipio = await getMunicipioNome(origemMunicipioCodigoProduto, origemEstadoCodigoProduto) || '';
                     else p.origemMunicipio = p.origemMunicipio || '';
                 } catch (err) { p.__conversionError = true; }
                 try {
-                    if (p.destinoMunicipioNome && String(p.destinoMunicipioNome).trim() !== '') p.destinoMunicipio = p.destinoMunicipioNome || '';
-                    else if (p.destinoMunicipioCodigo) p.destinoMunicipio = await getMunicipioNome(p.destinoMunicipioCodigo, p.destinoEstadoUf) || '';
+                    if (destinoMunicipioNomeProduto && destinoMunicipioNomeProduto.trim() !== '') p.destinoMunicipio = destinoMunicipioNomeProduto || '';
+                    else if (destinoMunicipioCodigoProduto && destinoEstadoCodigoProduto) p.destinoMunicipio = await getMunicipioNome(destinoMunicipioCodigoProduto, destinoEstadoCodigoProduto) || '';
                     else p.destinoMunicipio = p.destinoMunicipio || '';
                 } catch (err) { p.__conversionError = true; }
+
+                // Remover helper keys para evitar exportar códigos auxiliares
+                [
+                    'origemPaisCodigo', 'destinoPaisCodigo',
+                    'origemEstadoUf', 'destinoEstadoUf',
+                    'origemMunicipioCodigo', 'destinoMunicipioCodigo',
+                    'origemPaisNome', 'destinoPaisNome',
+                    'origemEstadoNome', 'destinoEstadoNome',
+                    'origemMunicipioNome', 'destinoMunicipioNome',
+                    '__conversionError'
+                ].forEach(key => delete p[key]);
             }
         }
+
+        // Garantir que campos de código no objeto principal não sigam para exportação
+        [
+            '__conversionError',
+            'origemPaisCodigo', 'destinoPaisCodigo',
+            'origemEstadoCodigo', 'destinoEstadoCodigo',
+            'origemEstadoUf', 'destinoEstadoUf',
+            'origemMunicipioCodigo', 'destinoMunicipioCodigo',
+            'naturalidadeUfCodigo', 'naturalidadeMunicipioCodigo'
+        ].forEach(key => delete copy[key]);
 
         return copy;
     },
