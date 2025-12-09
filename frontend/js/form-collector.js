@@ -490,6 +490,18 @@ const FormCollector = {
             const observacoesEl = row.querySelector(`[name="produto-observacoes-${rowNum}"]`);
 
             const carga = cargaEl ? cargaEl.value || '' : '';
+            
+            // Modalidade (multi-select): coleta múltiplas opções e converte para string separada por vírgula
+            let modalidade = '';
+            if (modalidadeEl) {
+                if (modalidadeEl.multiple) {
+                    const selected = Array.from(modalidadeEl.selectedOptions || []).map(o => o.value).filter(v => v && v !== '');
+                    modalidade = selected.length > 0 ? selected.join(',') : '';
+                } else {
+                    modalidade = modalidadeEl.value || '';
+                }
+            }
+            
             // Incluir a linha do produto se pelo menos um campo estiver preenchido
             const anyFilled = [
                 carga,
@@ -502,17 +514,6 @@ const FormCollector = {
                 observacoesEl ? observacoesEl.value : ''
             ].some(v => v !== null && String(v).trim() !== '');
             if (!anyFilled) return; // ignore fully empty product rows
-
-            // Modalidade (multi-select): coleta múltiplas opções e converte para string separada por vírgula
-            let modalidade = '';
-            if (modalidadeEl) {
-                if (modalidadeEl.multiple) {
-                    const selected = Array.from(modalidadeEl.selectedOptions || []).map(o => o.value).filter(v => v && v !== '');
-                    modalidade = selected.length > 0 ? selected.join(',') : '';
-                } else {
-                    modalidade = modalidadeEl.value || '';
-                }
-            }
 
             const produto = {
                 carga: carga,
