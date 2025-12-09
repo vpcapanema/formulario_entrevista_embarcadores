@@ -475,8 +475,15 @@ const FormCollector = {
             const cargaEl = row.querySelector(`[name="produto-carga-${rowNum}"]`);
             const movimentacaoEl = row.querySelector(`[name="produto-movimentacao-${rowNum}"]`);
             // Prefer selects (pais/estado/municipio) over free-text input when collecting product origin/destination
-            const origemEl = row.querySelector(`[name="produto-origem-pais-${rowNum}"]`) || row.querySelector(`[name="produto-origem-text-${rowNum}"]`);
-            const destinoEl = row.querySelector(`[name="produto-destino-pais-${rowNum}"]`) || row.querySelector(`[name="produto-destino-text-${rowNum}"]`);
+            const origemPaisSelect = row.querySelector(`[name="produto-origem-pais-${rowNum}"]`);
+            const origemEstadoSelect = row.querySelector(`[name="produto-origem-estado-${rowNum}"]`);
+            const origemMunicipioSelect = row.querySelector(`[name="produto-origem-municipio-${rowNum}"]`);
+            const origemTextInput = row.querySelector(`[name="produto-origem-text-${rowNum}"]`);
+
+            const destinoPaisSelect = row.querySelector(`[name="produto-destino-pais-${rowNum}"]`);
+            const destinoEstadoSelect = row.querySelector(`[name="produto-destino-estado-${rowNum}"]`);
+            const destinoMunicipioSelect = row.querySelector(`[name="produto-destino-municipio-${rowNum}"]`);
+            const destinoTextInput = row.querySelector(`[name="produto-destino-text-${rowNum}"]`);
             const distanciaEl = row.querySelector(`[name="produto-distancia-${rowNum}"]`);
             const modalidadeEl = row.querySelector(`[name^="produto-modalidade-${rowNum}"]`);
             const acondEl = row.querySelector(`[name="produto-acondicionamento-${rowNum}"]`);
@@ -499,8 +506,22 @@ const FormCollector = {
             const produto = {
                 carga: carga,
                 movimentacao: movimentacaoEl ? this._parseNumeric(movimentacaoEl.value) : null,
-                origem: origemEl ? origemEl.value : '',
-                destino: destinoEl ? destinoEl.value : '',
+                // Origem: priorizar selects, fallback para texto
+                origemPaisCodigo: origemPaisSelect ? origemPaisSelect.value || '' : '',
+                origemPaisNome: origemPaisSelect ? (origemPaisSelect.selectedOptions[0]?.textContent || '') : (origemTextInput ? origemTextInput.value || '' : ''),
+                origemEstadoUf: origemEstadoSelect ? origemEstadoSelect.value || '' : '',
+                origemEstadoNome: origemEstadoSelect ? (origemEstadoSelect.selectedOptions[0]?.textContent || '') : '',
+                origemMunicipioCodigo: origemMunicipioSelect ? origemMunicipioSelect.value || '' : '',
+                origemMunicipioNome: origemMunicipioSelect ? (origemMunicipioSelect.selectedOptions[0]?.textContent || '') : '',
+                origemText: origemTextInput ? origemTextInput.value || '' : '',
+                // Destino: priorizar selects, fallback para texto
+                destinoPaisCodigo: destinoPaisSelect ? destinoPaisSelect.value || '' : '',
+                destinoPaisNome: destinoPaisSelect ? (destinoPaisSelect.selectedOptions[0]?.textContent || '') : (destinoTextInput ? destinoTextInput.value || '' : ''),
+                destinoEstadoUf: destinoEstadoSelect ? destinoEstadoSelect.value || '' : '',
+                destinoEstadoNome: destinoEstadoSelect ? (destinoEstadoSelect.selectedOptions[0]?.textContent || '') : '',
+                destinoMunicipioCodigo: destinoMunicipioSelect ? destinoMunicipioSelect.value || '' : '',
+                destinoMunicipioNome: destinoMunicipioSelect ? (destinoMunicipioSelect.selectedOptions[0]?.textContent || '') : '',
+                destinoText: destinoTextInput ? destinoTextInput.value || '' : '',
                 distancia: distanciaEl ? this._parseNumeric(distanciaEl.value) : null,
                 modalidade: modalidade,
                 acondicionamento: acondEl ? (acondEl.value || '') : '',

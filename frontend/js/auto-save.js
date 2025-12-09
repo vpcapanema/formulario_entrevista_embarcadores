@@ -696,6 +696,14 @@ const AutoSave = {
         const timestamp = localStorage.getItem(this.TIMESTAMP_KEY);
         return timestamp ? new Date(timestamp) : null;
     },
+
+    /**
+     * Converte kebab-case (ex: origem-pais) em camelCase (origemPais)
+     */
+    _toCamelCase(str) {
+        if (!str || typeof str !== 'string') return str;
+        return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    },
     
     // ============================================================
     // EXPORTAÇÃO DE RASCUNHO
@@ -704,7 +712,7 @@ const AutoSave = {
     /**
      * Exporta o rascunho atual para Excel
      */
-    exportarRascunho() {
+    async exportarRascunho() {
         try {
             // Salvar dados atuais primeiro
             this._saveNow();
@@ -713,6 +721,8 @@ const AutoSave = {
             let formData;
             if (window.FormCollector && typeof window.FormCollector.collectData === 'function') {
                 formData = window.FormCollector.collectData();
+                // Converter códigos (ids) para nomes legíveis
+                formData = await this._convertCodesToNames(formData);
             } else {
                 // Fallback: usar dados do auto-save
                 const savedData = this.getSavedData();
@@ -721,6 +731,7 @@ const AutoSave = {
                     return;
                 }
                 formData = this._convertSavedDataToFormData(savedData);
+                formData = await this._convertCodesToNames(formData);
             }
             
             // Verificar se há dados para exportar
@@ -756,6 +767,111 @@ const AutoSave = {
             this._showExportMessage('error', 'Erro ao exportar rascunho. Veja o console para detalhes.');
         }
     },
+
+    /**
+     * Converte ids de selects para nomes (paises, estados, municipios) no object formData
+     * Retorna uma nova cópia do objeto com valores legíveis para export
+     */
+    async _convertCodesToNames(formData) {
+        const copy = JSON.parse(JSON.stringify(formData));
+
+        // Helper functions
+        const getPaisNome = (idPais) => {
+            try {
+                const cache = window.DropdownManager?._cache?.paises || [];
+                const item = cache.find(p => String(p.id_pais) === String(idPais));
+                return item ? item.nome_pais : (idPais || '');
+            } catch (err) { return idPais || ''; }
+        };
+
+        const getEstadoNome = (uf) => {
+            try {
+                const cache = window.DropdownManager?._cache?.estados || [];
+                const item = cache.find(e => String(e.uf) === String(uf));
+                return item ? item.nome_estado : (uf || '');
+            } catch (err) { return uf || ''; }
+        };
+
+        const getMunicipioNome = async (cdMun, uf) => {
+            if (!cdMun) return '';
+            try {
+                // Tentar usar dropdown DOM se disponível (mais rápido)
+                const selects = document.querySelectorAll('select');
+                for (const sel of selects) {
+                    const opt = Array.from(sel.options).find(o => String(o.value) === String(cdMun));
+                    if (opt) return opt.textContent;
+                }
+
+                // Fallback: consulta CoreAPI por estado (uf)
+                if (window.CoreAPI && uf) {
+                    const municipios = await window.CoreAPI.getMunicipiosByUF(uf);
+                    const item = municipios.find(m => String(m.cd_mun) === String(cdMun));
+                    return item ? item.nm_mun : cdMun;
+                }
+                return cdMun;
+            } catch (err) {
+                return cdMun;
+            }
+        };
+
+        // ==== Top-level fields (camelCase keys expected from FormCollector.collectData) ====
+        if (copy.origemPais !== undefined) copy.origemPais = getPaisNome(copy.origemPais);
+        if (copy.destinoPais !== undefined) copy.destinoPais = getPaisNome(copy.destinoPais);
+        if (copy.origemEstado !== undefined) copy.origemEstado = getEstadoNome(copy.origemEstado);
+        if (copy.destinoEstado !== undefined) copy.destinoEstado = getEstadoNome(copy.destinoEstado);
+        if (copy.origemMunicipio !== undefined) copy.origemMunicipio = await getMunicipioNome(copy.origemMunicipio, copy.origemEstado);
+        if (copy.destinoMunicipio !== undefined) copy.destinoMunicipio = await getMunicipioNome(copy.destinoMunicipio, copy.destinoEstado);
+
+        // Naturalidade
+        if (copy.ufNaturalidade !== undefined) copy.ufNaturalidade = getEstadoNome(copy.ufNaturalidade);
+        if (copy.municipioNaturalidade !== undefined) copy.municipioNaturalidade = await getMunicipioNome(copy.municipioNaturalidade, copy.ufNaturalidade);
+
+        // Empresa municipality
+        if (copy.municipio !== undefined) {
+            // Encontrar UF do endereço da empresa se existir; não temos UF, então a informação do municipio pode vir como nome já
+            // Tentar mapear com seletor DOM empresa: municipio-empresa is a select containing nm_mun values
+            const select = document.getElementById('municipio-empresa');
+            if (select) {
+                const opt = Array.from(select.options).find(o => String(o.value) === String(copy.municipio));
+                if (opt) copy.municipio = opt.textContent;
+            }
+        }
+
+        // Produtos
+        if (Array.isArray(copy.produtos)) {
+            for (const p of copy.produtos) {
+                // If product contains 'origemPaisNome' or 'origemPaisCodigo' -> prefer label fields
+                if (p.origemPaisCodigo) {
+                    p.origemPais = getPaisNome(p.origemPaisCodigo);
+                } else if (p.origemPaisNome) {
+                    p.origemPais = p.origemPaisNome;
+                }
+                if (p.destinoPaisCodigo) {
+                    p.destinoPais = getPaisNome(p.destinoPaisCodigo);
+                } else if (p.destinoPaisNome) {
+                    p.destinoPais = p.destinoPaisNome;
+                }
+
+                // Estados (UF)
+                if (p.origemEstadoUf) p.origemEstado = getEstadoNome(p.origemEstadoUf);
+                if (p.destinoEstadoUf) p.destinoEstado = getEstadoNome(p.destinoEstadoUf);
+
+                // Municípios (async)
+                if (p.origemMunicipioCodigo) {
+                    p.origemMunicipio = await getMunicipioNome(p.origemMunicipioCodigo, p.origemEstadoUf);
+                } else if (p.origemMunicipioNome) {
+                    p.origemMunicipio = p.origemMunicipioNome;
+                }
+                if (p.destinoMunicipioCodigo) {
+                    p.destinoMunicipio = await getMunicipioNome(p.destinoMunicipioCodigo, p.destinoEstadoUf);
+                } else if (p.destinoMunicipioNome) {
+                    p.destinoMunicipio = p.destinoMunicipioNome;
+                }
+            }
+        }
+
+        return copy;
+    },
     
     /**
      * Converte dados salvos do localStorage para formato de formData
@@ -763,36 +879,78 @@ const AutoSave = {
     _convertSavedDataToFormData(savedData) {
         const formData = {};
         
-        // Campos simples
+        // Campos simples: normalizar chaves com hífen em camelCase
         if (savedData.fields) {
-            Object.assign(formData, savedData.fields);
+            Object.entries(savedData.fields).forEach(([name, value]) => {
+                const camel = this._toCamelCase(name);
+                formData[camel] = value;
+            });
         }
         
-        // Radios
+        // Radios (normalizar também)
         if (savedData.radios) {
-            Object.assign(formData, savedData.radios);
+            Object.entries(savedData.radios).forEach(([name, value]) => {
+                const camel = this._toCamelCase(name);
+                formData[camel] = value;
+            });
         }
         
         // Selects
         if (savedData.selects) {
-            Object.assign(formData, savedData.selects);
+            Object.entries(savedData.selects).forEach(([name, value]) => {
+                const camel = this._toCamelCase(name);
+                formData[camel] = value;
+            });
         }
         
         // Checkboxes (converter arrays para string separada por vírgula)
         if (savedData.checkboxes) {
             Object.entries(savedData.checkboxes).forEach(([name, values]) => {
                 if (values && values.length > 0) {
-                    formData[name] = values.join(', ');
+                    formData[this._toCamelCase(name)] = values.join(', ');
                 }
             });
         }
         
         // Produtos
         if (savedData.produtos && savedData.produtos.length > 0) {
-            formData.produtos = savedData.produtos.map(p => ({
-                ...p.fields,
-                ...p.selects
-            }));
+            formData.produtos = savedData.produtos.map(p => {
+                const produtoObj = {};
+                // fields são como produto-carga-1, produto-movimentacao-1, etc - mapear para chaves limpas
+                Object.entries(p.fields || {}).forEach(([k, v]) => {
+                    // remover sufixo -<rowid>
+                    const base = k.replace(/-\d+$/, '');
+                    switch (true) {
+                        case /produto-carga/.test(base): produtoObj.carga = v; break;
+                        case /produto-movimentacao/.test(base): produtoObj.movimentacao = v; break;
+                        case /produto-origem-text/.test(base): produtoObj.origemText = v; break;
+                        case /produto-destino-text/.test(base): produtoObj.destinoText = v; break;
+                        case /produto-distancia/.test(base): produtoObj.distancia = v; break;
+                        case /produto-acondicionamento/.test(base): produtoObj.acondicionamento = v; break;
+                        case /produto-observacoes/.test(base): produtoObj.observacoes = v; break;
+                        default:
+                            // manter caso desconhecido
+                            produtoObj[base] = v;
+                    }
+                });
+                // selects: produto-origem-pais-1, produto-origem-estado-1, produto-origem-municipio-1, produto-modalidade-1
+                Object.entries(p.selects || {}).forEach(([k, v]) => {
+                    const base = k.replace(/-\d+$/, '');
+                    switch (true) {
+                        case /produto-origem-pais/.test(base): produtoObj.origemPaisCodigo = v; produtoObj.origemPaisNome = (p.selects && p.selects[k] ? (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || '') : '' ); break;
+                        case /produto-origem-estado/.test(base): produtoObj.origemEstadoUf = v; produtoObj.origemEstadoNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
+                        case /produto-origem-municipio/.test(base): produtoObj.origemMunicipioCodigo = v; produtoObj.origemMunicipioNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
+                        case /produto-destino-pais/.test(base): produtoObj.destinoPaisCodigo = v; produtoObj.destinoPaisNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
+                        case /produto-destino-estado/.test(base): produtoObj.destinoEstadoUf = v; produtoObj.destinoEstadoNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
+                        case /produto-destino-municipio/.test(base): produtoObj.destinoMunicipioCodigo = v; produtoObj.destinoMunicipioNome = (document.querySelector(`[name=\"${k}\"]`)?.selectedOptions[0]?.textContent || ''); break;
+                        case /produto-modalidade/.test(base): produtoObj.modalidade = Array.isArray(v) ? v.join(',') : v; break;
+                        default:
+                            produtoObj[base] = v;
+                    }
+                });
+
+                return produtoObj;
+            });
         }
         
         return formData;
