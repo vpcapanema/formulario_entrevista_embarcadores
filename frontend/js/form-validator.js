@@ -49,6 +49,9 @@
 
 const FormValidator = {
     
+    // ⭐ Flag para desabilitar validação durante restauração de rascunho
+    _validationDisabled: false,
+    
     // Mapeamento de campos para validadores (TODOS os 70 campos do formulário)
     fieldValidators: {
         // ========================================
@@ -315,6 +318,11 @@ const FormValidator = {
      * Chamada por: onChange (SELECTs/RADIO) ou onInput após 3 chars (INPUTs/TEXTAREAs)
      */
     validateFieldFormat: function(fieldId) {
+        // ⭐ Se validação está desabilitada, não fazer nada
+        if (this._validationDisabled) {
+            return true;
+        }
+        
         const field = document.getElementById(fieldId);
         if (!field) return true;
 
@@ -437,6 +445,11 @@ const FormValidator = {
      * SEMPRE mostra feedback verde quando houver itens marcados (obrigatório ou opcional)
      */
     validateCheckboxGroupFormat: function(groupName) {
+        // ⭐ Se validação está desabilitada, não fazer nada
+        if (this._validationDisabled) {
+            return true;
+        }
+        
         const config = this.checkboxGroups[groupName];
         if (!config) {
             console.warn(`Grupo de checkbox ${groupName} não configurado`);

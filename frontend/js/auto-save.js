@@ -473,12 +473,18 @@ const AutoSave = {
     
     /**
      * Restaura dados salvos nos campos do formulário
+     * SEM disparar validação visual
      */
     _restoreData(data) {
         const form = document.getElementById('entrevista-form');
         if (!form) return;
         
         this._isRestoring = true;
+        
+        // ⭐ Desabilitar validação visual durante restauração
+        if (window.FormValidator) {
+            window.FormValidator._validationDisabled = true;
+        }
         
         // Restaurar campos simples
         Object.keys(data).forEach(key => {
@@ -501,16 +507,21 @@ const AutoSave = {
                 }
             } else if (element.tagName === 'SELECT') {
                 element.value = data[key];
-                // Trigger change para cascata funcionar
+                // Trigger change para cascata funcionar (sem validação visual)
                 element.dispatchEvent(new Event('change', { bubbles: true }));
             } else {
                 element.value = data[key] || '';
             }
         });
         
+        // ⭐ Reabilitar validação após restauração
+        if (window.FormValidator) {
+            window.FormValidator._validationDisabled = false;
+        }
+        
         this._updateIndicator('restored');
         this._isRestoring = false;
-        console.log('✅ Rascunho restaurado');
+        console.log('✅ Rascunho restaurado (sem validação visual)');
     },
     
     // ============================================================
