@@ -130,6 +130,24 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
             db.flush()
             entrevistado = entrevistado_existente
             logger.info(f"✅ Entrevistado ATUALIZADO: {entrevistado.id_entrevistado} - {entrevistado.nome} (email: {email_lower})")
+        else:
+            # CREATE: Cria novo entrevistado quando não existe (sem email também)
+            entrevistado = Entrevistado(
+                id_empresa=id_empresa,
+                nome=data.nome,
+                funcao=data.funcao,
+                telefone=data.telefone if data.telefone else None,
+                email=data.email if data.email else None,
+                email_lower=email_lower if email_lower else None,
+                estado_civil=data.estadoCivil if hasattr(data, 'estadoCivil') else None,
+                nacionalidade=data.nacionalidade if hasattr(data, 'nacionalidade') else None,
+                uf_naturalidade=data.ufNaturalidade if hasattr(data, 'ufNaturalidade') else None,
+                municipio_naturalidade=data.municipioNaturalidade if hasattr(data, 'municipioNaturalidade') else None,
+                data_cadastro=func.now()
+            )
+            db.add(entrevistado)
+            db.flush()
+            logger.info(f"✅ Entrevistado CRIADO: {entrevistado.id_entrevistado} - {entrevistado.nome} (email: {email_lower or 'N/A'})")
 
         # ====================================================
         # CÁLCULO DO id_responsavel (LÓGICA DE NEGÓCIO)
