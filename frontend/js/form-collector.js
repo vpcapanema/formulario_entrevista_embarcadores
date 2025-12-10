@@ -460,13 +460,19 @@ const FormCollector = {
     },
     
     /**
-     * Coleta produtos da tabela
+     * Coleta produtos da tabela - APENAS CONFIRMADOS
      */
     _collectProdutos() {
         const produtos = [];
         const rows = document.querySelectorAll('#produtos-tbody tr');
 
         rows.forEach((row) => {
+            // ⭐ NOVO: Verificar se produto foi confirmado
+            if (row.dataset.confirmado !== 'true') {
+                console.log(`⏭️  Produto não confirmado, pulando: ${row.id}`);
+                return; // Ignorar produtos não confirmados
+            }
+
             // Exemplo de id do row: produto-row-1
             const idParts = (row.id || '').split('-');
             const rowNum = idParts[idParts.length - 1];
@@ -793,6 +799,7 @@ async function addProdutoRow() {
     
     const row = document.createElement('tr');
     row.id = rowId;
+    row.dataset.confirmado = 'false'; // Estado inicial: não confirmado
     row.innerHTML = `
         <td><input type="text" name="produto-carga-${currentCounter}" class="table-input" placeholder="Nome da carga"></td>
         <td><input type="number" name="produto-movimentacao-${currentCounter}" class="table-input" placeholder="Toneladas/ano" min="0"></td>
@@ -857,7 +864,12 @@ async function addProdutoRow() {
             </div>
         </td>
         <td><input type="text" name="produto-observacoes-${currentCounter}" class="table-input" placeholder="Observações sobre este produto (opcional)"></td>
-        <td><button type="button" class="btn-remove" onclick="removeProdutoRow('${rowId}')">🗑️</button></td>
+        <td>
+            <div class="produto-acoes">
+                <button type="button" class="btn-confirm" onclick="confirmarProduto('${rowId}')" title="Confirmar seleção deste produto">✅</button>
+                <button type="button" class="btn-remove" onclick="removeProdutoRow('${rowId}')" title="Remover este produto">🗑️</button>
+            </div>
+        </td>
     `;
     
     tbody.appendChild(row);
@@ -866,6 +878,48 @@ async function addProdutoRow() {
     await DropdownManager.applyToProductRow(currentCounter);
     // Ajustar altura do select de modalidades para combinar com a altura dos 3 selects de origem
     setTimeout(() => setModalidadeHeight(currentCounter), 60);
+}
+
+/**
+ * Confirma a seleção de um produto na tabela
+ * Marca visualmente e garante que será enviado
+ */
+function confirmarProduto(rowId) {
+    const row = document.getElementById(rowId);
+    if (!row) {
+        console.error(`❌ Linha de produto não encontrada: ${rowId}`);
+        return;
+    }
+    
+    const confirmado = row.dataset.confirmado === 'true';
+    
+    if (!confirmado) {
+        // Marcar como confirmado
+        row.dataset.confirmado = 'true';
+        row.classList.add('produto-confirmado');
+        
+        // Atualizar botão
+        const btnConfirm = row.querySelector('.btn-confirm');
+        if (btnConfirm) {
+            btnConfirm.classList.add('btn-confirm-ativo');
+            btnConfirm.title = 'Produto confirmado (clique para desfazer)';
+        }
+        
+        console.log(`✅ Produto confirmado: ${rowId}`);
+    } else {
+        // Desmarcar confirmação
+        row.dataset.confirmado = 'false';
+        row.classList.remove('produto-confirmado');
+        
+        // Atualizar botão
+        const btnConfirm = row.querySelector('.btn-confirm');
+        if (btnConfirm) {
+            btnConfirm.classList.remove('btn-confirm-ativo');
+            btnConfirm.title = 'Confirmar seleção deste produto';
+        }
+        
+        console.log(`🔄 Confirmação removida: ${rowId}`);
+    }
 }
 
 /**
@@ -909,6 +963,7 @@ function handleProdutoAcondicionamentoChange(rowId) {
 
 // Exportar funções para escopo global (para uso em onclick inline no HTML)
 window.addProdutoRow = addProdutoRow;
+window.confirmarProduto = confirmarProduto;
 window.removeProdutoRow = removeProdutoRow;
 window.handleProdutoAcondicionamentoChange = handleProdutoAcondicionamentoChange;
 

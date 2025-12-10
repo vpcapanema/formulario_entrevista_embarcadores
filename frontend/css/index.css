@@ -684,6 +684,50 @@ select.table-input[multiple] {
     background: #c0392b;
 }
 
+.btn-confirm {
+    background: #95a5a6;
+    color: white;
+    padding: 0.5rem 0.8rem;
+    margin-right: 0.3rem;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-confirm:hover {
+    background: #7f8c8d;
+    transform: scale(1.05);
+}
+
+.btn-confirm-ativo {
+    background: var(--success-color) !important;
+    border-color: #1e8449;
+    font-weight: bold;
+}
+
+.btn-confirm-ativo:hover {
+    background: #229954 !important;
+}
+
+.produto-acoes {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.produto-confirmado {
+    background-color: #f0fdf4;
+    border-left: 4px solid var(--success-color);
+    opacity: 1;
+}
+
+.produto-confirmado td {
+    background-color: rgba(39, 174, 96, 0.05);
+}
+
 .btn-delete {
     background: var(--accent-color);
     color: white;
