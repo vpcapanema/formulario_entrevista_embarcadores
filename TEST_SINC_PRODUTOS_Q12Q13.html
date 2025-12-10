@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste: Sincronização Q8 → Q12/Q13</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #555;
+            margin-top: 20px;
+        }
+        
+        .section {
+            background: #f9f9f9;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .test-step {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .test-step.success {
+            border-left: 4px solid #28a745;
+        }
+        
+        .test-step.info {
+            border-left: 4px solid #17a2b8;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        .button:hover {
+            background: #0056b3;
+        }
+        
+        .button.secondary {
+            background: #6c757d;
+        }
+        
+        .button.secondary:hover {
+            background: #545b62;
+        }
+        
+        .log-box {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Teste: Sincronização Q8 → Q12/Q13</h1>
+        <p>Este documento testa a sincronização entre a tabela de produtos (Q8) e os campos de origem/destino (Q12/Q13).</p>
+    </div>
+
+    <div class="container">
+        <h2>📋 Requisito</h2>
+        <div class="section">
+            <p>
+                <strong>Os campos Q12 (Origem) e Q13 (Destino) devem ser preenchidos automaticamente</strong>
+                com base nas escolhas feitas na tabela de produtos.
+            </p>
+            <ul>
+                <li>Se o 1º produto tem origem=Brasil/SP e destino=Brasil/RJ → Q12 e Q13 são preenchidos automaticamente</li>
+                <li>Se múltiplos produtos têm mesma origem/destino → Usa essa origem/destino comum</li>
+                <li>Se produtos têm origens/destinos diferentes → Usa a origem/destino do PRIMEIRO produto</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🧪 Casos de Teste</h2>
+        
+        <div class="test-step info">
+            <h3>Caso 1: Um único produto</h3>
+            <p>
+                <strong>Setup:</strong> Adiciona 1 produto com origem=Brasil/SP (código 35) e destino=Brasil/RJ (código 33)
+            </p>
+            <p>
+                <strong>Esperado:</strong>
+                <ul>
+                    <li>Q12 (origem-pais) = 31 (Brasil)</li>
+                    <li>Q12 (origem-estado) = 35 (São Paulo)</li>
+                    <li>Q12 (origem-municipio) = 3550308 (São Paulo)</li>
+                    <li>Q13 (destino-pais) = 31 (Brasil)</li>
+                    <li>Q13 (destino-estado) = 33 (Rio de Janeiro)</li>
+                    <li>Q13 (destino-municipio) = 3304557 (Rio de Janeiro)</li>
+                </ul>
+            </p>
+            <button class="button" onclick="testCase1()">▶️ Executar Caso 1</button>
+        </div>
+
+        <div class="test-step info">
+            <h3>Caso 2: Múltiplos produtos com mesma origem/destino</h3>
+            <p>
+                <strong>Setup:</strong> Adiciona 2 produtos:
+                <ul>
+                    <li>Produto 1: origem=Brasil/SP → destino=Brasil/RJ</li>
+                    <li>Produto 2: origem=Brasil/SP → destino=Brasil/RJ (MESMO)</li>
+                </ul>
+            </p>
+            <p>
+                <strong>Esperado:</strong> Q12 e Q13 preenchidos com os valores comuns (SP → RJ)
+            </p>
+            <button class="button" onclick="testCase2()">▶️ Executar Caso 2</button>
+        </div>
+
+        <div class="test-step info">
+            <h3>Caso 3: Múltiplos produtos com origens/destinos DIFERENTES</h3>
+            <p>
+                <strong>Setup:</strong> Adiciona 2 produtos:
+                <ul>
+                    <li>Produto 1: origem=Brasil/SP → destino=Brasil/RJ</li>
+                    <li>Produto 2: origem=Brasil/MG → destino=Brasil/BA (DIFERENTE)</li>
+                </ul>
+            </p>
+            <p>
+                <strong>Esperado:</strong> Q12 e Q13 preenchidos com valores do PRIMEIRO produto (SP → RJ)
+            </p>
+            <button class="button" onclick="testCase3()">▶️ Executar Caso 3</button>
+        </div>
+
+        <div class="test-step info">
+            <h3>Caso 4: Limpar tabela de produtos</h3>
+            <p>
+                <strong>Setup:</strong> Remove todos os produtos da tabela
+            </p>
+            <p>
+                <strong>Esperado:</strong> Q12 e Q13 não são alterados (apenas produtos com dados preenchidos são considerados)
+            </p>
+            <button class="button" onclick="testCase4()">▶️ Executar Caso 4</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📜 Console de Execução</h2>
+        <div class="log-box" id="logBox">
+            <div class="log-entry">🟢 Aguardando execução de testes...</div>
+        </div>
+        <button class="button secondary" onclick="limparLog()">Limpar Log</button>
+    </div>
+
+    <div class="container">
+        <h2>📖 Como funciona</h2>
+        <div class="section">
+            <h3>Arquivo: <code>sync-produtos-q12-q13.js</code></h3>
+            <p>
+                Este módulo implementa a sincronização automática entre a tabela de produtos (Q8) e os campos Q12/Q13.
+            </p>
+            
+            <h4>Funções principais:</h4>
+            <ul>
+                <li><code>init()</code> - Inicializa o monitor de mudanças na tabela de produtos</li>
+                <li><code>sincronizar()</code> - Executa a sincronização (chamada automaticamente ao detectar mudanças)</li>
+                <li><code>_extrairDadosProdutos()</code> - Lê origem/destino de todos os produtos</li>
+                <li><code>_preencherOrigem(origem)</code> - Preenche Q12 automaticamente</li>
+                <li><code>_preencherDestino(destino)</code> - Preenche Q13 automaticamente</li>
+            </ul>
+
+            <h4>Eventos observados:</h4>
+            <ul>
+                <li>Adição/remoção de linhas na tabela (MutationObserver)</li>
+                <li>Mudanças nos selects de origem/destino dos produtos (change event)</li>
+            </ul>
+
+            <h4>Cascata de Fills (com delays):</h4>
+            <ol>
+                <li>Preenche país (dispara change event)</li>
+                <li>Aguarda 150ms → preenche estado (dispara change event)</li>
+                <li>Aguarda 150ms → preenche município (dispara change event)</li>
+            </ol>
+
+            <p><strong>⚠️ Nota:</strong> Os delays são necessários para permitir que o DropdownManager carregue os dados dos selects em cascata.</p>
+        </div>
+    </div>
+
+    <script>
+        // Funções de teste
+        function addLog(message) {
+            const logBox = document.getElementById('logBox');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function limparLog() {
+            document.getElementById('logBox').innerHTML = '<div class="log-entry">🟢 Log limpo</div>';
+        }
+
+        function testCase1() {
+            addLog('🧪 CASO 1: Um único produto');
+            addLog('   Setup: 1 produto com origem=SP, destino=RJ');
+            addLog('');
+            addLog('📋 Etapas:');
+            addLog('   1. Limpar tabela de produtos');
+            addLog('   2. Adicionar 1 produto');
+            addLog('   3. Preencher: origem=Brasil/SP, destino=Brasil/RJ');
+            addLog('   4. Verificar sincronização automática de Q12/Q13');
+            addLog('');
+            addLog('✅ Teste deve passar quando:');
+            addLog('   - Q12 (origem-pais) = 31');
+            addLog('   - Q12 (origem-estado) = 35');
+            addLog('   - Q13 (destino-pais) = 31');
+            addLog('   - Q13 (destino-estado) = 33');
+            addLog('');
+            addLog('💡 Abra o console do navegador (F12) para ver detalhes');
+        }
+
+        function testCase2() {
+            addLog('🧪 CASO 2: Múltiplos produtos com MESMA origem/destino');
+            addLog('   Setup: 2 produtos, ambos com origem=SP, destino=RJ');
+            addLog('');
+            addLog('📋 Etapas:');
+            addLog('   1. Limpar tabela de produtos');
+            addLog('   2. Adicionar 2 produtos');
+            addLog('   3. Preencher ambos com: origem=Brasil/SP, destino=Brasil/RJ');
+            addLog('   4. Verificar sincronização (deve reconhecer "mesma origem" e "mesmo destino")');
+            addLog('');
+            addLog('✅ Teste deve passar quando:');
+            addLog('   - Console mostra: "Todos os 2 produto(s) têm MESMA origem"');
+            addLog('   - Console mostra: "Todos os 2 produto(s) têm MESMO destino"');
+            addLog('   - Q12 e Q13 preenchidos corretamente');
+            addLog('');
+            addLog('💡 Abra o console do navegador (F12) para ver detalhes');
+        }
+
+        function testCase3() {
+            addLog('🧪 CASO 3: Múltiplos produtos com origens/destinos DIFERENTES');
+            addLog('   Setup: 2 produtos com valores diferentes');
+            addLog('   - Produto 1: origem=SP, destino=RJ');
+            addLog('   - Produto 2: origem=MG, destino=BA');
+            addLog('');
+            addLog('📋 Etapas:');
+            addLog('   1. Limpar tabela de produtos');
+            addLog('   2. Adicionar 2 produtos');
+            addLog('   3. Preencher produto 1: origem=Brasil/SP, destino=Brasil/RJ');
+            addLog('   4. Preencher produto 2: origem=Brasil/MG, destino=Brasil/BA');
+            addLog('   5. Verificar sincronização (deve usar valores do 1º produto)');
+            addLog('');
+            addLog('✅ Teste deve passar quando:');
+            addLog('   - Console mostra: "Produtos com origens DIFERENTES"');
+            addLog('   - Console mostra: "Produtos com destinos DIFERENTES"');
+            addLog('   - Q12 e Q13 preenchidos com valores do PRIMEIRO produto (SP → RJ)');
+            addLog('');
+            addLog('💡 Abra o console do navegador (F12) para ver detalhes');
+        }
+
+        function testCase4() {
+            addLog('🧪 CASO 4: Limpar tabela de produtos');
+            addLog('   Setup: Remove todos os produtos');
+            addLog('');
+            addLog('📋 Etapas:');
+            addLog('   1. Remover todos os produtos da tabela');
+            addLog('   2. Verificar que Q12/Q13 não são alterados');
+            addLog('');
+            addLog('✅ Teste deve passar quando:');
+            addLog('   - Console mostra: "0 produto(s) com origem/destino preenchido(s)"');
+            addLog('   - Q12 e Q13 mantêm os valores anteriores (não são resetados)');
+            addLog('');
+            addLog('💡 Abra o console do navegador (F12) para ver detalhes');
+        }
+
+        // Log inicial
+        addLog('');
+        addLog('═══════════════════════════════════════════════════════════════');
+        addLog('  TESTE: Sincronização Tabela de Produtos (Q8) ↔ Q12/Q13');
+        addLog('═══════════════════════════════════════════════════════════════');
+        addLog('');
+        addLog('📖 Como usar:');
+        addLog('  1. Clique em um botão de caso de teste acima');
+        addLog('  2. Abra o console (F12) para ver os logs detalhados');
+        addLog('  3. Verifique se os campos Q12/Q13 são preenchidos corretamente');
+        addLog('');
+        addLog('📍 Localização do código: frontend/js/sync-produtos-q12-q13.js');
+        addLog('');
+    </script>
+</body>
+</html>
