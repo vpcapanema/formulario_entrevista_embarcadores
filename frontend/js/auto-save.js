@@ -430,51 +430,91 @@ const AutoSave = {
         
         this._isRestoring = true;
         
+        console.log('🔄 Iniciando restauração de dados...');
+        console.log('Dados a restaurar:', data);
+        
         // ⭐ Desabilitar validação visual durante restauração
         if (window.FormValidator) {
             window.FormValidator._validationDisabled = true;
+            console.log('✅ Validação desabilitada');
         }
         
         try {
+            let camposRestaurados = 0;
+            
             // Restaurar campos simples (text, number, email, tel, textarea)
             if (data.fields) {
+                console.log(`📝 Restaurando ${Object.keys(data.fields).length} campos...`);
+                
                 Object.keys(data.fields).forEach(name => {
                     // Pular labels (não são campos reais, só para export)
                     if (name.endsWith('-label')) return;
                     
                     const element = form.querySelector(`[name="${name}"]`);
                     if (element && element.tagName !== 'SELECT') {
+                        const oldValue = element.value;
                         element.value = data.fields[name] || '';
-                        console.log(`✅ Campo restaurado: ${name} = ${element.value}`);
+                        
+                        // Disparar eventos de change para validação/cascata
+                        element.dispatchEvent(new Event('input', { bubbles: true }));
+                        element.dispatchEvent(new Event('change', { bubbles: true }));
+                        
+                        console.log(`✅ Campo restaurado: ${name} = "${element.value}" (era: "${oldValue}")`);
+                        camposRestaurados++;
+                    } else if (!element) {
+                        console.warn(`⚠️ Campo não encontrado: ${name}`);
                     }
                 });
             }
             
             // Restaurar radio buttons
             if (data.radios) {
+                console.log(`📻 Restaurando ${Object.keys(data.radios).length} radios...`);
+                
                 Object.keys(data.radios).forEach(name => {
                     const selector = `input[type="radio"][name="${name}"][value="${data.radios[name]}"]`;
                     const radioElement = form.querySelector(selector);
+                    
                     if (radioElement) {
                         radioElement.checked = true;
+                        radioElement.dispatchEvent(new Event('change', { bubbles: true }));
                         console.log(`✅ Radio restaurado: ${name} = ${data.radios[name]}`);
+                        camposRestaurados++;
+                    } else {
+                        console.warn(`⚠️ Radio não encontrado: ${name} = ${data.radios[name]}`);
                     }
                 });
             }
             
             // Restaurar checkboxes
             if (data.checkboxes) {
+                console.log(`☑️ Restaurando ${Object.keys(data.checkboxes).length} grupos de checkboxes...`);
+                
                 Object.keys(data.checkboxes).forEach(name => {
                     const checkboxes = form.querySelectorAll(`input[type="checkbox"][name="${name}"]`);
-                    checkboxes.forEach(checkbox => {
-                        checkbox.checked = data.checkboxes[name].includes(checkbox.value);
-                    });
-                    console.log(`✅ Checkboxes restaurados: ${name} = [${data.checkboxes[name].join(', ')}]`);
+                    
+                    if (checkboxes.length > 0) {
+                        checkboxes.forEach(checkbox => {
+                            const shouldCheck = data.checkboxes[name].includes(checkbox.value);
+                            const wasChecked = checkbox.checked;
+                            checkbox.checked = shouldCheck;
+                            
+                            if (shouldCheck !== wasChecked) {
+                                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        });
+                        console.log(`✅ Checkboxes restaurados: ${name} = [${data.checkboxes[name].join(', ')}]`);
+                        camposRestaurados++;
+                    } else {
+                        console.warn(`⚠️ Checkboxes não encontrados: ${name}`);
+                    }
                 });
             }
             
             // Restaurar selects
             if (data.selects) {
+                console.log(`🔽 Restaurando ${Object.keys(data.selects).length} selects...`);
+                
                 Object.keys(data.selects).forEach(name => {
                     const element = form.querySelector(`select[name="${name}"]`);
                     if (element) {
@@ -484,18 +524,22 @@ const AutoSave = {
                             });
                             console.log(`✅ Select múltiplo restaurado: ${name} = [${data.selects[name].join(', ')}]`);
                         } else {
+                            const oldValue = element.value;
                             element.value = data.selects[name] || '';
-                            console.log(`✅ Select restaurado: ${name} = ${element.value}`);
+                            console.log(`✅ Select restaurado: ${name} = ${element.value} (era: ${oldValue})`);
                         }
                         // Disparar change para cascata funcionar
                         element.dispatchEvent(new Event('change', { bubbles: true }));
+                        camposRestaurados++;
+                    } else {
+                        console.warn(`⚠️ Select não encontrado: ${name}`);
                     }
                 });
             }
             
             // Restaurar produtos
             if (data.produtos && Array.isArray(data.produtos) && data.produtos.length > 0) {
-                console.log(`🔄 Restaurando ${data.produtos.length} produtos...`);
+                console.log(`🛒 Restaurando ${data.produtos.length} produtos...`);
                 
                 data.produtos.forEach((produto, idx) => {
                     console.log(`  Produto ${idx + 1}:`);
@@ -509,7 +553,9 @@ const AutoSave = {
                             const element = form.querySelector(`[name="${name}"]`);
                             if (element && element.tagName !== 'SELECT') {
                                 element.value = produto.fields[name] || '';
+                                element.dispatchEvent(new Event('change', { bubbles: true }));
                                 console.log(`    ✅ ${name} = ${element.value}`);
+                                camposRestaurados++;
                             }
                         });
                     }
@@ -530,24 +576,27 @@ const AutoSave = {
                                 }
                                 element.dispatchEvent(new Event('change', { bubbles: true }));
                                 console.log(`    ✅ ${name} = ${produto.selects[name]}`);
+                                camposRestaurados++;
                             }
                         });
                     }
                 });
             }
             
-            console.log('✅ Todos os dados restaurados com sucesso!');
+            console.log(`✅ Restauração concluída! ${camposRestaurados} campos restaurados`);
         } catch (error) {
             console.error('❌ AutoSave: Erro ao restaurar dados', error);
+            console.error('Stack trace:', error.stack);
         } finally {
             // ⭐ Reabilitar validação após restauração
             if (window.FormValidator) {
                 window.FormValidator._validationDisabled = false;
+                console.log('✅ Validação reabilitada');
             }
             
             this._updateIndicator('restored');
             this._isRestoring = false;
-            console.log('✅ Rascunho restaurado (sem validação visual)');
+            console.log('✅✅✅ Rascunho restaurado com sucesso! ✅✅✅');
         }
     },
     
