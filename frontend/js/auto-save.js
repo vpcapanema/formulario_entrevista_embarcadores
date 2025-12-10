@@ -328,82 +328,8 @@ const AutoSave = {
     },
     
     // ============================================================
-    // INDICADOR VISUAL
+    // INDICADOR VISUAL - ATUALIZAÇÃO
     // ============================================================
-    
-    /**
-     * Cria o indicador visual de status do auto-save
-     */
-    _createStatusIndicator() {
-        // Verificar se já existe
-        if (document.getElementById('autosave-container')) return;
-        
-        const container = document.createElement('div');
-        container.id = 'autosave-container';
-        container.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 9999;
-        `;
-        
-        // Indicador de status
-        const indicator = document.createElement('div');
-        indicator.id = 'autosave-indicator';
-        indicator.innerHTML = `
-            <span class="autosave-icon">💾</span>
-            <span class="autosave-text">Auto-save ativo</span>
-        `;
-        indicator.style.cssText = `
-            background: rgba(40, 167, 69, 0.95);
-            color: white;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            opacity: 0.9;
-        `;
-        
-        // Botão de exportar rascunho
-        const exportBtn = document.createElement('button');
-        exportBtn.id = 'autosave-export-btn';
-        exportBtn.innerHTML = '📥 Exportar Rascunho';
-        exportBtn.title = 'Exportar respostas parciais para Excel';
-        exportBtn.style.cssText = `
-            background: rgba(52, 152, 219, 0.95);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            opacity: 0.9;
-        `;
-        exportBtn.addEventListener('mouseenter', () => {
-            exportBtn.style.background = 'rgba(41, 128, 185, 0.95)';
-            exportBtn.style.transform = 'translateY(-2px)';
-        });
-        exportBtn.addEventListener('mouseleave', () => {
-            exportBtn.style.background = 'rgba(52, 152, 219, 0.95)';
-            exportBtn.style.transform = 'translateY(0)';
-        });
-        exportBtn.addEventListener('click', () => this.exportarRascunho());
-        
-        container.appendChild(indicator);
-        container.appendChild(exportBtn);
-        document.body.appendChild(container);
-    },
     
     /**
      * Atualiza o indicador visual
