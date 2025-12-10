@@ -1,18 +1,17 @@
 /**
  * ============================================================
- * AUTO-SAVE - Salvamento Automático Local com Modal de Escolha
+ * AUTO-SAVE - Salvamento Automático Local com Carregamento Automático
  * ============================================================
  * 
  * Gerencia o salvamento automático de respostas do formulário
- * no localStorage com interface modal para escolher entre:
- * - Carregar rascunho anterior (< 7 dias)
- * - Iniciar nova pesquisa
+ * no localStorage com carregamento automático de rascunhos.
  * 
  * RECURSOS:
  * ✅ Salvamento automático com debounce (500ms)
- * ✅ Modal de escolha inteligente (exibe se rascunho válido existe)
+ * ✅ Carregamento automático de rascunhos válidos (< 7 dias)
  * ✅ Restauração de dados SEM validação visual
- * ✅ Limpeza completa do localStorage (STORAGE_KEY + TIMESTAMP_KEY)
+ * ✅ Botão "Nova Pesquisa" sempre disponível quando há rascunho
+ * ✅ Limpeza completa do localStorage apenas quando solicitado
  * ✅ Indicador visual de status (saving, saved, restored, cleared, error)
  * ✅ Exportação de rascunho para Excel (botão manual)
  * ✅ Observador de novos campos (suporta tabelas dinâmicas)
@@ -20,11 +19,10 @@
  * 
  * FLUXO PRINCIPAL:
  * 1. Página carrega → _setup() verifica localStorage
- * 2. Se rascunho válido → _showDraftModal() mostra opções
- * 3. Usuário clica "Carregar" → _restoreData() (sem validação visual)
- * 4. Usuário clica "Nova Pesquisa" → clear() + _clearFormFields()
- * 5. Durante edição → _scheduleAutoSave() salva a cada mudança
- * 6. Ao exportar → exportarRascunho() gera Excel com _convertCodesToNames()
+ * 2. Se rascunho válido → _restoreData() carrega automaticamente
+ * 3. Usuário pode clicar "Nova Pesquisa" para limpar quando quiser
+ * 4. Durante edição → _scheduleAutoSave() salva a cada mudança
+ * 5. Ao exportar → exportarRascunho() gera Excel com _convertCodesToNames()
  * 
  * PADRÕES IMPORTANTES:
  * - FormValidator._validationDisabled = true durante restauração
@@ -74,7 +72,7 @@ const AutoSave = {
             return;
         }
         
-        // ⭐ NOVO: Verificar se há rascunho e perguntar ao usuário
+        // ⭐ MELHORADO: Carregar rascunho automaticamente se existir
         const savedData = localStorage.getItem(this.STORAGE_KEY);
         const savedTimestamp = localStorage.getItem(this.TIMESTAMP_KEY);
         
@@ -86,20 +84,24 @@ const AutoSave = {
                 // Verificar se os dados são recentes (menos de 7 dias)
                 const daysDiff = (new Date() - timestamp) / (1000 * 60 * 60 * 24);
                 if (daysDiff <= 7) {
-                    // Há um rascunho válido - perguntar ao usuário
-                    const formattedDate = timestamp.toLocaleString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                    
-                    // Mostrar modal e deixar usuário decidir
-                    this._showDraftModal(formattedDate, data, form);
+                    // Há um rascunho válido - CARREGAR AUTOMATICAMENTE
+                    console.log('🔄 Rascunho encontrado - carregando automaticamente...');
+                    this._restoreData(data);
                     this._createStatusIndicator();
                     this._attachFieldListeners(form);
                     this._initialized = true;
+                    
+                    // Adicionar botão "Nova Pesquisa" na interface
+                    this._addNewResearchButton();
+                    
+                    // Salvar antes de fechar a página
+                    window.addEventListener('beforeunload', (e) => {
+                        if (this._hasUnsavedData()) {
+                            this._saveNow();
+                        }
+                    });
+                    
+                    console.log('✅ AutoSave inicializado - Rascunho carregado');
                     return;
                 }
             } catch (error) {
@@ -126,6 +128,66 @@ const AutoSave = {
         
         this._initialized = true;
         console.log('✅ AutoSave inicializado - Nova pesquisa');
+    },
+    
+    /**
+     * Adiciona botão "Nova Pesquisa" quando há rascunho carregado
+     */
+    _addNewResearchButton() {
+        // Verificar se já existe
+        if (document.getElementById('new-research-btn')) return;
+        
+        const container = document.querySelector('.page-header') || document.querySelector('.container');
+        if (!container) return;
+        
+        const button = document.createElement('button');
+        button.id = 'new-research-btn';
+        button.innerHTML = '🆕 Nova Pesquisa';
+        button.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
+            z-index: 1000;
+        `;
+        
+        button.onmouseover = () => {
+            button.style.background = '#c0392b';
+            button.style.transform = 'translateY(-1px)';
+            button.style.boxShadow = '0 4px 8px rgba(231, 76, 60, 0.3)';
+        };
+        
+        button.onmouseout = () => {
+            button.style.background = '#e74c3c';
+            button.style.transform = 'translateY(0)';
+            button.style.boxShadow = '0 2px 4px rgba(231, 76, 60, 0.2)';
+        };
+        
+        button.onclick = () => {
+            if (confirm('⚠️ Tem certeza que deseja iniciar uma nova pesquisa?\n\nTodos os dados atuais serão perdidos.')) {
+                const form = document.getElementById('entrevista-form');
+                this.clear();
+                this._clearFormFields(form);
+                button.remove();
+                console.log('🆕 Nova pesquisa iniciada pelo usuário');
+            }
+        };
+        
+        // Tornar container relativo se não for
+        if (getComputedStyle(container).position === 'static') {
+            container.style.position = 'relative';
+        }
+        
+        container.appendChild(button);
     },
     
     /**
@@ -159,115 +221,7 @@ const AutoSave = {
         });
     },
     
-    /**
-     * Modal para escolher entre carregar rascunho ou nova pesquisa
-     */
-    _showDraftModal(timestamp, data, form) {
-        const overlay = document.createElement('div');
-        overlay.id = 'draft-choice-modal';
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10001;
-        `;
-        
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            animation: slideIn 0.3s ease;
-        `;
-        
-        modal.innerHTML = `
-            <h2 style="margin-bottom: 1rem; color: #2c3e50;">📋 Você tem um rascunho</h2>
-            <p style="color: #7f8c8d; margin-bottom: 1.5rem;">
-                Rascunho salvo em: <strong>${timestamp}</strong>
-            </p>
-            <p style="color: #555; margin-bottom: 2rem;">
-                O que você deseja fazer?
-            </p>
-            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                <button id="btn-new-research" style="
-                    padding: 0.8rem 1.5rem;
-                    border: 2px solid #3498db;
-                    background: white;
-                    color: #3498db;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                ">
-                    🆕 Nova Pesquisa
-                </button>
-                <button id="btn-load-draft" style="
-                    padding: 0.8rem 1.5rem;
-                    border: none;
-                    background: #27ae60;
-                    color: white;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                ">
-                    ↩️ Carregar Rascunho
-                </button>
-            </div>
-        `;
-        
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-        
-        // Adicionar estilos da animação
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateY(-20px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-            }
-            #btn-new-research:hover {
-                background: #3498db;
-                color: white;
-                transform: translateY(-2px);
-            }
-            #btn-load-draft:hover {
-                background: #229954;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Event listeners
-        document.getElementById('btn-load-draft').addEventListener('click', () => {
-            overlay.remove();
-            this._restoreData(data);
-            console.log('✅ Rascunho carregado');
-        });
-        
-        document.getElementById('btn-new-research').addEventListener('click', () => {
-            overlay.remove();
-            this.clear();
-            this._clearFormFields(form);
-            console.log('🆕 Nova pesquisa iniciada');
-        });
-    },
+
     
     // ============================================================
     // INDICADOR VISUAL
