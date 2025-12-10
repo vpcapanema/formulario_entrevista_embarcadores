@@ -207,7 +207,12 @@ const FormValidator = {
 
     /**
      * Adiciona listeners de validação instantânea em TODOS os campos
-     * VALIDAÇÃO AUTOMÁTICA: onChange (SELECTs) ou onInput após 3 chars (INPUTs)
+     * VALIDAÇÃO AUTOMÁTICA: Dispara SEMPRE que campo receber dados (diferente de vazio)
+     * 
+     * LÓGICA NOVA:
+     * - Campo diferente de vazio = interação do usuário detectada
+     * - Dispara validação visual imediatamente
+     * - Campo vazio = limpa validação (sem feedback visual)
      */
     attachBlurListeners: function() {
         let listenersAdded = 0;
@@ -223,22 +228,28 @@ const FormValidator = {
                 // 1. SELECTs: Validação IMEDIATA ao selecionar opção
                 if (field.tagName === 'SELECT') {
                     field.addEventListener('change', (e) => {
-                        console.log(`⚡ Validação instantânea (onChange) do campo: ${fieldId}`);
-                        this.validateFieldFormat(fieldId);
+                        const value = field.value.trim();
+                        if (value) {
+                            // Campo diferente de vazio → dispara validação
+                            console.log(`⚡ Validação visual (valor diferente de vazio): ${fieldId}`);
+                            this.validateFieldFormat(fieldId);
+                        } else {
+                            // Campo vazio → limpa validação
+                            this.clearValidation(fieldId);
+                        }
                     });
                 }
                 
-                // 2. INPUTs (text, email, tel, number): Validação após 3 caracteres
+                // 2. INPUTs (text, email, tel, number): Validação SEMPRE que diferente de vazio
                 else if (field.tagName === 'INPUT' && (field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number')) {
                     field.addEventListener('input', (e) => {
                         const value = field.value.trim();
-                        // Para type="number", validar imediatamente se tiver algum valor
-                        const minLength = field.type === 'number' ? 1 : 3;
-                        if (value.length >= minLength) {
-                            console.log(`⚡ Validação instantânea (onInput ${minLength}+ chars) do campo: ${fieldId}`);
+                        if (value) {
+                            // Campo diferente de vazio → dispara validação visual
+                            console.log(`⚡ Validação visual (valor diferente de vazio): ${fieldId}`);
                             this.validateFieldFormat(fieldId);
-                        } else if (value.length === 0) {
-                            // Limpa validação quando campo é esvaziado
+                        } else {
+                            // Campo vazio → limpa validação
                             this.clearValidation(fieldId);
                         }
                     });
@@ -247,19 +258,21 @@ const FormValidator = {
                 // 3. RADIO BUTTONS: Validação IMEDIATA ao marcar
                 else if (field.tagName === 'INPUT' && field.type === 'radio') {
                     field.addEventListener('change', (e) => {
-                        console.log(`⚡ Validação instantânea (onChange) do radio: ${field.name}`);
+                        console.log(`⚡ Validação visual (radio selecionado): ${field.name}`);
                         this.validateFieldFormat(fieldId);
                     });
                 }
                 
-                // 4. TEXTAREAS: Validação após 3 caracteres
+                // 4. TEXTAREAS: Validação SEMPRE que diferente de vazio
                 else if (field.tagName === 'TEXTAREA') {
                     field.addEventListener('input', (e) => {
                         const value = field.value.trim();
-                        if (value.length >= 3) {
-                            console.log(`⚡ Validação instantânea (onInput 3+ chars) do textarea: ${fieldId}`);
+                        if (value) {
+                            // Campo diferente de vazio → dispara validação visual
+                            console.log(`⚡ Validação visual (valor diferente de vazio): ${fieldId}`);
                             this.validateFieldFormat(fieldId);
-                        } else if (value.length === 0) {
+                        } else {
+                            // Campo vazio → limpa validação
                             this.clearValidation(fieldId);
                         }
                     });
