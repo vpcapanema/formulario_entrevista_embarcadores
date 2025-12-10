@@ -1,16 +1,36 @@
 /**
  * ============================================================
- * AUTO-SAVE - Salvamento Automático Local
+ * AUTO-SAVE - Salvamento Automático Local com Modal de Escolha
  * ============================================================
- * Salva respostas do formulário no localStorage automaticamente
- * para recuperação em caso de queda de conexão ou fechamento acidental
  * 
- * FUNCIONALIDADES:
- * - Salva automaticamente a cada alteração de campo
- * - Restaura dados ao carregar a página
- * - Limpa dados após envio bem-sucedido
- * - Indicador visual de status do auto-save
- * - Debounce para evitar salvamentos excessivos
+ * Gerencia o salvamento automático de respostas do formulário
+ * no localStorage com interface modal para escolher entre:
+ * - Carregar rascunho anterior (< 7 dias)
+ * - Iniciar nova pesquisa
+ * 
+ * RECURSOS:
+ * ✅ Salvamento automático com debounce (500ms)
+ * ✅ Modal de escolha inteligente (exibe se rascunho válido existe)
+ * ✅ Restauração de dados SEM validação visual
+ * ✅ Limpeza completa do localStorage (STORAGE_KEY + TIMESTAMP_KEY)
+ * ✅ Indicador visual de status (saving, saved, restored, cleared, error)
+ * ✅ Exportação de rascunho para Excel (botão manual)
+ * ✅ Observador de novos campos (suporta tabelas dinâmicas)
+ * ✅ Salvamento automático ao fechar página (beforeunload)
+ * 
+ * FLUXO PRINCIPAL:
+ * 1. Página carrega → _setup() verifica localStorage
+ * 2. Se rascunho válido → _showDraftModal() mostra opções
+ * 3. Usuário clica "Carregar" → _restoreData() (sem validação visual)
+ * 4. Usuário clica "Nova Pesquisa" → clear() + _clearFormFields()
+ * 5. Durante edição → _scheduleAutoSave() salva a cada mudança
+ * 6. Ao exportar → exportarRascunho() gera Excel com _convertCodesToNames()
+ * 
+ * PADRÕES IMPORTANTES:
+ * - FormValidator._validationDisabled = true durante restauração
+ * - localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+ * - Todos os IDs de elementos começam com 'autosave-' ou 'draft-'
+ * - Async/await usado apenas em exportarRascunho()
  */
 
 const AutoSave = {
@@ -652,160 +672,6 @@ const AutoSave = {
         });
         
         return data;
-    },
-    
-    // ============================================================
-    // RESTAURAÇÃO
-    // ============================================================
-    
-    /**
-     * Verifica se há dados salvos e pergunta se deseja restaurar
-     */
-    _checkAndRestore() {
-        const savedData = localStorage.getItem(this.STORAGE_KEY);
-        const savedTimestamp = localStorage.getItem(this.TIMESTAMP_KEY);
-        
-        // ⭐ NOVO: Não restaurar dados - sempre começar vazio
-        // Limpar dados salvos ao carregar página
-        if (savedData) {
-            console.log('🧹 AutoSave: Limpando dados salvos (página recarregada)');
-            this.clear();
-            return;
-        }
-        
-        // Versão anterior (comentada) que restaurava dados:
-        /*
-        if (!savedData) return;
-        
-        try {
-            const data = JSON.parse(savedData);
-            const timestamp = savedTimestamp ? new Date(savedTimestamp) : null;
-            
-            // Verificar se os dados são recentes (menos de 7 dias)
-            if (timestamp) {
-                const daysDiff = (new Date() - timestamp) / (1000 * 60 * 60 * 24);
-                if (daysDiff > 7) {
-                    console.log('⏰ AutoSave: Dados expirados (> 7 dias), removendo...');
-                    this.clear();
-                    return;
-                }
-            }
-            
-            // Verificar se há dados significativos
-            const hasData = Object.keys(data.fields || {}).length > 0 ||
-                           Object.keys(data.radios || {}).length > 0 ||
-                           Object.keys(data.selects || {}).length > 0;
-            
-            if (!hasData) return;
-            
-            // Formatar data/hora para exibição
-            const formattedDate = timestamp ? timestamp.toLocaleString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : 'data desconhecida';
-            
-            // Mostrar modal de confirmação
-            this._showRestoreModal(formattedDate, () => {
-                this._restoreData(data);
-            });
-            
-        } catch (error) {
-            console.error('❌ AutoSave: Erro ao verificar dados salvos', error);
-            this.clear();
-        }
-        */
-    },
-    
-    /**
-     * Mostra modal perguntando se deseja restaurar dados
-     */
-    _showRestoreModal(timestamp, onConfirm) {
-        // Criar overlay
-        const overlay = document.createElement('div');
-        overlay.id = 'autosave-restore-modal';
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        `;
-        
-        overlay.innerHTML = `
-            <div style="
-                background: white;
-                padding: 30px;
-                border-radius: 12px;
-                max-width: 450px;
-                width: 90%;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-                text-align: center;
-            ">
-                <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
-                <h3 style="margin: 0 0 12px 0; color: #333; font-size: 20px;">
-                    Rascunho Encontrado
-                </h3>
-                <p style="color: #666; margin: 0 0 8px 0; font-size: 14px;">
-                    Você tem respostas não enviadas salvas em:
-                </p>
-                <p style="color: #333; font-weight: 600; margin: 0 0 24px 0; font-size: 15px;">
-                    ${timestamp}
-                </p>
-                <p style="color: #666; margin: 0 0 24px 0; font-size: 14px;">
-                    Deseja restaurar essas respostas?
-                </p>
-                <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button id="autosave-restore-yes" style="
-                        background: #28a745;
-                        color: white;
-                        border: none;
-                        padding: 12px 24px;
-                        border-radius: 6px;
-                        font-size: 14px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: background 0.2s;
-                    ">
-                        ✅ Sim, restaurar
-                    </button>
-                    <button id="autosave-restore-no" style="
-                        background: #6c757d;
-                        color: white;
-                        border: none;
-                        padding: 12px 24px;
-                        border-radius: 6px;
-                        font-size: 14px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: background 0.2s;
-                    ">
-                        🗑️ Não, começar novo
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(overlay);
-        
-        // Event listeners
-        document.getElementById('autosave-restore-yes').addEventListener('click', () => {
-            overlay.remove();
-            onConfirm();
-        });
-        
-        document.getElementById('autosave-restore-no').addEventListener('click', () => {
-            overlay.remove();
-            this.clear();
-            this._updateIndicator('cleared');
-        });
     },
     
     // ============================================================
