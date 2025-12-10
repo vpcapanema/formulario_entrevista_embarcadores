@@ -517,7 +517,7 @@ const FormCollector = {
     },
     
     /**
-     * Coleta produtos da tabela - APENAS CONFIRMADOS
+     * Coleta produtos da tabela - APENAS CONFIRMADOS (para JSON backend)
      */
     _collectProdutos() {
         const produtos = [];
@@ -601,6 +601,96 @@ const FormCollector = {
                 modalidade: modalidade,
                 acondicionamento: acondEl ? (acondEl.value || '') : '',
                 observacoes: observacoesEl ? (observacoesEl.value || '') : ''
+            };
+
+            produtos.push(produto);
+        });
+        
+        return produtos;
+    },
+    
+    /**
+     * Coleta TODOS os produtos (sem filtro de confirmação)
+     * Usado APENAS para Excel/Rascunho - para mostrar tudo que foi preenchido
+     */
+    collectAllProdutos() {
+        const produtos = [];
+        const rows = document.querySelectorAll('#produtos-tbody tr');
+
+        rows.forEach((row) => {
+            // ⭐ DIFERENÇA: SEM FILTRO - coleta TODOS os produtos
+            // Produtos não confirmados também são incluídos no Excel
+            
+            // Exemplo de id do row: produto-row-1
+            const idParts = (row.id || '').split('-');
+            const rowNum = idParts[idParts.length - 1];
+            if (!rowNum) return; // skip unexpected rows
+
+            const cargaEl = row.querySelector(`[name="produto-carga-${rowNum}"]`);
+            const movimentacaoEl = row.querySelector(`[name="produto-movimentacao-${rowNum}"]`);
+            const origemPaisSelect = row.querySelector(`[name="produto-origem-pais-${rowNum}"]`);
+            const origemEstadoSelect = row.querySelector(`[name="produto-origem-estado-${rowNum}"]`);
+            const origemMunicipioSelect = row.querySelector(`[name="produto-origem-municipio-${rowNum}"]`);
+            const origemTextInput = row.querySelector(`[name="produto-origem-text-${rowNum}"]`);
+
+            const destinoPaisSelect = row.querySelector(`[name="produto-destino-pais-${rowNum}"]`);
+            const destinoEstadoSelect = row.querySelector(`[name="produto-destino-estado-${rowNum}"]`);
+            const destinoMunicipioSelect = row.querySelector(`[name="produto-destino-municipio-${rowNum}"]`);
+            const destinoTextInput = row.querySelector(`[name="produto-destino-text-${rowNum}"]`);
+            const distanciaEl = row.querySelector(`[name="produto-distancia-${rowNum}"]`);
+            const modalidadeEl = row.querySelector(`[name^="produto-modalidade-${rowNum}"]`);
+            const acondEl = row.querySelector(`[name="produto-acondicionamento-${rowNum}"]`);
+            const observacoesEl = row.querySelector(`[name="produto-observacoes-${rowNum}"]`);
+
+            const carga = cargaEl ? cargaEl.value || '' : '';
+            
+            // Modalidade (multi-select)
+            let modalidade = '';
+            if (modalidadeEl) {
+                if (modalidadeEl.multiple) {
+                    const selected = Array.from(modalidadeEl.selectedOptions || []).map(o => o.value).filter(v => v && v !== '');
+                    modalidade = selected.length > 0 ? selected.join(',') : '';
+                } else {
+                    modalidade = modalidadeEl.value || '';
+                }
+            }
+            
+            // ⭐ IMPORTANTE: Incluir TODOS os produtos, mesmo sem confirmação
+            // Apenas verificar se tem algo preenchido
+            const anyFilled = [
+                carga,
+                movimentacaoEl ? movimentacaoEl.value : '',
+                origemPaisSelect ? origemPaisSelect.value : (origemTextInput ? origemTextInput.value : ''),
+                destinoPaisSelect ? destinoPaisSelect.value : (destinoTextInput ? destinoTextInput.value : ''),
+                distanciaEl ? distanciaEl.value : '',
+                modalidade,
+                acondEl ? acondEl.value : '',
+                observacoesEl ? observacoesEl.value : ''
+            ].some(v => v !== null && String(v).trim() !== '');
+            if (!anyFilled) return; // ignore fully empty product rows
+
+            const produto = {
+                carga: carga,
+                movimentacao: movimentacaoEl ? this._parseNumeric(movimentacaoEl.value) : null,
+                origemPaisCodigo: origemPaisSelect ? origemPaisSelect.value || '' : '',
+                origemPaisNome: origemPaisSelect ? (origemPaisSelect.selectedOptions[0]?.textContent || '') : (origemTextInput ? origemTextInput.value || '' : ''),
+                origemEstadoUf: origemEstadoSelect ? origemEstadoSelect.value || '' : '',
+                origemEstadoNome: origemEstadoSelect ? (origemEstadoSelect.selectedOptions[0]?.textContent || '') : '',
+                origemMunicipioCodigo: origemMunicipioSelect ? origemMunicipioSelect.value || '' : '',
+                origemMunicipioNome: origemMunicipioSelect ? (origemMunicipioSelect.selectedOptions[0]?.textContent || '') : '',
+                origemText: origemTextInput ? origemTextInput.value || '' : '',
+                destinoPaisCodigo: destinoPaisSelect ? destinoPaisSelect.value || '' : '',
+                destinoPaisNome: destinoPaisSelect ? (destinoPaisSelect.selectedOptions[0]?.textContent || '') : (destinoTextInput ? destinoTextInput.value || '' : ''),
+                destinoEstadoUf: destinoEstadoSelect ? destinoEstadoSelect.value || '' : '',
+                destinoEstadoNome: destinoEstadoSelect ? (destinoEstadoSelect.selectedOptions[0]?.textContent || '') : '',
+                destinoMunicipioCodigo: destinoMunicipioSelect ? destinoMunicipioSelect.value || '' : '',
+                destinoMunicipioNome: destinoMunicipioSelect ? (destinoMunicipioSelect.selectedOptions[0]?.textContent || '') : '',
+                destinoText: destinoTextInput ? destinoTextInput.value || '' : '',
+                distancia: distanciaEl ? this._parseNumeric(distanciaEl.value) : null,
+                modalidade: modalidade,
+                acondicionamento: acondEl ? (acondEl.value || '') : '',
+                observacoes: observacoesEl ? (observacoesEl.value || '') : '',
+                confirmado: row.dataset.confirmado === 'true' ? '✅ SIM' : '❌ NÃO' // Mostrar no Excel se foi confirmado
             };
 
             produtos.push(produto);
@@ -724,10 +814,12 @@ const FormCollector = {
             try {
                 const backupFilename = `PLI2050_Resposta_BACKUP_${formData.razaoSocial || formData.nomeEmpresa || 'resposta'}_${new Date().toISOString().split('T')[0]}.xlsx`;
                 console.log(`🧾 Gerando backup XLSX (pre-send) em memória: ${backupFilename}`);
-                // Informar usuário de que um backup em memória foi gerado (console + modal opcional)
-                // Mostramos uma mensagem discreta no console; não forçamos modal para não interromper o fluxo.
+                // ⭐ Para Excel: usar TODOS os produtos (não apenas confirmados)
+                const backupDataForExcel = Object.assign({}, formData, {
+                    produtos: this.collectAllProdutos()
+                });
                 // Gerar workbook em memória (ArrayBuffer), sem iniciar download
-                const backupAb = window.ExcelGenerator.createWorkbookArrayBuffer(formData, { success: true, statusLabel: 'BACKUP', labels: window.ExcelLabels });
+                const backupAb = window.ExcelGenerator.createWorkbookArrayBuffer(backupDataForExcel, { success: true, statusLabel: 'BACKUP', labels: window.ExcelLabels });
                 // Armazenar backup em variável global temporária (somente em memória, sem baixar)
                 window.__lastBackupXlsx = { arrayBuffer: backupAb, filename: backupFilename };
             } catch (err) {
@@ -756,10 +848,12 @@ const FormCollector = {
                 // Gerar Excel com marcação de sucesso (download automático)
                 try {
                     // Inclui IDs retornados pelo backend no arquivo final
+                    // ⭐ Para Excel: usar TODOS os produtos (não apenas confirmados)
                     const finalFormData = Object.assign({}, formData, {
                         id_pesquisa: response.id_pesquisa,
                         id_empresa: response.id_empresa,
-                        id_entrevistado: response.id_entrevistado
+                        id_entrevistado: response.id_entrevistado,
+                        produtos: this.collectAllProdutos()
                     });
                     const finalFilename = `PLI2050_Resposta_${finalFormData.razaoSocial || finalFormData.nomeEmpresa || 'resposta'}_${new Date().toISOString().split('T')[0]}.xlsx`;
                     const finalAb = window.ExcelGenerator.createWorkbookArrayBuffer(finalFormData, { success: true, statusLabel: 'SUCESSO', labels: window.ExcelLabels });
