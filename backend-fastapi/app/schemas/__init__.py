@@ -321,13 +321,13 @@ class SubmitFormData(BaseModel):
 
     # ---- ORIGEM ----
     origemPais: str = Field(..., alias="origemPais")
-    origemEstado: str = Field(..., alias="origemEstado")
-    origemMunicipio: str = Field(..., alias="origemMunicipio")
+    origemEstado: Optional[str] = Field(None, alias="origemEstado")  # Obrigatório apenas se país = Brasil
+    origemMunicipio: Optional[str] = Field(None, alias="origemMunicipio")  # Obrigatório apenas se país = Brasil
 
     # ---- DESTINO ----
     destinoPais: str = Field(..., alias="destinoPais")
-    destinoEstado: str = Field(..., alias="destinoEstado")
-    destinoMunicipio: str = Field(..., alias="destinoMunicipio")
+    destinoEstado: Optional[str] = Field(None, alias="destinoEstado")  # Obrigatório apenas se país = Brasil
+    destinoMunicipio: Optional[str] = Field(None, alias="destinoMunicipio")  # Obrigatório apenas se país = Brasil
 
     # ---- DISTÂNCIA E PARADAS ----
     distancia: Decimal
