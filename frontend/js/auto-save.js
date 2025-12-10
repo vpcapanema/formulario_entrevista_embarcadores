@@ -434,6 +434,16 @@ const AutoSave = {
         const savedData = localStorage.getItem(this.STORAGE_KEY);
         const savedTimestamp = localStorage.getItem(this.TIMESTAMP_KEY);
         
+        // ⭐ NOVO: Não restaurar dados - sempre começar vazio
+        // Limpar dados salvos ao carregar página
+        if (savedData) {
+            console.log('🧹 AutoSave: Limpando dados salvos (página recarregada)');
+            this.clear();
+            return;
+        }
+        
+        // Versão anterior (comentada) que restaurava dados:
+        /*
         if (!savedData) return;
         
         try {
@@ -475,6 +485,7 @@ const AutoSave = {
             console.error('❌ AutoSave: Erro ao verificar dados salvos', error);
             this.clear();
         }
+        */
     },
     
     /**
