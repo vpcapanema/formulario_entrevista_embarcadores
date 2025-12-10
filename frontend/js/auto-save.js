@@ -54,11 +54,19 @@ const AutoSave = {
             return;
         }
         
+        // ⭐ PRIMEIRO: Limpar TODOS os campos (começar vazio)
+        this._clearFormFields(form);
+        console.log('🧹 Formulário limpo ao carregar');
+        
+        // ⭐ SEGUNDO: Limpar localStorage (não restaurar dados)
+        this.clear();
+        console.log('🧹 LocalStorage limpo');
+        
         // Criar indicador visual
         this._createStatusIndicator();
         
-        // Verificar se há dados salvos e perguntar se deseja restaurar
-        this._checkAndRestore();
+        // NÃO restaurar dados: _checkAndRestore() foi removido
+        // Formulário começa sempre vazio
         
         // Adicionar listeners para todos os campos do formulário
         this._attachFieldListeners(form);
@@ -72,7 +80,38 @@ const AutoSave = {
         });
         
         this._initialized = true;
-        console.log('✅ AutoSave inicializado');
+        console.log('✅ AutoSave inicializado (formulário vazio)');
+    },
+    
+    /**
+     * Limpa todos os campos do formulário
+     */
+    _clearFormFields(form) {
+        // Limpar inputs de texto
+        form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea').forEach(el => {
+            el.value = '';
+        });
+        
+        // Limpar selects
+        form.querySelectorAll('select').forEach(el => {
+            el.value = '';
+            el.selectedIndex = 0;
+        });
+        
+        // Desmarcar checkboxes
+        form.querySelectorAll('input[type="checkbox"]').forEach(el => {
+            el.checked = false;
+        });
+        
+        // Desmarcar radio buttons
+        form.querySelectorAll('input[type="radio"]').forEach(el => {
+            el.checked = false;
+        });
+        
+        // Remover classes de validação
+        form.querySelectorAll('.invalid').forEach(el => {
+            el.classList.remove('invalid');
+        });
     },
     
     // ============================================================
