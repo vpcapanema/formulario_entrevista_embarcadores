@@ -54,19 +54,45 @@ const AutoSave = {
             return;
         }
         
-        // ⭐ PRIMEIRO: Limpar TODOS os campos (começar vazio)
-        this._clearFormFields(form);
-        console.log('🧹 Formulário limpo ao carregar');
+        // ⭐ NOVO: Verificar se há rascunho e perguntar ao usuário
+        const savedData = localStorage.getItem(this.STORAGE_KEY);
+        const savedTimestamp = localStorage.getItem(this.TIMESTAMP_KEY);
         
-        // ⭐ SEGUNDO: Limpar localStorage (não restaurar dados)
+        if (savedData && savedTimestamp) {
+            try {
+                const data = JSON.parse(savedData);
+                const timestamp = new Date(savedTimestamp);
+                
+                // Verificar se os dados são recentes (menos de 7 dias)
+                const daysDiff = (new Date() - timestamp) / (1000 * 60 * 60 * 24);
+                if (daysDiff <= 7) {
+                    // Há um rascunho válido - perguntar ao usuário
+                    const formattedDate = timestamp.toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    // Mostrar modal e deixar usuário decidir
+                    this._showDraftModal(formattedDate, data, form);
+                    this._createStatusIndicator();
+                    this._attachFieldListeners(form);
+                    this._initialized = true;
+                    return;
+                }
+            } catch (error) {
+                console.error('❌ AutoSave: Erro ao verificar rascunho', error);
+            }
+        }
+        
+        // Nenhum rascunho válido - começar novo
+        this._clearFormFields(form);
         this.clear();
-        console.log('🧹 LocalStorage limpo');
         
         // Criar indicador visual
         this._createStatusIndicator();
-        
-        // NÃO restaurar dados: _checkAndRestore() foi removido
-        // Formulário começa sempre vazio
         
         // Adicionar listeners para todos os campos do formulário
         this._attachFieldListeners(form);
@@ -75,12 +101,11 @@ const AutoSave = {
         window.addEventListener('beforeunload', (e) => {
             if (this._hasUnsavedData()) {
                 this._saveNow();
-                // Não mostra confirmação se já salvou
             }
         });
         
         this._initialized = true;
-        console.log('✅ AutoSave inicializado (formulário vazio)');
+        console.log('✅ AutoSave inicializado - Nova pesquisa');
     },
     
     /**
@@ -112,6 +137,194 @@ const AutoSave = {
         form.querySelectorAll('.invalid').forEach(el => {
             el.classList.remove('invalid');
         });
+    },
+    
+    /**
+     * Modal para escolher entre carregar rascunho ou nova pesquisa
+     */
+    _showDraftModal(timestamp, data, form) {
+        const overlay = document.createElement('div');
+        overlay.id = 'draft-choice-modal';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+        `;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+        `;
+        
+        modal.innerHTML = `
+            <h2 style="margin-bottom: 1rem; color: #2c3e50;">📋 Você tem um rascunho</h2>
+            <p style="color: #7f8c8d; margin-bottom: 1.5rem;">
+                Rascunho salvo em: <strong>${timestamp}</strong>
+            </p>
+            <p style="color: #555; margin-bottom: 2rem;">
+                O que você deseja fazer?
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button id="btn-new-research" style="
+                    padding: 0.8rem 1.5rem;
+                    border: 2px solid #3498db;
+                    background: white;
+                    color: #3498db;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    🆕 Nova Pesquisa
+                </button>
+                <button id="btn-load-draft" style="
+                    padding: 0.8rem 1.5rem;
+                    border: none;
+                    background: #27ae60;
+                    color: white;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">
+                    ↩️ Carregar Rascunho
+                </button>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        // Adicionar estilos da animação
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateY(-20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            #btn-new-research:hover {
+                background: #3498db;
+                color: white;
+                transform: translateY(-2px);
+            }
+            #btn-load-draft:hover {
+                background: #229954;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Event listeners
+        document.getElementById('btn-load-draft').addEventListener('click', () => {
+            overlay.remove();
+            this._restoreData(data);
+            console.log('✅ Rascunho carregado');
+        });
+        
+        document.getElementById('btn-new-research').addEventListener('click', () => {
+            overlay.remove();
+            this.clear();
+            this._clearFormFields(form);
+            console.log('🆕 Nova pesquisa iniciada');
+        });
+    },
+    
+    // ============================================================
+    // INDICADOR VISUAL
+    // ============================================================
+    
+    /**
+     * Cria o indicador visual de status do auto-save
+     */
+    _createStatusIndicator() {
+        // Verificar se já existe
+        if (document.getElementById('autosave-container')) return;
+        
+        const container = document.createElement('div');
+        container.id = 'autosave-container';
+        container.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+        `;
+        
+        // Indicador de status
+        const indicator = document.createElement('div');
+        indicator.id = 'autosave-indicator';
+        indicator.innerHTML = `
+            <span class="autosave-icon">💾</span>
+            <span class="autosave-text">Auto-save ativo</span>
+        `;
+        indicator.style.cssText = `
+            background: rgba(40, 167, 69, 0.95);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        `;
+        
+        // Botão de exportar rascunho
+        const exportBtn = document.createElement('button');
+        exportBtn.id = 'autosave-export-btn';
+        exportBtn.innerHTML = '📥 Exportar Rascunho';
+        exportBtn.title = 'Exportar respostas parciais para Excel';
+        exportBtn.style.cssText = `
+            background: rgba(52, 152, 219, 0.95);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        `;
+        exportBtn.addEventListener('mouseenter', () => {
+            exportBtn.style.background = 'rgba(41, 128, 185, 0.95)';
+            exportBtn.style.transform = 'translateY(-2px)';
+        });
+        exportBtn.addEventListener('mouseleave', () => {
+            exportBtn.style.background = 'rgba(52, 152, 219, 0.95)';
+            exportBtn.style.transform = 'translateY(0)';
+        });
+        exportBtn.addEventListener('click', () => this.exportarRascunho());
+        
+        container.appendChild(indicator);
+        container.appendChild(exportBtn);
+        document.body.appendChild(container);
     },
     
     // ============================================================
@@ -256,6 +469,48 @@ const AutoSave = {
                 indicator.style.background = 'rgba(40, 167, 69, 0.95)';
                 indicator.style.color = 'white';
         }
+    },
+    
+    /**
+     * Restaura dados salvos nos campos do formulário
+     */
+    _restoreData(data) {
+        const form = document.getElementById('entrevista-form');
+        if (!form) return;
+        
+        this._isRestoring = true;
+        
+        // Restaurar campos simples
+        Object.keys(data).forEach(key => {
+            const element = document.getElementById(key);
+            if (!element) return;
+            
+            if (element.type === 'checkbox') {
+                // Para checkboxes: verificar se está no array
+                if (Array.isArray(data[key])) {
+                    form.querySelectorAll(`input[name="${element.name}"]`).forEach(el => {
+                        el.checked = data[key].includes(el.value);
+                    });
+                }
+            } else if (element.type === 'radio') {
+                // Para radio: achar pelo value
+                const selector = `input[name="${element.name}"][value="${data[key]}"]`;
+                const radioElement = form.querySelector(selector);
+                if (radioElement) {
+                    radioElement.checked = true;
+                }
+            } else if (element.tagName === 'SELECT') {
+                element.value = data[key];
+                // Trigger change para cascata funcionar
+                element.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                element.value = data[key] || '';
+            }
+        });
+        
+        this._updateIndicator('restored');
+        this._isRestoring = false;
+        console.log('✅ Rascunho restaurado');
     },
     
     // ============================================================
@@ -614,82 +869,6 @@ const AutoSave = {
             this.clear();
             this._updateIndicator('cleared');
         });
-    },
-    
-    /**
-     * Restaura dados no formulário
-     */
-    _restoreData(data) {
-        this._isRestoring = true;
-        const form = document.getElementById('entrevista-form');
-        if (!form) return;
-        
-        try {
-            console.log('🔄 AutoSave: Restaurando dados...');
-            
-            // Restaurar campos de texto
-            Object.entries(data.fields || {}).forEach(([name, value]) => {
-                const field = form.querySelector(`[name="${name}"]`);
-                if (field) {
-                    field.value = value;
-                    // Disparar evento para atualizar campos dependentes
-                    field.dispatchEvent(new Event('input', { bubbles: true }));
-                    field.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            });
-            
-            // Restaurar radios
-            Object.entries(data.radios || {}).forEach(([name, value]) => {
-                const radio = form.querySelector(`input[type="radio"][name="${name}"][value="${value}"]`);
-                if (radio) {
-                    radio.checked = true;
-                    radio.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            });
-            
-            // Restaurar checkboxes
-            Object.entries(data.checkboxes || {}).forEach(([name, values]) => {
-                // Primeiro, desmarcar todos
-                form.querySelectorAll(`input[type="checkbox"][name="${name}"]`).forEach(cb => {
-                    cb.checked = false;
-                });
-                // Depois, marcar os salvos
-                values.forEach(value => {
-                    const checkbox = form.querySelector(`input[type="checkbox"][name="${name}"][value="${value}"]`);
-                    if (checkbox) {
-                        checkbox.checked = true;
-                        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-            });
-            
-            // Restaurar selects (com delay para garantir que options foram carregadas)
-            setTimeout(() => {
-                Object.entries(data.selects || {}).forEach(([name, value]) => {
-                    const select = form.querySelector(`select[name="${name}"]`);
-                    if (select) {
-                        if (Array.isArray(value)) {
-                            // Select múltiplo
-                            Array.from(select.options).forEach(opt => {
-                                opt.selected = value.includes(opt.value);
-                            });
-                        } else {
-                            select.value = value;
-                        }
-                        select.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-                
-                this._isRestoring = false;
-                this._updateIndicator('restored');
-                console.log('✅ AutoSave: Dados restaurados com sucesso');
-                
-            }, 500); // Aguardar dropdowns carregarem
-            
-        } catch (error) {
-            console.error('❌ AutoSave: Erro ao restaurar dados', error);
-            this._isRestoring = false;
-        }
     },
     
     // ============================================================
