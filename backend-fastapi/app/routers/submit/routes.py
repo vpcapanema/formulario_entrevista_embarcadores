@@ -103,25 +103,33 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
         logger.info(f"✅ Empresa UPSERT: {id_empresa} - {razao_social} (CNPJ: {cnpj_clean or 'N/A'})")
 
         # ====================================================
-        # ETAPA 2: ENTREVISTADO
+        # ETAPA 2: ENTREVISTADO (UPSERT se email existe)
         # ====================================================
-
-        entrevistado = Entrevistado(
-            id_empresa=id_empresa,
-            nome=data.nome,
-            funcao=data.funcao,
-            telefone=data.telefone if data.telefone else None,
-            email=data.email if data.email else None,
-            email_lower=(data.email.lower() if data.email else None),
-            principal=True,  # Primeiro entrevistado é sempre principal
-            estado_civil=data.estadoCivil if hasattr(data, 'estadoCivil') else None,
-            nacionalidade=data.nacionalidade if hasattr(data, 'nacionalidade') else None,
-            uf_naturalidade=data.ufNaturalidade if hasattr(data, 'ufNaturalidade') else None,
-            municipio_naturalidade=data.municipioNaturalidade if hasattr(data, 'municipioNaturalidade') else None
-        )
-        db.add(entrevistado)
-        db.flush()
-        logger.info(f"Entrevistado criado: {entrevistado.id_entrevistado} - {entrevistado.nome}")
+        
+        email_lower = data.email.lower() if data.email else None
+        
+        # Verificar se entrevistado com este email já existe nesta empresa
+        entrevistado_existente = None
+        if email_lower:
+            entrevistado_existente = db.query(Entrevistado).filter(
+                Entrevistado.id_empresa == id_empresa,
+                Entrevistado.email_lower == email_lower
+            ).first()
+        
+        if entrevistado_existente:
+            # UPDATE: Atualizar dados do entrevistado existente
+            entrevistado_existente.nome = data.nome
+            entrevistado_existente.funcao = data.funcao
+            entrevistado_existente.telefone = data.telefone if data.telefone else None
+            entrevistado_existente.estado_civil = data.estadoCivil if hasattr(data, 'estadoCivil') else None
+            entrevistado_existente.nacionalidade = data.nacionalidade if hasattr(data, 'nacionalidade') else None
+            entrevistado_existente.uf_naturalidade = data.ufNaturalidade if hasattr(data, 'ufNaturalidade') else None
+            entrevistado_existente.municipio_naturalidade = data.municipioNaturalidade if hasattr(data, 'municipioNaturalidade') else None
+            entrevistado_existente.data_atualizacao = func.now()
+            db.add(entrevistado_existente)
+            db.flush()
+            entrevistado = entrevistado_existente
+            logger.info(f"✅ Entrevistado ATUALIZADO: {entrevistado.id_entrevistado} - {entrevistado.nome} (email: {email_lower})")
 
         # ====================================================
         # CÁLCULO DO id_responsavel (LÓGICA DE NEGÓCIO)
@@ -283,23 +291,33 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
 
     except IntegrityError as e:
         db.rollback()
-        logger.error(f"❌ Erro de integridade: {str(e)}")
+        error_str = str(e)
+        logger.error(f"❌ Erro de integridade: {error_str}")
+
+        # Debug: Log detalhado do erro
+        if hasattr(e, 'orig'):
+            logger.error(f"   Erro original: {str(e.orig)}")
 
         # Identificar tipo de erro
-        if "cnpj" in str(e).lower():
+        if "cnpj" in error_str.lower():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="CNPJ já cadastrado no sistema"
             )
-        elif "email" in str(e).lower():
+        elif "email" in error_str.lower():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email já cadastrado para esta empresa"
             )
+        elif "id_responsavel" in error_str.lower():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"ID do responsável inválido: {data.idResponsavel}"
+            )
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Erro de validação: {str(e)}"
+                detail=f"Erro de validação: {error_str[:200]}"
             )
 
     except SQLAlchemyError as e:

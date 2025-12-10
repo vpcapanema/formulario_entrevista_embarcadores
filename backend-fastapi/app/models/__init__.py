@@ -153,12 +153,13 @@ class Entrevistado(Base):
     __tablename__ = "entrevistados"
     __table_args__ = (
         CheckConstraint(
-            "email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'",
+            "email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$' OR email IS NULL",
             name="email_entrevistado_valido"
         ),
         Index("idx_entrevistados_empresa", "id_empresa"),
         Index("idx_entrevistados_email", "email"),
         Index("idx_entrevistados_principal", "principal"),
+        Index("idx_entrevistados_empresa_email_lower", "id_empresa", "email_lower"),
         {"schema": SCHEMA}
     )
 
