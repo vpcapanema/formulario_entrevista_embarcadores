@@ -705,7 +705,8 @@ const FormCollector = {
     
     _getValue(id) {
         const el = document.getElementById(id);
-        return el ? el.value : null;
+        // Retornar string vazia ao invés de null para campos vazios
+        return el ? (el.value || '') : '';
     },
     
     _getNumeric(id) {
@@ -728,11 +729,12 @@ const FormCollector = {
         document.querySelectorAll(`input[name="${name}"]:checked`).forEach(cb => {
             checked.push(cb.value);
         });
-        return checked.length > 0 ? checked : null;
+        // Retornar array vazio ao invés de null
+        return checked;
     },
     
     _parseNumeric(value) {
-        if (!value) return null;
+        if (!value || value === '') return null;
         const str = String(value).replace(/[^\d.,-]/g, '').replace(',', '.');
         const num = parseFloat(str);
         return isNaN(num) ? null : num;

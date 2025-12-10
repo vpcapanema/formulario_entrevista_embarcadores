@@ -393,6 +393,26 @@ class SubmitFormData(BaseModel):
     # VALIDADORES CUSTOMIZADOS
     # ============================================================
 
+    @model_validator(mode='before')
+    @classmethod
+    def convert_empty_strings_to_none(cls, data):
+        """Converte strings vazias em None para campos opcionais"""
+        if isinstance(data, dict):
+            # Lista de campos que devem ficar como string vazia ao invés de None
+            campos_string = {
+                'telefone', 'outroTipo', 'numero', 'complemento', 'bairro', 
+                'outroProduto', 'observacoesProdutoPrincipal', 'logradouro',
+                'frequenciaOutra', 'observacoesSazonalidade', 'detalheDificuldade',
+                'fatorAdicional', 'observacoes', 'cep', 'cnpj'
+            }
+            
+            for key, value in data.items():
+                # Se é string vazia e campo é opcional
+                if isinstance(value, str) and value == '':
+                    if key not in campos_string:
+                        data[key] = None
+        return data
+
     @field_validator('cnpj')
     @classmethod
     def validate_cnpj(cls, v):
