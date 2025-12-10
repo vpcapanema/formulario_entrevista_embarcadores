@@ -455,8 +455,65 @@ const FormCollector = {
         // ==== SEÇÃO 9: Flags e Status ====
         data.transportaCarga = true; // Sempre true (formulário é para embarcadores)
         
-        console.log('📋 Dados coletados:', data);
-        return data;
+        // ⭐ LIMPEZA: Remover campos vazios/null/undefined
+        const dataLimpa = this._removeEmptyFields(data);
+        
+        console.log('📋 Dados coletados (após limpeza):', dataLimpa);
+        return dataLimpa;
+    },
+    
+    /**
+     * Remove campos vazios, null, undefined, arrays vazios
+     * Mantém apenas dados que foram realmente preenchidos
+     */
+    _removeEmptyFields(obj) {
+        const cleaned = {};
+        
+        Object.keys(obj).forEach(key => {
+            const value = obj[key];
+            
+            // Verificar se o valor não é vazio
+            if (value === null || value === undefined || value === '') {
+                return; // pular este campo
+            }
+            
+            // Se é array, manter apenas se tem elementos
+            if (Array.isArray(value)) {
+                if (value.length > 0) {
+                    cleaned[key] = value;
+                }
+                return;
+            }
+            
+            // Se é número, manter (até 0 é válido)
+            if (typeof value === 'number') {
+                cleaned[key] = value;
+                return;
+            }
+            
+            // Se é booleano, manter
+            if (typeof value === 'boolean') {
+                cleaned[key] = value;
+                return;
+            }
+            
+            // Se é string e não é vazio, manter
+            if (typeof value === 'string' && value.trim() !== '') {
+                cleaned[key] = value;
+                return;
+            }
+            
+            // Se é objeto (produtos array de objetos), processar recursivamente
+            if (typeof value === 'object' && !Array.isArray(value)) {
+                const cleanedObj = this._removeEmptyFields(value);
+                if (Object.keys(cleanedObj).length > 0) {
+                    cleaned[key] = cleanedObj;
+                }
+                return;
+            }
+        });
+        
+        return cleaned;
     },
     
     /**
