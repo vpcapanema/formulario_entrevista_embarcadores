@@ -43,10 +43,38 @@
                 if (typeof v === 'object' && v !== null) return JSON.stringify(v);
                 return v == null ? '' : String(v);
             });
+            
+            // ABA 1: Dados (Colunas) + Produtos em seções separadas
             const sheetColumns = [headerRow, valuesRow];
+            
+            // Adicionar espaço e depois produtos se houver
+            const produtos = Array.isArray(formData.produtos) ? formData.produtos : [];
+            if (produtos.length > 0) {
+                sheetColumns.push([]); // linha vazia separadora
+                
+                // Header dos produtos
+                const preferred = ['carga', 'movimentacao', 'origemPais', 'origemEstado', 'origemMunicipio', 'destinoPais', 'destinoEstado', 'destinoMunicipio', 'distancia', 'modalidade', 'acondicionamento', 'observacoes'];
+                const produtoKeys = Array.from(new Set(produtos.flatMap(p => Object.keys(p))));
+                const orderedKeys = preferred.concat(produtoKeys.filter(k => !preferred.includes(k)));
+                const produtoHeaderLabels = orderedKeys.map(k => labelMap[k] || k);
+                sheetColumns.push(produtoHeaderLabels);
+                
+                // Linhas dos produtos
+                produtos.forEach(p => {
+                    const row = orderedKeys.map(k => {
+                        let v = p[k];
+                        if (Array.isArray(v)) return v.join(', ');
+                        if (typeof v === 'object' && v !== null) return JSON.stringify(v);
+                        return v == null ? '' : String(v);
+                    });
+                    sheetColumns.push(row);
+                });
+            }
+            
             const wsCols = XLSX.utils.aoa_to_sheet(sheetColumns);
             XLSX.utils.book_append_sheet(wb, wsCols, 'Dados (Colunas)');
 
+            // ABA 2: Dados (Campo-Valor) + Produtos em seções separadas
             const dadosPrincipais = [['Campo', 'Valor']];
             Object.keys(formData).forEach(key => {
                 if (key === 'produtos') return;
@@ -56,34 +84,30 @@
                 if (typeof value === 'object' && value !== null) value = JSON.stringify(value);
                 dadosPrincipais.push([label, value == null ? '' : String(value)]);
             });
+            
+            // Adicionar produtos à aba 2 também
+            if (produtos.length > 0) {
+                dadosPrincipais.push([]); // linha vazia separadora
+                dadosPrincipais.push(['PRODUTOS TRANSPORTADOS', '']); // Seção de produtos
+                dadosPrincipais.push([]);
+                
+                // Para cada produto, exibir em formato campo-valor
+                produtos.forEach((p, idx) => {
+                    dadosPrincipais.push([`Produto ${idx + 1}`, '']);
+                    Object.entries(p).forEach(([k, v]) => {
+                        const label = labelMap[k] || k;
+                        if (Array.isArray(v)) v = v.join(', ');
+                        if (typeof v === 'object' && v !== null) v = JSON.stringify(v);
+                        dadosPrincipais.push([`  ${label}`, v == null ? '' : String(v)]);
+                    });
+                    dadosPrincipais.push([]);
+                });
+            }
+            
             const ws1 = XLSX.utils.aoa_to_sheet(dadosPrincipais);
             XLSX.utils.book_append_sheet(wb, ws1, 'Dados (Campo-Valor)');
 
-            const produtos = Array.isArray(formData.produtos) ? formData.produtos : [];
-            if (produtos.length > 0) {
-                // Determinar chaves (ordenando preferenciais)
-                const preferred = ['carga', 'movimentacao', 'origemPais', 'origemEstado', 'origemMunicipio', 'destinoPais', 'destinoEstado', 'destinoMunicipio', 'distancia', 'modalidade', 'acondicionamento', 'observacoes'];
-                const allKeys = Array.from(new Set(produtos.flatMap(p => Object.keys(p))));
-                const orderedKeys = preferred.concat(allKeys.filter(k => !preferred.includes(k)));
-                const headerLabels = orderedKeys.map(k => labelMap[k] || k);
-                // Construir rows
-                const rows = [headerLabels];
-                produtos.forEach(p => {
-                    const row = orderedKeys.map(k => {
-                        let v = p[k];
-                        if (Array.isArray(v)) return v.join(', ');
-                        if (typeof v === 'object' && v !== null) return JSON.stringify(v);
-                        return v == null ? '' : String(v);
-                    });
-                    rows.push(row);
-                });
-                const wsProdutos = XLSX.utils.aoa_to_sheet(rows);
-                XLSX.utils.book_append_sheet(wb, wsProdutos, 'Produtos');
-            } else {
-                const emptySheet = XLSX.utils.aoa_to_sheet([['Nenhum produto informado']]);
-                XLSX.utils.book_append_sheet(wb, emptySheet, 'Produtos');
-            }
-
+            // ABA 3: Status / Log (com Timestamp)
             const statusText = opts.statusLabel || (success ? 'SUCESSO' : 'ERRO');
             const timestamp = new Date().toISOString();
             const statusSheet = XLSX.utils.aoa_to_sheet([['Status', statusText], ['Timestamp', timestamp]]);

@@ -26,7 +26,7 @@
  * - tempo_dias: INTEGER min=0
  * - tempo_horas: INTEGER min=0 max=23
  * - tempo_minutos: INTEGER min=0 max=59
- * - variacao_*: NUMERIC(5,2) min=0 max=100
+ * - variacao_*: NUMERIC(5,2) min=0 (sem limite máximo)
  * 
  * ARRAYS (checkboxes):
  * - modos[] → modos de transporte (obrigatório, min: 1)
