@@ -423,7 +423,10 @@ const AutoSave = {
      */
     _restoreData(data) {
         const form = document.getElementById('entrevista-form');
-        if (!form) return;
+        if (!form) {
+            console.error('❌ AutoSave: Formulário não encontrado');
+            return;
+        }
         
         this._isRestoring = true;
         
@@ -432,42 +435,120 @@ const AutoSave = {
             window.FormValidator._validationDisabled = true;
         }
         
-        // Restaurar campos simples
-        Object.keys(data).forEach(key => {
-            const element = document.getElementById(key);
-            if (!element) return;
-            
-            if (element.type === 'checkbox') {
-                // Para checkboxes: verificar se está no array
-                if (Array.isArray(data[key])) {
-                    form.querySelectorAll(`input[name="${element.name}"]`).forEach(el => {
-                        el.checked = data[key].includes(el.value);
-                    });
-                }
-            } else if (element.type === 'radio') {
-                // Para radio: achar pelo value
-                const selector = `input[name="${element.name}"][value="${data[key]}"]`;
-                const radioElement = form.querySelector(selector);
-                if (radioElement) {
-                    radioElement.checked = true;
-                }
-            } else if (element.tagName === 'SELECT') {
-                element.value = data[key];
-                // Trigger change para cascata funcionar (sem validação visual)
-                element.dispatchEvent(new Event('change', { bubbles: true }));
-            } else {
-                element.value = data[key] || '';
+        try {
+            // Restaurar campos simples (text, number, email, tel, textarea)
+            if (data.fields) {
+                Object.keys(data.fields).forEach(name => {
+                    // Pular labels (não são campos reais, só para export)
+                    if (name.endsWith('-label')) return;
+                    
+                    const element = form.querySelector(`[name="${name}"]`);
+                    if (element && element.tagName !== 'SELECT') {
+                        element.value = data.fields[name] || '';
+                        console.log(`✅ Campo restaurado: ${name} = ${element.value}`);
+                    }
+                });
             }
-        });
-        
-        // ⭐ Reabilitar validação após restauração
-        if (window.FormValidator) {
-            window.FormValidator._validationDisabled = false;
+            
+            // Restaurar radio buttons
+            if (data.radios) {
+                Object.keys(data.radios).forEach(name => {
+                    const selector = `input[type="radio"][name="${name}"][value="${data.radios[name]}"]`;
+                    const radioElement = form.querySelector(selector);
+                    if (radioElement) {
+                        radioElement.checked = true;
+                        console.log(`✅ Radio restaurado: ${name} = ${data.radios[name]}`);
+                    }
+                });
+            }
+            
+            // Restaurar checkboxes
+            if (data.checkboxes) {
+                Object.keys(data.checkboxes).forEach(name => {
+                    const checkboxes = form.querySelectorAll(`input[type="checkbox"][name="${name}"]`);
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = data.checkboxes[name].includes(checkbox.value);
+                    });
+                    console.log(`✅ Checkboxes restaurados: ${name} = [${data.checkboxes[name].join(', ')}]`);
+                });
+            }
+            
+            // Restaurar selects
+            if (data.selects) {
+                Object.keys(data.selects).forEach(name => {
+                    const element = form.querySelector(`select[name="${name}"]`);
+                    if (element) {
+                        if (element.multiple) {
+                            Array.from(element.options).forEach(option => {
+                                option.selected = data.selects[name].includes(option.value);
+                            });
+                            console.log(`✅ Select múltiplo restaurado: ${name} = [${data.selects[name].join(', ')}]`);
+                        } else {
+                            element.value = data.selects[name] || '';
+                            console.log(`✅ Select restaurado: ${name} = ${element.value}`);
+                        }
+                        // Disparar change para cascata funcionar
+                        element.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            }
+            
+            // Restaurar produtos
+            if (data.produtos && Array.isArray(data.produtos) && data.produtos.length > 0) {
+                console.log(`🔄 Restaurando ${data.produtos.length} produtos...`);
+                
+                data.produtos.forEach((produto, idx) => {
+                    console.log(`  Produto ${idx + 1}:`);
+                    
+                    // Restaurar campos do produto
+                    if (produto.fields) {
+                        Object.keys(produto.fields).forEach(name => {
+                            // Pular labels
+                            if (name.endsWith('-label')) return;
+                            
+                            const element = form.querySelector(`[name="${name}"]`);
+                            if (element && element.tagName !== 'SELECT') {
+                                element.value = produto.fields[name] || '';
+                                console.log(`    ✅ ${name} = ${element.value}`);
+                            }
+                        });
+                    }
+                    
+                    // Restaurar selects do produto
+                    if (produto.selects) {
+                        Object.keys(produto.selects).forEach(name => {
+                            const element = form.querySelector(`select[name="${name}"]`);
+                            if (element) {
+                                if (element.multiple) {
+                                    Array.from(element.options).forEach(option => {
+                                        option.selected = Array.isArray(produto.selects[name]) 
+                                            ? produto.selects[name].includes(option.value)
+                                            : false;
+                                    });
+                                } else {
+                                    element.value = produto.selects[name] || '';
+                                }
+                                element.dispatchEvent(new Event('change', { bubbles: true }));
+                                console.log(`    ✅ ${name} = ${produto.selects[name]}`);
+                            }
+                        });
+                    }
+                });
+            }
+            
+            console.log('✅ Todos os dados restaurados com sucesso!');
+        } catch (error) {
+            console.error('❌ AutoSave: Erro ao restaurar dados', error);
+        } finally {
+            // ⭐ Reabilitar validação após restauração
+            if (window.FormValidator) {
+                window.FormValidator._validationDisabled = false;
+            }
+            
+            this._updateIndicator('restored');
+            this._isRestoring = false;
+            console.log('✅ Rascunho restaurado (sem validação visual)');
         }
-        
-        this._updateIndicator('restored');
-        this._isRestoring = false;
-        console.log('✅ Rascunho restaurado (sem validação visual)');
     },
     
     // ============================================================

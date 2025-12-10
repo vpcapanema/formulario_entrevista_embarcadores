@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Teste Completo - Rascunho Save/Load</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 14px; }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            cursor: pointer;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+        }
+        
+        .console {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .console-line {
+            margin: 3px 0;
+            padding: 2px 5px;
+        }
+        
+        .console-line.error { color: #ff6b6b; }
+        .console-line.success { color: #51cf66; }
+        .console-line.info { color: #74c0fc; }
+        .console-line.warning { color: #ffd43b; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .status-badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-badge.error {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+        
+        .status-badge.warning {
+            background: #fef3c7;
+            color: #78350f;
+        }
+        
+        .status-badge.info {
+            background: #dbeafe;
+            color: #0c2340;
+        }
+        
+        .progress-bar {
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .results-table th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .results-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-table tr:hover {
+            background: #f3f4f6;
+        }
+        
+        .field-value {
+            font-family: 'Courier New', monospace;
+            background: #f3f4f6;
+            padding: 5px 8px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste Completo - Rascunho Save/Load</h1>
+        <p class="subtitle">Testa o fluxo completo de salvamento e carregamento de dados do formulário</p>
+        
+        <!-- Seção 1: Preencher Formulário -->
+        <div class="test-section">
+            <h2>📝 Passo 1: Preencher Formulário de Teste</h2>
+            <p style="color: #666; margin-bottom: 15px; font-size: 13px;">Preencha os campos abaixo com dados de teste. Eles serão salvos automaticamente em localStorage.</p>
+            
+            <form id="testForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="razao_social">Razão Social</label>
+                        <input type="text" id="razao_social" name="razao_social" placeholder="Ex: ABC Logística LTDA">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cnpj">CNPJ</label>
+                        <input type="text" id="cnpj" name="cnpj" placeholder="Ex: 12.345.678/0001-90">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Ex: contato@empresa.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" placeholder="Ex: (11) 99999-9999">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pais">País</label>
+                        <select id="pais" name="pais">
+                            <option value="">Selecione...</option>
+                            <option value="31">Brasil</option>
+                            <option value="32">Uruguai</option>
+                            <option value="33">Paraguai</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select id="estado" name="estado">
+                            <option value="">Selecione...</option>
+                            <option value="SP">SP - São Paulo</option>
+                            <option value="MG">MG - Minas Gerais</option>
+                            <option value="RJ">RJ - Rio de Janeiro</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tem Paradas?</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="radio" id="tem_paradas_sim" name="tem_paradas" value="sim">
+                            <label for="tem_paradas_sim" style="margin: 0;">Sim</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="tem_paradas_nao" name="tem_paradas" value="nao">
+                            <label for="tem_paradas_nao" style="margin: 0;">Não</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Modos de Transporte</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="modo_rodoviario" name="modos" value="rodoviario">
+                            <label for="modo_rodoviario" style="margin: 0;">Rodoviário</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="modo_ferroviario" name="modos" value="ferroviario">
+                            <label for="modo_ferroviario" style="margin: 0;">Ferroviário</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="modo_fluvial" name="modos" value="fluvial">
+                            <label for="modo_fluvial" style="margin: 0;">Fluvial</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="modo_maritimo" name="modos" value="maritimo">
+                            <label for="modo_maritimo" style="margin: 0;">Marítimo</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" name="observacoes" placeholder="Digite observações..." rows="4"></textarea>
+                </div>
+            </form>
+            
+            <div class="buttons">
+                <button class="btn-primary" onclick="preencherFormularioTestudo()">
+                    ✏️ Preencher com Dados de Teste
+                </button>
+                <button class="btn-warning" onclick="limparFormulario()">
+                    🗑️ Limpar Formulário
+                </button>
+            </div>
+        </div>
+        
+        <!-- Seção 2: Salvar Dados -->
+        <div class="test-section">
+            <h2>💾 Passo 2: Salvar Rascunho em localStorage</h2>
+            <p style="color: #666; margin-bottom: 15px; font-size: 13px;">Simula o salvamento automático que seria feito pelo sistema real.</p>
+            
+            <div class="buttons">
+                <button class="btn-success" onclick="salvarRascunho()">
+                    💾 Salvar Rascunho Agora
+                </button>
+                <button class="btn-primary" onclick="verificarLocalStorage()">
+                    🔍 Verificar localStorage
+                </button>
+            </div>
+            
+            <div class="console" id="consoleSalvar"></div>
+        </div>
+        
+        <!-- Seção 3: Recarregar Página -->
+        <div class="test-section">
+            <h2>🔄 Passo 3: Simular Recarga da Página</h2>
+            <p style="color: #666; margin-bottom: 15px; font-size: 13px;">Limpa o formulário como se a página tivesse sido recarregada.</p>
+            
+            <div class="buttons">
+                <button class="btn-danger" onclick="simularRecargaPagina()">
+                    🔄 Simular Recarga (Limpar Campos)
+                </button>
+            </div>
+            
+            <div class="console" id="consoleRecarga"></div>
+        </div>
+        
+        <!-- Seção 4: Carregar Rascunho -->
+        <div class="test-section">
+            <h2>📥 Passo 4: Carregar Rascunho</h2>
+            <p style="color: #666; margin-bottom: 15px; font-size: 13px;">Restaura os dados salvos no localStorage de volta para o formulário.</p>
+            
+            <div class="buttons">
+                <button class="btn-primary" onclick="carregarRascunho()">
+                    📥 Carregar Rascunho
+                </button>
+            </div>
+            
+            <div class="console" id="consoleCarregar"></div>
+        </div>
+        
+        <!-- Seção 5: Resultados -->
+        <div class="test-section">
+            <h2>✅ Passo 5: Verificar Resultados</h2>
+            <p style="color: #666; margin-bottom: 15px; font-size: 13px;">Compara os dados originais com os restaurados.</p>
+            
+            <div class="buttons">
+                <button class="btn-primary" onclick="compararDados()">
+                    🔎 Comparar Dados Originais vs Restaurados
+                </button>
+                <button class="btn-danger" onclick="limparTudo()">
+                    🗑️ Limpar Tudo (localStorage + formulário)
+                </button>
+            </div>
+            
+            <div id="resultadosComparacao"></div>
+            <div class="console" id="consoleComparacao"></div>
+        </div>
+        
+        <!-- Status Geral -->
+        <div class="test-section" style="border-left-color: #667eea;">
+            <h2>📊 Status Geral do Teste</h2>
+            <div id="statusGeral">
+                <p style="color: #666; font-size: 13px;">Aguardando inicialização...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados de teste que serão usados
+        let dadosSalvos = null;
+        let dadosRestaurados = null;
+
+        // Logger personalizado
+        function log(message, type = 'info', consoleId = 'consoleSalvar') {
+            const console = document.getElementById(consoleId);
+            if (!console) return;
+            
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            const icon = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            }[type] || 'ℹ️';
+            
+            line.textContent = `[${timestamp}] ${icon} ${message}`;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        // Preencher formulário com dados de teste
+        function preencherFormularioTestudo() {
+            document.getElementById('razao_social').value = 'ABC Logística LTDA';
+            document.getElementById('cnpj').value = '12.345.678/0001-90';
+            document.getElementById('email').value = 'contato@empresa.com';
+            document.getElementById('telefone').value = '(11) 99999-9999';
+            document.getElementById('pais').value = '31';
+            document.getElementById('estado').value = 'SP';
+            document.getElementById('tem_paradas_sim').checked = true;
+            document.getElementById('modo_rodoviario').checked = true;
+            document.getElementById('modo_ferroviario').checked = true;
+            document.getElementById('observacoes').value = 'Este é um teste de rascunho. Dados devem ser restaurados corretamente.';
+            
+            log('Formulário preenchido com dados de teste', 'success', 'consoleSalvar');
+            atualizarStatus();
+        }
+
+        // Limpar formulário
+        function limparFormulario() {
+            document.getElementById('testForm').reset();
+            log('Formulário limpado', 'info', 'consoleSalvar');
+            atualizarStatus();
+        }
+
+        // Salvar rascunho
+        function salvarRascunho() {
+            const form = document.getElementById('testForm');
+            const formData = new FormData(form);
+            
+            // Coleta dados como estrutura aninhada (como faz a aplicação real)
+            const dados = {
+                _savedAt: new Date().toISOString(),
+                _version: '1.0',
+                fields: {},
+                radios: {},
+                checkboxes: {},
+                selects: {},
+                produtos: []
+            };
+            
+            // Coleta campos de texto/email/tel/textarea
+            for (let [name, value] of formData.entries()) {
+                const element = document.querySelector(`[name="${name}"]`);
+                
+                if (element.type === 'checkbox') {
+                    if (!dados.checkboxes[name]) dados.checkboxes[name] = [];
+                    dados.checkboxes[name].push(value);
+                } else if (element.type === 'radio') {
+                    dados.radios[name] = value;
+                } else if (element.tagName === 'SELECT') {
+                    dados.selects[name] = value;
+                } else {
+                    dados.fields[name] = value;
+                }
+            }
+            
+            dadosSalvos = dados;
+            localStorage.setItem('rascunho_teste', JSON.stringify(dados));
+            
+            log('Rascunho salvo em localStorage', 'success', 'consoleSalvar');
+            log(`Total de campos de texto: ${Object.keys(dados.fields).length}`, 'info', 'consoleSalvar');
+            log(`Total de radios: ${Object.keys(dados.radios).length}`, 'info', 'consoleSalvar');
+            log(`Total de checkboxes: ${Object.keys(dados.checkboxes).length}`, 'info', 'consoleSalvar');
+            log(`Total de selects: ${Object.keys(dados.selects).length}`, 'info', 'consoleSalvar');
+            
+            atualizarStatus();
+        }
+
+        // Verificar localStorage
+        function verificarLocalStorage() {
+            const dados = localStorage.getItem('rascunho_teste');
+            
+            if (!dados) {
+                log('Nenhum rascunho encontrado em localStorage', 'warning', 'consoleSalvar');
+                return;
+            }
+            
+            try {
+                const parsed = JSON.parse(dados);
+                log('Rascunho encontrado em localStorage ✓', 'success', 'consoleSalvar');
+                log(`Dados salvos em: ${parsed._savedAt}`, 'info', 'consoleSalvar');
+                log(`Versão: ${parsed._version}`, 'info', 'consoleSalvar');
+                
+                // Exibir estrutura
+                console.log('Estrutura de dados salva:', parsed);
+                log('Ver console do navegador para detalhes completos', 'info', 'consoleSalvar');
+            } catch (error) {
+                log(`Erro ao parsejar dados: ${error.message}`, 'error', 'consoleSalvar');
+            }
+            
+            atualizarStatus();
+        }
+
+        // Simular recarga da página
+        function simularRecargaPagina() {
+            document.getElementById('testForm').reset();
+            log('Página recargada - formulário limpo', 'info', 'consoleRecarga');
+            atualizarStatus();
+        }
+
+        // Carregar rascunho
+        function carregarRascunho() {
+            const dados = localStorage.getItem('rascunho_teste');
+            
+            if (!dados) {
+                log('Nenhum rascunho encontrado em localStorage', 'error', 'consoleCarregar');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(dados);
+                dadosRestaurados = data;
+                
+                log('Iniciando restauração de dados...', 'info', 'consoleCarregar');
+                
+                // Restaurar campos de texto
+                if (data.fields) {
+                    Object.keys(data.fields).forEach(name => {
+                        const element = document.querySelector(`[name="${name}"]`);
+                        if (element && element.tagName !== 'SELECT') {
+                            element.value = data.fields[name] || '';
+                            log(`✅ Campo restaurado: ${name} = "${element.value}"`, 'success', 'consoleCarregar');
+                        }
+                    });
+                }
+                
+                // Restaurar radios
+                if (data.radios) {
+                    Object.keys(data.radios).forEach(name => {
+                        const radio = document.querySelector(`[name="${name}"][value="${data.radios[name]}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                            log(`✅ Radio restaurado: ${name} = ${data.radios[name]}`, 'success', 'consoleCarregar');
+                        }
+                    });
+                }
+                
+                // Restaurar checkboxes
+                if (data.checkboxes) {
+                    Object.keys(data.checkboxes).forEach(name => {
+                        const values = data.checkboxes[name];
+                        values.forEach(value => {
+                            const checkbox = document.querySelector(`[name="${name}"][value="${value}"]`);
+                            if (checkbox) {
+                                checkbox.checked = true;
+                                log(`✅ Checkbox restaurado: ${name} = ${value}`, 'success', 'consoleCarregar');
+                            }
+                        });
+                    });
+                }
+                
+                // Restaurar selects
+                if (data.selects) {
+                    Object.keys(data.selects).forEach(name => {
+                        const element = document.querySelector(`[name="${name}"]`);
+                        if (element && element.tagName === 'SELECT') {
+                            element.value = data.selects[name] || '';
+                            log(`✅ Select restaurado: ${name} = ${element.value}`, 'success', 'consoleCarregar');
+                        }
+                    });
+                }
+                
+                log('✅ Restauração concluída com sucesso!', 'success', 'consoleCarregar');
+                atualizarStatus();
+            } catch (error) {
+                log(`❌ Erro ao restaurar: ${error.message}`, 'error', 'consoleCarregar');
+            }
+        }
+
+        // Comparar dados
+        function compararDados() {
+            if (!dadosSalvos) {
+                log('Nenhum dado salvo para comparar', 'warning', 'consoleComparacao');
+                return;
+            }
+            
+            const form = document.getElementById('testForm');
+            const formData = new FormData(form);
+            const dadosAtuais = {
+                fields: {},
+                radios: {},
+                checkboxes: {},
+                selects: {}
+            };
+            
+            for (let [name, value] of formData.entries()) {
+                const element = document.querySelector(`[name="${name}"]`);
+                
+                if (element.type === 'checkbox') {
+                    if (!dadosAtuais.checkboxes[name]) dadosAtuais.checkboxes[name] = [];
+                    dadosAtuais.checkboxes[name].push(value);
+                } else if (element.type === 'radio') {
+                    dadosAtuais.radios[name] = value;
+                } else if (element.tagName === 'SELECT') {
+                    dadosAtuais.selects[name] = value;
+                } else {
+                    dadosAtuais.fields[name] = value;
+                }
+            }
+            
+            // Criar tabela de comparação
+            let html = '<table class="results-table"><thead><tr><th>Campo</th><th>Salvo</th><th>Restaurado</th><th>Status</th></tr></thead><tbody>';
+            
+            let sucessos = 0;
+            let falhas = 0;
+            
+            // Comparar fields
+            [...new Set([...Object.keys(dadosSalvos.fields), ...Object.keys(dadosAtuais.fields)])].forEach(name => {
+                const salvo = dadosSalvos.fields[name] || '';
+                const atual = dadosAtuais.fields[name] || '';
+                const match = salvo === atual;
+                
+                if (match) sucessos++;
+                else falhas++;
+                
+                const status = match ? '<span class="status-badge success">✅ OK</span>' : '<span class="status-badge error">❌ MISMATCH</span>';
+                html += `<tr>
+                    <td><strong>${name}</strong></td>
+                    <td><div class="field-value">${salvo || '(vazio)'}</div></td>
+                    <td><div class="field-value">${atual || '(vazio)'}</div></td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+            
+            // Comparar radios
+            [...new Set([...Object.keys(dadosSalvos.radios), ...Object.keys(dadosAtuais.radios)])].forEach(name => {
+                const salvo = dadosSalvos.radios[name] || '';
+                const atual = dadosAtuais.radios[name] || '';
+                const match = salvo === atual;
+                
+                if (match) sucessos++;
+                else falhas++;
+                
+                const status = match ? '<span class="status-badge success">✅ OK</span>' : '<span class="status-badge error">❌ MISMATCH</span>';
+                html += `<tr>
+                    <td><strong>${name} (radio)</strong></td>
+                    <td><div class="field-value">${salvo || '(não selecionado)'}</div></td>
+                    <td><div class="field-value">${atual || '(não selecionado)'}</div></td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+            
+            // Comparar checkboxes
+            [...new Set([...Object.keys(dadosSalvos.checkboxes), ...Object.keys(dadosAtuais.checkboxes)])].forEach(name => {
+                const salvo = (dadosSalvos.checkboxes[name] || []).join(', ') || '(nenhum)';
+                const atual = (dadosAtuais.checkboxes[name] || []).join(', ') || '(nenhum)';
+                const match = salvo === atual;
+                
+                if (match) sucessos++;
+                else falhas++;
+                
+                const status = match ? '<span class="status-badge success">✅ OK</span>' : '<span class="status-badge error">❌ MISMATCH</span>';
+                html += `<tr>
+                    <td><strong>${name} (checkboxes)</strong></td>
+                    <td><div class="field-value">${salvo}</div></td>
+                    <td><div class="field-value">${atual}</div></td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+            
+            // Comparar selects
+            [...new Set([...Object.keys(dadosSalvos.selects), ...Object.keys(dadosAtuais.selects)])].forEach(name => {
+                const salvo = dadosSalvos.selects[name] || '';
+                const atual = dadosAtuais.selects[name] || '';
+                const match = salvo === atual;
+                
+                if (match) sucessos++;
+                else falhas++;
+                
+                const status = match ? '<span class="status-badge success">✅ OK</span>' : '<span class="status-badge error">❌ MISMATCH</span>';
+                html += `<tr>
+                    <td><strong>${name} (select)</strong></td>
+                    <td><div class="field-value">${salvo || '(não selecionado)'}</div></td>
+                    <td><div class="field-value">${atual || '(não selecionado)'}</div></td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            
+            // Resumo
+            const total = sucessos + falhas;
+            const percentual = total > 0 ? ((sucessos / total) * 100).toFixed(1) : 0;
+            
+            const resumo = `
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #333; margin-bottom: 10px;">📊 Resumo da Comparação</h3>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div style="padding: 15px; background: #d1fae5; border-radius: 5px; flex: 1; min-width: 150px;">
+                        <div style="font-size: 24px; font-weight: 700; color: #065f46;">${sucessos}</div>
+                        <div style="font-size: 13px; color: #047857;">Campos OK</div>
+                    </div>
+                    <div style="padding: 15px; background: #fee2e2; border-radius: 5px; flex: 1; min-width: 150px;">
+                        <div style="font-size: 24px; font-weight: 700; color: #7f1d1d;">${falhas}</div>
+                        <div style="font-size: 13px; color: #dc2626;">Campos com Diferença</div>
+                    </div>
+                    <div style="padding: 15px; background: #dbeafe; border-radius: 5px; flex: 1; min-width: 150px;">
+                        <div style="font-size: 24px; font-weight: 700; color: #0c2340;">${percentual}%</div>
+                        <div style="font-size: 13px; color: #1e40af;">Taxa de Sucesso</div>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            document.getElementById('resultadosComparacao').innerHTML = resumo + html;
+            
+            if (falhas === 0) {
+                log('✅ TESTE PASSOU! Todos os campos foram restaurados corretamente!', 'success', 'consoleComparacao');
+            } else {
+                log(`⚠️ TESTE COM PROBLEMAS: ${falhas} campo(s) não restaurado(s) corretamente`, 'warning', 'consoleComparacao');
+            }
+            
+            atualizarStatus();
+        }
+
+        // Limpar tudo
+        function limparTudo() {
+            document.getElementById('testForm').reset();
+            localStorage.removeItem('rascunho_teste');
+            dadosSalvos = null;
+            dadosRestaurados = null;
+            document.getElementById('resultadosComparacao').innerHTML = '';
+            document.getElementById('consoleSalvar').innerHTML = '';
+            document.getElementById('consoleRecarga').innerHTML = '';
+            document.getElementById('consoleCarregar').innerHTML = '';
+            document.getElementById('consoleComparacao').innerHTML = '';
+            
+            log('Tudo foi limpo: formulário, localStorage e logs', 'info', 'consoleSalvar');
+            atualizarStatus();
+        }
+
+        // Atualizar status geral
+        function atualizarStatus() {
+            const temRascunho = localStorage.getItem('rascunho_teste') !== null;
+            const formPreenchido = document.getElementById('razao_social').value !== '';
+            
+            let html = '<div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">';
+            
+            html += temRascunho 
+                ? '<span class="status-badge success">✅ Rascunho em localStorage</span>'
+                : '<span class="status-badge warning">⚠️ Nenhum rascunho salvo</span>';
+            
+            html += formPreenchido
+                ? '<span class="status-badge success">✅ Formulário com dados</span>'
+                : '<span class="status-badge info">ℹ️ Formulário vazio</span>';
+            
+            html += '</div>';
+            html += '<p style="color: #666; font-size: 13px; margin-top: 10px;">';
+            html += '<strong>Como usar:</strong><br>';
+            html += '1️⃣ Preencha o formulário ou use "Preencher com Dados de Teste"<br>';
+            html += '2️⃣ Clique "Salvar Rascunho Agora" (ou acontece automaticamente)<br>';
+            html += '3️⃣ Clique "Simular Recarga (Limpar Campos)"<br>';
+            html += '4️⃣ Clique "Carregar Rascunho" para restaurar<br>';
+            html += '5️⃣ Clique "Comparar Dados" para ver resultados<br>';
+            html += '</p>';
+            
+            document.getElementById('statusGeral').innerHTML = html;
+        }
+
+        // Inicializar
+        atualizarStatus();
+    </script>
+</body>
+</html>
