@@ -431,7 +431,7 @@ const AutoSave = {
         this._isRestoring = true;
         
         console.log('🔄 Iniciando restauração de dados...');
-        console.log('Dados a restaurar:', data);
+        console.log('Dados completos a restaurar:', data);
         
         // ⭐ Desabilitar validação visual durante restauração
         if (window.FormValidator) {
@@ -441,6 +441,29 @@ const AutoSave = {
         
         try {
             let camposRestaurados = 0;
+            let camposNaoEncontrados = [];
+            
+            // ⭐ IMPORTANTE: Criar produtos na tabela antes de restaurar dados
+            // Isso é essencial pois os campos dos produtos estão fora do DOM inicialmente
+            if (data.produtos && Array.isArray(data.produtos) && data.produtos.length > 0) {
+                console.log(`🛒 PRÉ-REQUISITO: Criando ${data.produtos.length} linhas de produto na tabela...`);
+                
+                // Chamar função global para adicionar produtos (se existir)
+                if (typeof adicionarProduto === 'function') {
+                    for (let i = 0; i < data.produtos.length; i++) {
+                        try {
+                            adicionarProduto();
+                            console.log(`   ✅ Linha de produto ${i + 1} criada`);
+                        } catch (err) {
+                            console.error(`   ❌ Erro ao criar linha ${i + 1}:`, err);
+                        }
+                    }
+                    // Aguardar um pouco para as linhas renderizarem
+                    console.log('   ⏳ Aguardando renderização das linhas...');
+                } else {
+                    console.warn('   ⚠️ Função adicionarProduto não encontrada - produtos podem não ser restaurados');
+                }
+            }
             
             // Restaurar campos simples (text, number, email, tel, textarea)
             if (data.fields) {
@@ -451,7 +474,7 @@ const AutoSave = {
                     if (name.endsWith('-label')) return;
                     
                     const element = form.querySelector(`[name="${name}"]`);
-                    if (element && element.tagName !== 'SELECT') {
+                    if (element && element.tagName !== 'SELECT' && element.tagName !== 'TEXTAREA') {
                         const oldValue = element.value;
                         element.value = data.fields[name] || '';
                         
@@ -461,8 +484,17 @@ const AutoSave = {
                         
                         console.log(`✅ Campo restaurado: ${name} = "${element.value}" (era: "${oldValue}")`);
                         camposRestaurados++;
+                    } else if (element && element.tagName === 'TEXTAREA') {
+                        const oldValue = element.value;
+                        element.value = data.fields[name] || '';
+                        element.dispatchEvent(new Event('input', { bubbles: true }));
+                        element.dispatchEvent(new Event('change', { bubbles: true }));
+                        
+                        console.log(`✅ Textarea restaurado: ${name} = "${element.value}" (era: "${oldValue}")`);
+                        camposRestaurados++;
                     } else if (!element) {
                         console.warn(`⚠️ Campo não encontrado: ${name}`);
+                        camposNaoEncontrados.push(name);
                     }
                 });
             }
@@ -472,16 +504,18 @@ const AutoSave = {
                 console.log(`📻 Restaurando ${Object.keys(data.radios).length} radios...`);
                 
                 Object.keys(data.radios).forEach(name => {
-                    const selector = `input[type="radio"][name="${name}"][value="${data.radios[name]}"]`;
+                    const value = data.radios[name];
+                    const selector = `input[type="radio"][name="${name}"][value="${value}"]`;
                     const radioElement = form.querySelector(selector);
                     
                     if (radioElement) {
                         radioElement.checked = true;
                         radioElement.dispatchEvent(new Event('change', { bubbles: true }));
-                        console.log(`✅ Radio restaurado: ${name} = ${data.radios[name]}`);
+                        console.log(`✅ Radio restaurado: ${name} = ${value}`);
                         camposRestaurados++;
                     } else {
-                        console.warn(`⚠️ Radio não encontrado: ${name} = ${data.radios[name]}`);
+                        console.warn(`⚠️ Radio não encontrado: ${name} = ${value} (seletor: ${selector})`);
+                        camposNaoEncontrados.push(`${name}[radio]`);
                     }
                 });
             }
@@ -494,19 +528,22 @@ const AutoSave = {
                     const checkboxes = form.querySelectorAll(`input[type="checkbox"][name="${name}"]`);
                     
                     if (checkboxes.length > 0) {
+                        let checkouCount = 0;
                         checkboxes.forEach(checkbox => {
-                            const shouldCheck = data.checkboxes[name].includes(checkbox.value);
+                            const shouldCheck = Array.isArray(data.checkboxes[name]) && data.checkboxes[name].includes(checkbox.value);
                             const wasChecked = checkbox.checked;
                             checkbox.checked = shouldCheck;
                             
                             if (shouldCheck !== wasChecked) {
                                 checkbox.dispatchEvent(new Event('change', { bubbles: true }));
                             }
+                            if (shouldCheck) checkouCount++;
                         });
-                        console.log(`✅ Checkboxes restaurados: ${name} = [${data.checkboxes[name].join(', ')}]`);
+                        console.log(`✅ Checkboxes restaurados: ${name} = [${data.checkboxes[name].join(', ')}] (${checkouCount}/${checkboxes.length} marcados)`);
                         camposRestaurados++;
                     } else {
-                        console.warn(`⚠️ Checkboxes não encontrados: ${name}`);
+                        console.warn(`⚠️ Grupo de checkboxes não encontrado: ${name}`);
+                        camposNaoEncontrados.push(`${name}[checkboxes]`);
                     }
                 });
             }
@@ -519,71 +556,116 @@ const AutoSave = {
                     const element = form.querySelector(`select[name="${name}"]`);
                     if (element) {
                         if (element.multiple) {
+                            const values = Array.isArray(data.selects[name]) ? data.selects[name] : [data.selects[name]];
                             Array.from(element.options).forEach(option => {
-                                option.selected = data.selects[name].includes(option.value);
+                                option.selected = values.includes(option.value);
                             });
-                            console.log(`✅ Select múltiplo restaurado: ${name} = [${data.selects[name].join(', ')}]`);
+                            console.log(`✅ Select múltiplo restaurado: ${name} = [${values.join(', ')}]`);
                         } else {
                             const oldValue = element.value;
                             element.value = data.selects[name] || '';
-                            console.log(`✅ Select restaurado: ${name} = ${element.value} (era: ${oldValue})`);
+                            console.log(`✅ Select restaurado: ${name} = "${element.value}" (era: "${oldValue}")`);
                         }
                         // Disparar change para cascata funcionar
                         element.dispatchEvent(new Event('change', { bubbles: true }));
                         camposRestaurados++;
                     } else {
                         console.warn(`⚠️ Select não encontrado: ${name}`);
+                        camposNaoEncontrados.push(`${name}[select]`);
                     }
                 });
             }
             
-            // Restaurar produtos
+            // Restaurar produtos - COM TRATAMENTO ESPECIAL
+            let produtosRestaurados = 0;
             if (data.produtos && Array.isArray(data.produtos) && data.produtos.length > 0) {
                 console.log(`🛒 Restaurando ${data.produtos.length} produtos...`);
                 
                 data.produtos.forEach((produto, idx) => {
-                    console.log(`  Produto ${idx + 1}:`);
+                    console.log(`  \n📦 Produto ${idx + 1}/${data.produtos.length}:`);
                     
                     // Restaurar campos do produto
                     if (produto.fields) {
-                        Object.keys(produto.fields).forEach(name => {
+                        Object.keys(produto.fields).forEach(fieldName => {
                             // Pular labels
-                            if (name.endsWith('-label')) return;
+                            if (fieldName.endsWith('-label')) return;
                             
-                            const element = form.querySelector(`[name="${name}"]`);
+                            // Tentar encontrar o campo em toda a tabela
+                            let element = form.querySelector(`[name="${fieldName}"]`);
+                            
+                            if (!element) {
+                                // Tentar encontro dentro de tbody especificamente
+                                const tbody = form.querySelector('#produtos-tbody');
+                                if (tbody) {
+                                    element = tbody.querySelector(`[name="${fieldName}"]`);
+                                }
+                            }
+                            
                             if (element && element.tagName !== 'SELECT') {
-                                element.value = produto.fields[name] || '';
+                                element.value = produto.fields[fieldName] || '';
+                                element.dispatchEvent(new Event('input', { bubbles: true }));
                                 element.dispatchEvent(new Event('change', { bubbles: true }));
-                                console.log(`    ✅ ${name} = ${element.value}`);
+                                console.log(`    ✅ ${fieldName} = "${element.value}"`);
                                 camposRestaurados++;
+                            } else if (!element) {
+                                console.warn(`    ⚠️ Campo não encontrado: ${fieldName}`);
+                                camposNaoEncontrados.push(`produto[${idx}].${fieldName}`);
                             }
                         });
                     }
                     
                     // Restaurar selects do produto
                     if (produto.selects) {
-                        Object.keys(produto.selects).forEach(name => {
-                            const element = form.querySelector(`select[name="${name}"]`);
+                        Object.keys(produto.selects).forEach(selectName => {
+                            let element = form.querySelector(`select[name="${selectName}"]`);
+                            
+                            if (!element) {
+                                const tbody = form.querySelector('#produtos-tbody');
+                                if (tbody) {
+                                    element = tbody.querySelector(`select[name="${selectName}"]`);
+                                }
+                            }
+                            
                             if (element) {
                                 if (element.multiple) {
+                                    const values = Array.isArray(produto.selects[selectName]) ? produto.selects[selectName] : [produto.selects[selectName]];
                                     Array.from(element.options).forEach(option => {
-                                        option.selected = Array.isArray(produto.selects[name]) 
-                                            ? produto.selects[name].includes(option.value)
-                                            : false;
+                                        option.selected = values.includes(option.value);
                                     });
                                 } else {
-                                    element.value = produto.selects[name] || '';
+                                    element.value = produto.selects[selectName] || '';
                                 }
                                 element.dispatchEvent(new Event('change', { bubbles: true }));
-                                console.log(`    ✅ ${name} = ${produto.selects[name]}`);
+                                console.log(`    ✅ ${selectName} = "${produto.selects[selectName]}"`);
                                 camposRestaurados++;
+                            } else {
+                                console.warn(`    ⚠️ Select não encontrado: ${selectName}`);
+                                camposNaoEncontrados.push(`produto[${idx}].${selectName}`);
                             }
                         });
                     }
+                    
+                    produtosRestaurados++;
                 });
             }
             
-            console.log(`✅ Restauração concluída! ${camposRestaurados} campos restaurados`);
+            // ⭐ RESUMO DETALHADO FINAL
+            console.log('\n' + '='.repeat(70));
+            console.log('📊 RESUMO DA RESTAURAÇÃO');
+            console.log('='.repeat(70));
+            console.log(`✅ Total de campos restaurados: ${camposRestaurados}`);
+            console.log(`✅ Total de produtos restaurados: ${produtosRestaurados}`);
+            
+            if (camposNaoEncontrados.length > 0) {
+                console.warn(`⚠️ Campos NÃO encontrados: ${camposNaoEncontrados.length}`);
+                camposNaoEncontrados.forEach(campo => {
+                    console.warn(`   - ${campo}`);
+                });
+            } else {
+                console.log('✅ Todos os campos foram encontrados e restaurados!');
+            }
+            console.log('='.repeat(70) + '\n');
+            
         } catch (error) {
             console.error('❌ AutoSave: Erro ao restaurar dados', error);
             console.error('Stack trace:', error.stack);
