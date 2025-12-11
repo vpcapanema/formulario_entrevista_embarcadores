@@ -57,13 +57,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copiar código da aplicação do backend-fastapi
-COPY --chown=appuser:appuser backend-fastapi/app ./app
-COPY --chown=appuser:appuser backend-fastapi/main.py .
+# Copiar todo o diretório backend-fastapi preservando a estrutura
+COPY --chown=appuser:appuser backend-fastapi ./backend-fastapi
 
-# ❌ FRONTEND NÃO É COPIADO EM PRODUÇÃO
-# Frontend é servido pelo GitHub Pages separadamente
-# Backend roda em modo API-only no Render
+# Copiar frontend para dentro da imagem (se existir no repositório)
+COPY --chown=appuser:appuser frontend ./frontend
+
+# Garantir que o pacote `app` esteja disponível no top-level import path
+# para que imports como `from app.routers.health import ...` funcionem.
+COPY --chown=appuser:appuser backend-fastapi/app ./app
+
+# Agora a aplicação roda com a mesma estrutura de diretórios do repositório,
+# permitindo que `backend-fastapi/main.py` localize `../frontend/html/index.html`.
 
 # Mudar para usuário não-root
 USER appuser
@@ -76,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Comando de inicialização
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--log-level", "info"]
+CMD ["uvicorn", "backend-fastapi.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "--log-level", "info"]
