@@ -408,37 +408,24 @@ const AutoSave = {
                     const selector = `input[type="radio"][name="${name}"][value="${value}"]`;
                     const radioElement = form.querySelector(selector);
                     
-                    if (element) {
-                        if (element.multiple) {
-                            const values = Array.isArray(produto.selects[selectName]) ? produto.selects[selectName] : [produto.selects[selectName]];
-                            Array.from(element.options).forEach(option => {
-                                option.selected = values.includes(option.value);
-                            });
-                        } else {
-                            const targetValue = produto.selects[selectName] || '';
-                            const hasOption = Array.from(element.options).some(o => String(o.value) === String(targetValue));
-                            if (targetValue !== '' && !hasOption) {
-                                try {
-                                    const labelName = `${selectName}-label`;
-                                    const fallbackLabel = (produto.fields && produto.fields[labelName]) || targetValue;
-                                    const opt = document.createElement('option');
-                                    opt.value = targetValue;
-                                    opt.textContent = fallbackLabel;
-                                    element.appendChild(opt);
-                                    console.warn(`⚠️ Option criada para select de produto ${selectName}: value=${targetValue} label=${fallbackLabel}`);
-                                } catch (err) {
-                                    console.error(`❌ Erro ao criar option fallback para produto select ${selectName}:`, err);
-                                }
-                            }
-                            element.value = targetValue;
-                        }
-                        element.dispatchEvent(new Event('change', { bubbles: true }));
-                        console.log(`    ✅ ${selectName} = "${produto.selects[selectName]}"`);
+                    if (radioElement) {
+                        radioElement.checked = true;
+                        radioElement.dispatchEvent(new Event('change', { bubbles: true }));
+                        console.log(`✅ Radio restaurado: ${name} = "${value}"`);
                         camposRestaurados++;
                     } else {
-                        console.warn(`    ⚠️ Select não encontrado: ${selectName}`);
-                        camposNaoEncontrados.push(`produto[${idx}].${selectName}`);
+                        console.warn(`⚠️ Radio button não encontrado: name="${name}" value="${value}"`);
+                        camposNaoEncontrados.push(`${name}=${value}`);
                     }
+                });
+            }
+            
+            // Restaurar checkboxes
+            if (data.checkboxes) {
+                console.log(`☑️ Restaurando ${Object.keys(data.checkboxes).length} grupos de checkboxes...`);
+                
+                Object.keys(data.checkboxes).forEach(name => {
+                    const checkboxes = form.querySelectorAll(`input[type="checkbox"][name="${name}"]`);
                     if (checkboxes.length > 0) {
                         let checkouCount = 0;
                         checkboxes.forEach(checkbox => {
