@@ -1,4 +1,7 @@
 """
+RECREATED: models/__init__.py
+Recreated on 2025-12-11 to align with `app/schemas` payload fields.
+
 ============================================================
 SQLALCHEMY MODELS - FastAPI PLI 2050
 ============================================================
@@ -6,7 +9,7 @@ Models para todas as tabelas do schema formulario_embarcadores
 """
 
 from sqlalchemy import (
-    Column, Integer, String, Numeric, Boolean, Text,
+    Column, Integer, String, Numeric, Boolean, Text, Date,
     TIMESTAMP, ForeignKey, ARRAY, CheckConstraint, Index
 )
 from sqlalchemy.orm import relationship
@@ -124,8 +127,6 @@ class Empresa(Base):
     municipio = Column(String(255), nullable=False)
     estado = Column(String(100))
     cnpj = Column(String(14), unique=True)  # Apenas dígitos (14 chars) conforme migration
-    data_cadastro = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    data_atualizacao = Column(TIMESTAMP(timezone=True))
 
     # Campos adicionais da Receita Federal
     nome_fantasia = Column(String(255))
@@ -137,7 +138,26 @@ class Empresa(Base):
     complemento = Column(String(100))
     bairro = Column(String(100))
     cep = Column(String(8))
-    cnpj_digits = Column(String(14), unique=True)  # DEPRECATED: cnpj já é 14 dígitos após migration
+    # cnpj_digits removed to match schema (deprecated)
+
+    # Novos campos da Receita Federal (migration 20251210)
+    endereco = Column(String(255))
+    uf = Column(String(2))
+    site = Column(String(255))
+    porte_empresa = Column(String(50))
+    setor_atividade = Column(String(255))
+    cnae = Column(String(20))
+    faturamento_anual = Column(String(50))
+    numero_funcionarios = Column(Integer)
+    ano_fundacao = Column(Integer)
+    inscricao_estadual = Column(String(20))
+    inscricao_municipal = Column(String(20))
+    natureza_juridica = Column(String(255))
+    situacao_cadastral = Column(String(50))
+    data_situacao_cadastral = Column(Date)
+    motivo_situacao_cadastral = Column(String(255))
+    situacao_especial = Column(String(50))
+    data_situacao_especial = Column(Date)
 
     # Relationships
     entrevistados = relationship("Entrevistado", back_populates="empresa", cascade="all, delete-orphan")
@@ -159,7 +179,6 @@ class Entrevistado(Base):
         Index("idx_entrevistados_empresa", "id_empresa"),
         Index("idx_entrevistados_email", "email"),
         Index("idx_entrevistados_principal", "principal"),
-        Index("idx_entrevistados_empresa_email_lower", "id_empresa", "email_lower"),
         {"schema": SCHEMA}
     )
 
@@ -170,9 +189,7 @@ class Entrevistado(Base):
     telefone = Column(String(20), nullable=True)
     email = Column(String(255), nullable=True)
     principal = Column(Boolean, default=False)
-    data_cadastro = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    data_atualizacao = Column(TIMESTAMP(timezone=True))
-    email_lower = Column(String(255))
+    # timestamps and email_lower removed to match schemas
     
     # Campos de naturalidade e estado civil (adicionados em 20251114)
     estado_civil = Column(String(20))
@@ -226,7 +243,6 @@ class Pesquisa(Base):
         ),
         Index("idx_pesquisas_empresa", "id_empresa"),
         Index("idx_pesquisas_entrevistado", "id_entrevistado"),
-        Index("idx_pesquisas_data", "data_entrevista"),
         Index("idx_pesquisas_produto", "produto_principal"),
         Index("idx_pesquisas_status", "status"),
         Index("idx_pesquisas_responsavel", "id_responsavel"),
@@ -242,9 +258,7 @@ class Pesquisa(Base):
     tipo_responsavel = Column(String(20), nullable=False)
     id_responsavel = Column(Integer, nullable=False)
 
-    # Timestamps
-    data_entrevista = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    data_atualizacao = Column(TIMESTAMP(timezone=True))
+        # Timestamps removed to match schema (managed externally if needed)
     status = Column(String(20), default="finalizada")
 
     # Produto
@@ -258,14 +272,14 @@ class Pesquisa(Base):
 
     # Origem
     origem_pais = Column(String(100), nullable=False)
-    origem_estado = Column(String(100), nullable=False)
-    origem_municipio = Column(String(255), nullable=False)
+    origem_estado = Column(String(100))  # NULLABLE no banco
+    origem_municipio = Column(String(255))  # NULLABLE no banco
     origem_instalacao = Column(String(255))
 
     # Destino
     destino_pais = Column(String(100), nullable=False)
-    destino_estado = Column(String(100), nullable=False)
-    destino_municipio = Column(String(255), nullable=False)
+    destino_estado = Column(String(100))  # NULLABLE no banco
+    destino_municipio = Column(String(255))  # NULLABLE no banco
     destino_instalacao = Column(String(255))
 
     # Distância e paradas
@@ -397,12 +411,19 @@ class ProdutoTransportado(Base):
     id_empresa = Column(Integer, ForeignKey(f"{SCHEMA}.empresas.id_empresa"), nullable=False)
     carga = Column(String(255), nullable=False)
     movimentacao = Column(Numeric(12, 2))
-    origem = Column(String(255))
-    destino = Column(String(255))
     distancia = Column(Numeric(10, 2))
     modalidade = Column(String(50))
     acondicionamento = Column(String(100))
     ordem = Column(Integer, default=1)
+    observacoes = Column(Text)
+    
+    # Campos de localização (migração 20251106)
+    origem_pais = Column(Integer)  # FK to paises.id_pais
+    destino_pais = Column(Integer)  # FK to paises.id_pais
+    origem_estado = Column(String(2))  # UF
+    origem_municipio = Column(String(10))  # Código IBGE
+    destino_estado = Column(String(2))  # UF
+    destino_municipio = Column(String(10))  # Código IBGE
 
     # Relationships
     pesquisa = relationship("Pesquisa", back_populates="produtos_transportados")

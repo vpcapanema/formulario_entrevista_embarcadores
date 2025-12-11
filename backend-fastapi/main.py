@@ -192,12 +192,13 @@ app.include_router(submit_router.router)    # POST /api/submit-form, /api/submit
 # app.include_router(pesquisas_router)        # GET /api/pesquisas/* (NOVO) - TEMPORARIAMENTE DESABILITADO
 # app.include_router(lists_router.router)   # DEPRECATED: JSONs estáticos
 # app.include_router(analytics_router.router)  # GET /api/analytics/* - TEMPORARIAMENTE DESABILITADO
-# GET /api/external/cnpj/*
-# app.include_router(
-#     external_router,
-#     prefix="/api/external",
-#     tags=["External APIs"]
-# )
+
+# GET /api/external/cnpj/* - Consulta CNPJ na Receita Federal via BrasilAPI
+app.include_router(
+    external_router,
+    prefix="/api/external",
+    tags=["External APIs"]
+)
 
 # ============================================================
 # ROOT ENDPOINT - SERVIR INDEX.HTML

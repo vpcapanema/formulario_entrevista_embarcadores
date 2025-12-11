@@ -2,24 +2,79 @@
 ============================================================
 PYDANTIC SCHEMAS - FastAPI PLI 2050
 ============================================================
-Schemas de validação para requests e responses
+Orquestrador de schemas
+Importa e re-exporta schemas dos módulos individuais
 """
 
-from pydantic import (
-    BaseModel, EmailStr, Field, field_validator, model_validator
-)
-from typing import Optional, List
-from datetime import datetime
+from typing import List, Optional
+from datetime import datetime, date
 from decimal import Decimal
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from app.utils.timezone import format_brasilia
 import re
 
 # ============================================================
-# SCHEMAS AUXILIARES
+# IMPORTS DOS SCHEMAS MODULARES
+# ============================================================
+from app.schemas.empresa import EmpresaPayload
+from app.schemas.entrevistado import EntrevistadoPayload
+from app.schemas.pesquisa import PesquisaPayload
+from app.schemas.produto import ProdutoTransportadoPayload
+
+# Re-exportar para compatibilidade
+__all__ = [
+    'EmpresaPayload',
+    'EntrevistadoPayload', 
+    'PesquisaPayload',
+    'ProdutoTransportadoPayload',
+    'DividedSubmitPayload',
+    'SubmitFormResponse',
+    'HealthResponse',
+    'SubmitFormData',  # Legado
+]
+
+# ============================================================
+# RESPONSE SCHEMAS
 # ============================================================
 
+class HealthResponse(BaseModel):
+    status: str
+    timestamp: datetime
+    database: str
+    message: Optional[str] = None
+
+
+class SubmitFormResponse(BaseModel):
+    success: bool
+    message: str
+    data: dict
+    id_pesquisa: Optional[int] = None
+    id_empresa: Optional[int] = None
+    id_entrevistado: Optional[int] = None
+    produtos_inseridos: int = 0
+
+
+# ============================================================
+# DIVIDED PAYLOAD SCHEMA
+# ============================================================
+
+class DividedSubmitPayload(BaseModel):
+    """Schema principal para payload dividido em 4 subpayloads"""
+    empresa: EmpresaPayload
+    entrevistado: EntrevistadoPayload
+    pesquisa: PesquisaPayload
+    produtos: List[ProdutoTransportadoPayload]
+
+    class Config:
+        populate_by_name = True
+
+
+# ============================================================
+# SUBMIT FORM - SCHEMA LEGADO (MANTER POR COMPATIBILIDADE)
+# ============================================================
 
 class ProdutoTransportadoBase(BaseModel):
+    """Schema base para produtos no payload legado"""
     carga: str
     movimentacao: Optional[Decimal] = None
     origem: Optional[str] = None
@@ -29,249 +84,6 @@ class ProdutoTransportadoBase(BaseModel):
     acondicionamento: Optional[str] = None
     observacoes: Optional[str] = None
     ordem: int = 1
-
-
-class ProdutoTransportadoCreate(ProdutoTransportadoBase):
-    pass
-
-
-class ProdutoTransportadoResponse(ProdutoTransportadoBase):
-    id_produto: int
-    id_pesquisa: int
-    id_empresa: int
-
-    class Config:
-        from_attributes = True
-
-# ============================================================
-# EMPRESA SCHEMAS
-# ============================================================
-
-
-class EmpresaBase(BaseModel):
-    nome_empresa: str
-    tipo_empresa: str = Field(..., pattern="^(embarcador|transportador|operador|outro)$")
-    outro_tipo: Optional[str] = None
-    municipio: str
-    estado: Optional[str] = None
-    cnpj: Optional[str] = None
-    razao_social: Optional[str] = None
-    nome_fantasia: Optional[str] = None
-    telefone: Optional[str] = None
-    email: Optional[EmailStr] = None
-    id_municipio: Optional[int] = None
-    logradouro: Optional[str] = None
-    numero: Optional[str] = None
-    complemento: Optional[str] = None
-    bairro: Optional[str] = None
-    cep: Optional[str] = None
-    cnpj_digits: Optional[str] = None
-
-
-class EmpresaCreate(EmpresaBase):
-    @field_validator('cnpj')
-    @classmethod
-    def validate_cnpj_format(cls, v):
-        if v and len(v.replace('.', '').replace('/', '').replace('-', '')) not in [14, 18]:
-            raise ValueError('CNPJ deve ter 14 dígitos')
-        return v
-
-
-class EmpresaResponse(EmpresaBase):
-    id_empresa: int
-    data_cadastro: datetime
-    data_atualizacao: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-# ============================================================
-# ENTREVISTADO SCHEMAS
-# ============================================================
-
-
-class EntrevistadoBase(BaseModel):
-    nome: str
-    funcao: str
-    telefone: Optional[str] = None
-    email: Optional[EmailStr] = None
-    principal: bool = False
-
-
-class EntrevistadoCreate(EntrevistadoBase):
-    id_empresa: int
-
-
-class EntrevistadoResponse(EntrevistadoBase):
-    id_entrevistado: int
-    id_empresa: int
-    data_cadastro: datetime
-    data_atualizacao: Optional[datetime] = None
-    email_lower: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-# ============================================================
-# PESQUISA SCHEMAS
-# ============================================================
-
-
-class PesquisaBase(BaseModel):
-    # Responsável
-    tipo_responsavel: str = Field(..., pattern="^(entrevistador|entrevistado)$")
-    id_responsavel: int
-
-    # Produto
-    produto_principal: str
-    agrupamento_produto: str
-    outro_produto: Optional[str] = None
-    observacoes_produto_principal: Optional[str] = None
-
-    # Transporte
-    tipo_transporte: str = Field(..., pattern="^(importacao|exportacao|local|nao-sei)$")
-
-    # Origem
-    origem_pais: str
-    origem_estado: str
-    origem_municipio: str
-    origem_instalacao: Optional[str] = None
-
-    # Destino
-    destino_pais: str
-    destino_estado: str
-    destino_municipio: str
-    destino_instalacao: Optional[str] = None
-
-    # Distância e Paradas
-    distancia: Decimal
-    tem_paradas: str = Field(..., pattern="^(sim|nao|nao-sei)$")
-    num_paradas: Optional[int] = Field(None, gt=0)
-
-    # Modais
-    modos: List[str]
-    config_veiculo: Optional[str] = None
-    modal_predominante: Optional[str] = None
-    modal_secundario: Optional[str] = None
-    modal_terciario: Optional[str] = None
-
-    # Capacidade e Peso
-    capacidade_utilizada: Optional[Decimal] = Field(None, ge=0)
-    peso_carga: Decimal
-    unidade_peso: str
-
-    # Custos
-    custo_transporte: Decimal
-    valor_carga: Decimal
-    custo_medio_tonelada: Optional[Decimal] = None
-    pedagio_custo: Optional[Decimal] = None
-    frete_custo: Optional[Decimal] = None
-    manutencao_custo: Optional[Decimal] = None
-    outros_custos: Optional[Decimal] = None
-
-    # Embalagem
-    tipo_embalagem: str
-    carga_perigosa: str = Field(..., pattern="^(sim|nao|nao-sei)$")
-
-    # Tempo
-    tempo_dias: int
-    tempo_horas: int
-    tempo_minutos: int
-    tempo_transporte: Optional[str] = None
-
-    # Frequência
-    frequencia: str
-    frequencia_diaria: Optional[Decimal] = Field(None, gt=0)
-    frequencia_outra: Optional[str] = None
-    observacoes_sazonalidade: Optional[str] = None
-
-    # Importâncias
-    importancia_custo: str
-    variacao_custo: Decimal = Field(..., ge=0)
-    importancia_tempo: str
-    variacao_tempo: Decimal = Field(..., ge=0)
-    importancia_confiabilidade: str
-    variacao_confiabilidade: Decimal = Field(..., ge=0)
-    importancia_seguranca: str
-    variacao_seguranca: Decimal = Field(..., ge=0)
-    importancia_capacidade: str
-    variacao_capacidade: Decimal = Field(..., ge=0)
-
-    # Estratégia
-    tipo_cadeia: str
-    modais_alternativos: Optional[List[str]] = None
-    fator_adicional: Optional[str] = None
-
-    # Dificuldades
-    dificuldades: Optional[List[str]] = None
-    detalhe_dificuldade: Optional[str] = None
-
-    # Frota
-    proprio_terceirizado: Optional[str] = None
-    qtd_caminhoes_proprios: Optional[int] = None
-    qtd_caminhoes_terceirizados: Optional[int] = None
-
-    # Volume
-    volume_anual_toneladas: Optional[Decimal] = None
-    tipo_produto: Optional[str] = None
-    classe_produto: Optional[str] = None
-    produtos_especificos: Optional[str] = None
-
-    # Desafios
-    principais_desafios: Optional[str] = None
-    investimento_sustentavel: Optional[str] = None
-    reducao_emissoes: Optional[str] = None
-    tecnologias_interesse: Optional[str] = None
-
-    # Tecnologia
-    uso_tecnologia: Optional[str] = None
-    grau_automacao: Optional[str] = None
-    rastreamento_carga: bool = False
-    uso_dados: Optional[str] = None
-
-    # Hidrovias
-    conhecimento_hidrovias: Optional[str] = None
-    viabilidade_hidrovia: Optional[str] = None
-    pontos_melhoria: Optional[str] = None
-
-    # Outros
-    interesse_parcerias: bool = False
-    feedback_formulario: Optional[str] = None
-    observacoes: Optional[str] = None
-    consentimento: bool = False
-    transporta_carga: bool = False
-    id_instalacao_origem: Optional[int] = None
-    status: str = "finalizada"
-
-
-class PesquisaCreate(PesquisaBase):
-    id_empresa: int
-    id_entrevistado: int
-
-
-class PesquisaResponse(PesquisaBase):
-    id_pesquisa: int
-    id_empresa: int
-    id_entrevistado: int
-    data_entrevista: str  # Retorna formatado como dd/mm/yyyy hh:mm:ss
-    data_atualizacao: Optional[str] = None  # Retorna formatado
-
-    @field_validator('data_entrevista', 'data_atualizacao', mode='before')
-    @classmethod
-    def format_datetime(cls, v):
-        """Formata datetime para dd/mm/yyyy hh:mm:ss no fuso de Brasília"""
-        if v is None:
-            return None
-        if isinstance(v, datetime):
-            return format_brasilia(v)
-        return v
-
-    class Config:
-        from_attributes = True
-
-# ============================================================
-# SUBMIT FORM - SCHEMA COMPLETO
-# ============================================================
 
 
 class SubmitFormData(BaseModel):
@@ -620,3 +432,18 @@ class SubmitFormResponse(BaseModel):
     id_empresa: Optional[int] = None
     id_entrevistado: Optional[int] = None
     produtos_inseridos: int = 0
+
+
+# ============================================================
+# DIVIDED PAYLOAD SCHEMAS (importados de arquivos separados)
+# ============================================================
+
+class DividedSubmitPayload(BaseModel):
+    """Schema principal para payload dividido em 4 subpayloads"""
+    empresa: EmpresaPayload
+    entrevistado: EntrevistadoPayload
+    pesquisa: PesquisaPayload
+    produtos: List[ProdutoTransportadoPayload]
+
+    class Config:
+        populate_by_name = True

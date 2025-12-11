@@ -1,8 +1,8 @@
 """
-Health router (minimal stubbed implementation)
-This file was replaced to avoid legacy field access while schemas/models are synchronized.
-Backups are in `backups/pre_models_routers_20251211`.
+Backup: app/routers/health/routes.py (pre-recreate)
 """
+
+# Original content saved for recovery
 
 from fastapi import APIRouter
 
@@ -10,7 +10,7 @@ router = APIRouter(tags=["health"])
 
 
 @router.get("/health")
-async def health_check():
+async def health_check_stub():
     return {"status": "OK", "database": "unknown", "timestamp": None}
 
 
