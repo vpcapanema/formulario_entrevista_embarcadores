@@ -24,10 +24,10 @@ const CoreAPI = {
     // ============================================================
     
     get BASE_URL() {
-        // Auto-detecção: produção (GitHub Pages) ou desenvolvimento (localhost)
+        // Auto-detecção: produção (GitHub Pages/Render) ou desenvolvimento (localhost)
         const hostname = window.location.hostname;
         
-        if (hostname.includes('github.io')) {
+        if (hostname.includes('github.io') || hostname.includes('onrender.com')) {
             // ✅ URL do backend em produção (Render.com)
             return 'https://formulario-entrevista-embarcadores.onrender.com';
         }
