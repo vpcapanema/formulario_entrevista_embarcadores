@@ -41,6 +41,8 @@ const CoreAPI = {
     
     MAX_RETRIES: 3,
     RETRY_DELAY: 1000, // ms
+    // Se true, usa o endpoint dividido (snake_case). Default: false (compatibilidade)
+    USE_DIVIDED_ENDPOINT: false,
     
     /**
      * Faz requisição HTTP com retry automático
@@ -121,7 +123,20 @@ const CoreAPI = {
      * @returns {Promise<Object>} Resposta com IDs das entidades criadas
      */
     async submitForm(formData) {
+        // Permite alternar para o novo endpoint sem quebrar o front-end atual
+        if (this.USE_DIVIDED_ENDPOINT) {
+            return this.submitFormDivided(formData);
+        }
+
         return this.post('/api/submit-form', formData);
+    },
+
+    /**
+     * Submete formulário usando o endpoint dividido (snake_case)
+     * @param {Object} formData - Dados coletados do formulário
+     */
+    async submitFormDivided(formData) {
+        return this.post('/api/submit-form-divided', formData);
     },
     
     // ============================================================
@@ -147,16 +162,52 @@ const CoreAPI = {
         try {
             const startTime = performance.now();
             
-            // 2. Fetch com caminho RELATIVO (arquivos em ./lists/)
-            const response = await fetch(`./lists/${fileName}`, {
-                method: 'GET',
-                cache: 'force-cache' // Prioriza cache do navegador
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${fileName} não encontrado`);
+            // 2. Tentar carregar JSON a partir de múltiplos caminhos possíveis
+            // Em desenvolvimento a pasta pode estar em frontend/html/lists/, em deploy em /lists/
+            const candidatePaths = [];
+
+            // Base relativa ao documento
+            candidatePaths.push(`./lists/${fileName}`);
+            candidatePaths.push(`/lists/${fileName}`);
+
+            // Tentar relativo ao script atual (caso scripts estejam em /frontend/js/)
+            try {
+                const scriptEl = document.querySelector('script[src*="core-api.js"]');
+                if (scriptEl && scriptEl.src) {
+                    const scriptUrl = new URL(scriptEl.src, window.location.href);
+                    const scriptBase = scriptUrl.href.replace(/\/core-api\.js(?:.*)?$/, '');
+                    candidatePaths.push(`${scriptBase}../html/lists/${fileName}`);
+                    candidatePaths.push(`${scriptBase}../lists/${fileName}`);
+                    candidatePaths.push(`${scriptBase}lists/${fileName}`);
+                }
+            } catch (e) {
+                // ignore URL errors
             }
-            
+
+            // Caminho provável quando a pasta 'frontend/html' é usada como raíz em servidores locais
+            candidatePaths.push('./frontend/html/lists/' + fileName);
+            candidatePaths.push('/frontend/html/lists/' + fileName);
+
+            let response = null;
+            let lastError = null;
+            for (const path of candidatePaths) {
+                try {
+                    response = await fetch(path, { method: 'GET', cache: 'force-cache' });
+                    if (response && response.ok) {
+                        break; // encontrado
+                    }
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+
+            if (!response || !response.ok) {
+                // Fornecer mensagem útil indicando os caminhos tentados
+                const tried = candidatePaths.join(', ');
+                const err = lastError || new Error('Nenhuma resposta válida');
+                throw new Error(`HTTP/Fetch falhou para ${fileName}. Caminhos tentados: ${tried}. Erro: ${err.message}`);
+            }
+
             const data = await response.json();
             this._cache[fileName] = data; // Salvar na RAM
             
