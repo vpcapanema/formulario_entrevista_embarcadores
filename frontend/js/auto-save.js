@@ -124,7 +124,7 @@ const AutoSave = {
         window.addEventListener('beforeunload', () => {
             if (!this._isRestoring) this._saveNow();
         });
-    }
+    },
 
     _clearFormFields(form) {
         // Limpar inputs de texto
@@ -152,7 +152,7 @@ const AutoSave = {
         form.querySelectorAll('.invalid').forEach(el => {
             el.classList.remove('invalid');
         });
-    }
+    },
     
 
     
