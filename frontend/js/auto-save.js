@@ -80,19 +80,33 @@ const AutoSave = {
             if (savedRaw) {
                 const meta = localStorage.getItem(this.TIMESTAMP_KEY);
                 const when = meta ? new Date(meta).toLocaleString('pt-BR') : 'anterior';
-                const ok = confirm(`Foi encontrado um rascunho salvo em ${when}.\nOK = Carregar rascunho / Cancelar = Iniciar nova pesquisa`);
+                console.log(`📦 Rascunho encontrado! Salvo em: ${when}`);
+                
+                const ok = confirm(`Foi encontrado um rascunho salvo em ${when}.\n\n✅ OK = Carregar rascunho no formulário\n❌ Cancelar = Iniciar nova pesquisa`);
+                
                 if (ok) {
-                    // Restaurar após pequeno delay para permitir que dropdowns e scripts carreguem
+                    console.log('✅ Usuário confirmou: CARREGAR RASCUNHO');
+                    console.log('⏳ Aguardando 1000ms para dropdowns carregarem...');
+                    
+                    // Restaurar após delay para permitir que dropdowns e scripts carreguem
                     setTimeout(() => {
-                        try { this._restoreData(JSON.parse(savedRaw)); } catch (err) { console.error('AutoSave: falha ao restaurar rascunho', err); }
-                    }, 250);
+                        console.log('🚀 Executando restauração agora...');
+                        try { 
+                            this._restoreData(JSON.parse(savedRaw)); 
+                        } catch (err) { 
+                            console.error('❌ AutoSave: falha ao restaurar rascunho', err); 
+                        }
+                    }, 1000);
                 } else {
+                    console.log('❌ Usuário cancelou: LIMPAR RASCUNHO');
                     this.clear();
                     this._clearFormFields(form);
                 }
+            } else {
+                console.log('ℹ️ Nenhum rascunho encontrado no localStorage');
             }
         } catch (err) {
-            console.warn('AutoSave: erro ao checar rascunho no início', err);
+            console.error('❌ AutoSave: erro ao checar rascunho no início', err);
         }
         
         console.log('🎨 AutoSave: Chamando _createStatusIndicator()...');
@@ -374,23 +388,30 @@ const AutoSave = {
                     if (!element) element = form.querySelector(`#${name.replace(/_/g,'-')}`);
                     if (!element) element = form.querySelector(`[name="${name.replace(/-/g,'_')}"]`);
                     if (!element) element = form.querySelector(`#${name.replace(/-/g,'_')}`);
+                    
                     if (element && element.tagName !== 'SELECT' && element.tagName !== 'TEXTAREA') {
                         const oldValue = element.value;
-                        element.value = data.fields[name] || '';
+                        const newValue = data.fields[name] || '';
+                        element.value = newValue;
                         
                         // Disparar eventos de change para validação/cascata
                         element.dispatchEvent(new Event('input', { bubbles: true }));
                         element.dispatchEvent(new Event('change', { bubbles: true }));
                         
-                        console.log(`✅ Campo restaurado: ${name} = "${element.value}" (era: "${oldValue}")`);
+                        if (newValue !== '') {
+                            console.log(`✅ Campo restaurado: ${name} = "${newValue}" (ID: ${element.id || 'sem id'})`);
+                        }
                         camposRestaurados++;
                     } else if (element && element.tagName === 'TEXTAREA') {
                         const oldValue = element.value;
-                        element.value = data.fields[name] || '';
+                        const newValue = data.fields[name] || '';
+                        element.value = newValue;
                         element.dispatchEvent(new Event('input', { bubbles: true }));
                         element.dispatchEvent(new Event('change', { bubbles: true }));
                         
-                        console.log(`✅ Textarea restaurado: ${name} = "${element.value}" (era: "${oldValue}")`);
+                        if (newValue !== '') {
+                            console.log(`✅ Textarea restaurado: ${name} = "${newValue}"`);
+                        }
                         camposRestaurados++;
                     } else if (!element) {
                         console.warn(`⚠️ Campo não encontrado: ${name}`);
@@ -608,7 +629,22 @@ const AutoSave = {
             
             this._updateIndicator('restored');
             this._isRestoring = false;
-            console.log('✅✅✅ Rascunho restaurado com sucesso! ✅✅✅');
+            
+            // Mensagem de sucesso mais visível
+            console.log('');
+            console.log('═══════════════════════════════════════════════');
+            console.log('✅✅✅ RASCUNHO RESTAURADO COM SUCESSO! ✅✅✅');
+            console.log('═══════════════════════════════════════════════');
+            console.log('');
+            console.log('📊 Todos os campos foram preenchidos com os dados salvos.');
+            console.log('🔍 Role a página para verificar os valores restaurados.');
+            console.log('');
+            
+            // Toast notification para feedback visual
+            this._showToast('✅ Rascunho carregado com sucesso!', 'success');
+            
+            // Scroll para o topo para o usuário ver os dados
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     },
     
