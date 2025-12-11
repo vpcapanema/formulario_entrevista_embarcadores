@@ -71,7 +71,9 @@ const AutoSave = {
             console.warn('⚠️ AutoSave: Formulário não encontrado');
             return;
         }
-
+        
+        console.log('🚀 AutoSave: Iniciando _setup()...');
+        
         // Mostrar prompt de rascunho IMEDIATAMENTE ao carregar a página
         try {
             const savedRaw = localStorage.getItem(this.STORAGE_KEY);
@@ -92,8 +94,10 @@ const AutoSave = {
         } catch (err) {
             console.warn('AutoSave: erro ao checar rascunho no início', err);
         }
+        
+        console.log('🎨 AutoSave: Chamando _createStatusIndicator()...');
         // Criar indicador visual (botão Exportar Rascunho + status)
-        try { this._createStatusIndicator(); } catch (e) { console.warn('AutoSave: _createStatusIndicator falhou', e); }
+        try { this._createStatusIndicator(); } catch (e) { console.error('❌ AutoSave: _createStatusIndicator falhou', e); }
 
         // Anexar listeners aos campos do formulário
         try { this._attachFieldListeners(form); } catch (e) { console.warn('AutoSave: _attachFieldListeners falhou', e); }
@@ -160,8 +164,13 @@ const AutoSave = {
      * Cria o indicador visual de status do auto-save
      */
     _createStatusIndicator() {
+        console.log('🔧 AutoSave: Criando indicador visual...');
+        
         // Verificar se já existe
-        if (document.getElementById('autosave-container')) return;
+        if (document.getElementById('autosave-container')) {
+            console.log('⚠️ AutoSave: Container já existe, pulando criação');
+            return;
+        }
         
         const container = document.createElement('div');
         container.id = 'autosave-container';
@@ -228,6 +237,8 @@ const AutoSave = {
         container.appendChild(indicator);
         container.appendChild(exportBtn);
         document.body.appendChild(container);
+        
+        console.log('✅ AutoSave: Indicador visual criado com sucesso!');
     },
     
     // ============================================================
