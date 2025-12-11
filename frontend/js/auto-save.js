@@ -75,53 +75,47 @@ const AutoSave = {
         // ⭐ MELHORADO: Carregar rascunho automaticamente se existir
         const savedData = localStorage.getItem(this.STORAGE_KEY);
         const savedTimestamp = localStorage.getItem(this.TIMESTAMP_KEY);
-        
-        if (savedData && savedTimestamp) {
+
+        // Se houver qualquer rascunho salvo, perguntar obrigatoriamente ao usuário
+        if (savedData) {
             try {
                 const data = JSON.parse(savedData);
-                const timestamp = new Date(savedTimestamp);
 
-                // Verificar se os dados são recentes (menos de 7 dias)
-                const daysDiff = (new Date() - timestamp) / (1000 * 60 * 60 * 24);
+                // Mostrar informação de timestamp se disponível
+                const formatted = savedTimestamp ? new Date(savedTimestamp).toLocaleString('pt-BR') : 'um rascunho anterior';
+                const mensagem = `Foi encontrado um rascunho salvo em ${formatted}.\n\nDeseja carregar o último rascunho salvo?\n(OK = Carregar rascunho / Cancelar = Iniciar nova pesquisa)`;
 
-                // Se houver rascunho válido (mesmo que seja antigo, vamos perguntar ao usuário)
-                if (daysDiff <= 365) { // permitir rascunhos até 1 ano para pergunta de carregamento
-                    // Perguntar ao usuário: carregar rascunho ou iniciar nova pesquisa
-                    const formatted = timestamp.toLocaleString('pt-BR');
-                    const mensagem = `Foi encontrado um rascunho salvo em ${formatted}.\n\nDeseja carregar o último rascunho salvo?\n(OK = Carregar rascunho / Cancelar = Iniciar nova pesquisa)`;
+                // Usar confirm: OK -> carregar; Cancel -> iniciar nova pesquisa
+                const carregar = confirm(mensagem);
 
-                    // Usar confirm: OK -> carregar; Cancel -> iniciar nova pesquisa
-                    const carregar = confirm(mensagem);
+                if (carregar) {
+                    console.log('🔄 Usuário escolheu carregar o rascunho...');
+                    this._restoreData(data);
+                    this._createStatusIndicator();
+                    this._attachFieldListeners(form);
+                    this._initialized = true;
 
-                    if (carregar) {
-                        console.log('🔄 Usuário escolheu carregar o rascunho...');
-                        this._restoreData(data);
-                        this._createStatusIndicator();
-                        this._attachFieldListeners(form);
-                        this._initialized = true;
+                    // Adicionar botão "Nova Pesquisa" na interface para permitir limpeza manual
+                    this._addNewResearchButton();
 
-                        // Adicionar botão "Nova Pesquisa" na interface para permitir limpeza manual
-                        this._addNewResearchButton();
+                    // Salvar antes de fechar a página
+                    window.addEventListener('beforeunload', (e) => {
+                        if (this._hasUnsavedData()) {
+                            this._saveNow();
+                        }
+                    });
 
-                        // Salvar antes de fechar a página
-                        window.addEventListener('beforeunload', (e) => {
-                            if (this._hasUnsavedData()) {
-                                this._saveNow();
-                            }
-                        });
-
-                        console.log('✅ AutoSave inicializado - Rascunho carregado por escolha do usuário');
-                        return;
-                    } else {
-                        // Usuário escolheu iniciar nova pesquisa -> limpar storage e recarregar
-                        console.log('🆕 Usuário escolheu iniciar nova pesquisa - limpando rascunho e recarregando...');
-                        this.clear();
-                        // Garantir que formulário seja limpo antes do reload
-                        this._clearFormFields(form);
-                        // Forçar reload para iniciar fluxo limpo (autosave reiniciará sem rascunho)
-                        location.reload();
-                        return; // evitar continuar execução (será recarregado)
-                    }
+                    console.log('✅ AutoSave inicializado - Rascunho carregado por escolha do usuário');
+                    return;
+                } else {
+                    // Usuário escolheu iniciar nova pesquisa -> limpar storage e recarregar
+                    console.log('🆕 Usuário escolheu iniciar nova pesquisa - limpando rascunho e recarregando...');
+                    this.clear();
+                    // Garantir que formulário seja limpo antes do reload
+                    this._clearFormFields(form);
+                    // Forçar reload para iniciar fluxo limpo (autosave reiniciará sem rascunho)
+                    location.reload();
+                    return; // evitar continuar execução (será recarregado)
                 }
             } catch (error) {
                 console.error('❌ AutoSave: Erro ao verificar rascunho', error);
@@ -1392,6 +1386,12 @@ const AutoSave = {
 
 // Exportar para uso global
 window.AutoSave = AutoSave;
+
+// Aliases globais (facilitam chamadas manuais e testes rápidos no console)
+window.autosaveForm = AutoSave.saveManual.bind(AutoSave);
+window.getAutosaveData = AutoSave.getSavedData.bind(AutoSave);
+window.clearAutosave = AutoSave.clear.bind(AutoSave);
+window.getAutosaveLastTime = AutoSave.getLastSaveTime.bind(AutoSave);
 
 // Inicializar automaticamente
 AutoSave.init();
