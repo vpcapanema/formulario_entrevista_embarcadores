@@ -71,7 +71,12 @@ const AutoSave = {
             console.warn('⚠️ AutoSave: Formulário não encontrado');
             return;
         }
-        
+        // Criar indicador visual (botão Exportar Rascunho + status)
+        try { this._createStatusIndicator(); } catch (e) { console.warn('AutoSave: _createStatusIndicator falhou', e); }
+
+        // Anexar listeners aos campos do formulário
+        try { this._attachFieldListeners(form); } catch (e) { console.warn('AutoSave: _attachFieldListeners falhou', e); }
+
         // ⭐ MELHORADO: tentar pré-carregar listas auxiliares (paises/estados/entrevistadores)
         // Isso ajuda a garantir que os <select>s existam antes de restaurar o rascunho
         (async () => {
@@ -311,6 +316,38 @@ const AutoSave = {
 
                     AutoSave.init();
      */
+            } catch (e) {
+                // não bloquear o fluxo principal se pré-load falhar
+                console.debug('AutoSave: pré-load de listas falhou (não bloqueante)', e);
+            }
+
+        // Verificar rascunho existente e perguntar ao usuário se deseja restaurar
+        try {
+            const savedRaw = localStorage.getItem(this.STORAGE_KEY);
+            if (savedRaw) {
+                const meta = localStorage.getItem(this.TIMESTAMP_KEY);
+                const when = meta ? new Date(meta).toLocaleString('pt-BR') : 'anterior';
+                const ok = confirm(`Foi encontrado um rascunho salvo em ${when}.\nOK = Carregar rascunho / Cancelar = Iniciar nova pesquisa`);
+                if (ok) {
+                    try {
+                        const saved = JSON.parse(savedRaw);
+                        this._restoreData(saved);
+                    } catch (err) {
+                        console.error('AutoSave: falha ao restaurar rascunho', err);
+                    }
+                } else {
+                    this.clear();
+                    this._clearFormFields(form);
+                }
+            }
+        } catch (err) {
+            console.warn('AutoSave: erro ao verificar rascunho', err);
+        }
+
+        // Garantir salvamento ao sair da página
+        window.addEventListener('beforeunload', () => {
+            if (!this._isRestoring) this._saveNow();
+        });
     _clearFormFields(form) {
         // Limpar inputs de texto
         form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea').forEach(el => {
