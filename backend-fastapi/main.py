@@ -64,15 +64,15 @@ allowed_origins_str = os.getenv(
 )
 allowed_origins = [origin.strip() for origin in allowed_origins_str.split(',')]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=allowed_origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
-logger.info(f"✅ CORS habilitado para: {allowed_origins}")
+# logger.info(f"✅ CORS habilitado para: {allowed_origins}")
 
 # ============================================================
 # MIDDLEWARE DE CACHE PARA ARQUIVOS ESTÁTICOS
@@ -108,11 +108,11 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
         return response
 
 
-app.add_middleware(CacheControlMiddleware)
-logger.info(
-    "✅ Cache Control middleware habilitado "
-    "(JSONs: 1 ano, assets: 1 hora)"
-)
+# app.add_middleware(CacheControlMiddleware)
+# logger.info(
+#     "✅ Cache Control middleware habilitado "
+#     "(JSONs: 1 ano, assets: 1 hora)"
+# )
 
 # ============================================================
 # MONTAR ARQUIVOS ESTÁTICOS DO FRONTEND (se existir)
@@ -121,78 +121,78 @@ logger.info(
 # Caminho para o frontend (relativo ao backend-fastapi)
 frontend_path = Path(__file__).parent.parent / "frontend"
 
-# Montar arquivos estáticos APENAS se diretórios existirem
-# Em produção (Render/Railway), frontend não existe no container
-if frontend_path.exists():
-    try:
-        if (frontend_path / "css").exists():
-            app.mount(
-                "/css",
-                StaticFiles(directory=str(frontend_path / "css")),
-                name="css"
-            )
-        if (frontend_path / "js").exists():
-            app.mount(
-                "/js",
-                StaticFiles(directory=str(frontend_path / "js")),
-                name="js"
-            )
-        if (frontend_path / "assets").exists():
-            app.mount(
-                "/assets",
-                StaticFiles(directory=str(frontend_path / "assets")),
-                name="assets"
-            )
-        if (frontend_path / "vendor").exists():
-            app.mount(
-                "/vendor",
-                StaticFiles(directory=str(frontend_path / "vendor")),
-                name="vendor"
-            )
-        if (frontend_path / "html").exists():
-            app.mount(
-                "/html",
-                StaticFiles(directory=str(frontend_path / "html"), html=True),
-                name="html"
-            )
+# # Montar arquivos estáticos APENAS se diretórios existirem
+# # Em produção (Render/Railway), frontend não existe no container
+# if frontend_path.exists():
+#     try:
+#         if (frontend_path / "css").exists():
+#             app.mount(
+#                 "/css",
+#                 StaticFiles(directory=str(frontend_path / "css")),
+#                 name="css"
+#             )
+#         if (frontend_path / "js").exists():
+#             app.mount(
+#                 "/js",
+#                 StaticFiles(directory=str(frontend_path / "js")),
+#                 name="js"
+#             )
+#         if (frontend_path / "assets").exists():
+#             app.mount(
+#                 "/assets",
+#                 StaticFiles(directory=str(frontend_path / "assets")),
+#                 name="assets"
+#             )
+#         if (frontend_path / "vendor").exists():
+#             app.mount(
+#                 "/vendor",
+#                 StaticFiles(directory=str(frontend_path / "vendor")),
+#                 name="vendor"
+#             )
+#         if (frontend_path / "html").exists():
+#             app.mount(
+#                 "/html",
+#                 StaticFiles(directory=str(frontend_path / "html"), html=True),
+#                 name="html"
+#             )
 
-        # NOVO: Montar JSONs estáticos de listas (cache habilitado)
-        lists_path = frontend_path / "html" / "lists"
-        if lists_path.exists():
-            app.mount(
-                "/lists",
-                StaticFiles(directory=str(lists_path)),
-                name="lists"
-            )
-            logger.info("📂 JSONs de listas disponíveis em: /lists/")
+#         # NOVO: Montar JSONs estáticos de listas (cache habilitado)
+# #         lists_path = frontend_path / "html" / "lists"
+#         if lists_path.exists():
+#             app.mount(
+#                 "/lists",
+#                 StaticFiles(directory=str(lists_path)),
+#                 name="lists"
+#             )
+#             logger.info("📂 JSONs de listas disponíveis em: /lists/")
 
-        logger.info(f"📁 Frontend estático montado de: {frontend_path}")
-    except Exception as e:
-        logger.warning(f"⚠️  Erro ao montar frontend: {e}")
-        logger.warning(
-            "⚠️  API rodando SEM arquivos estáticos (modo API-only)"
-        )
-else:
-    logger.info(
-        "📡 Modo API-only (frontend não encontrado - normal em produção)"
-    )
-    logger.info("📡 Frontend servido separadamente via GitHub Pages")
+#         logger.info(f"📁 Frontend estático montado de: {frontend_path}")
+#     except Exception as e:
+#         logger.warning(f"⚠️  Erro ao montar frontend: {e}")
+#         logger.warning(
+#             "⚠️  API rodando SEM arquivos estáticos (modo API-only)"
+#         )
+# else:
+#     logger.info(
+#         "📡 Modo API-only (frontend não encontrado - normal em produção)"
+#     )
+#     logger.info("📡 Frontend servido separadamente via GitHub Pages")
 
 # ============================================================
 # REGISTRAR ROUTERS (MODULARIZADOS)
 # ============================================================
 
 app.include_router(health_router.router)    # GET /health, /info
-app.include_router(submit_router.router)    # POST /api/submit-form
-app.include_router(pesquisas_router)        # GET /api/pesquisas/* (NOVO)
+app.include_router(submit_router.router)    # POST /api/submit-form, /api/submit-form-divided
+# app.include_router(pesquisas_router)        # GET /api/pesquisas/* (NOVO) - TEMPORARIAMENTE DESABILITADO
 # app.include_router(lists_router.router)   # DEPRECATED: JSONs estáticos
-app.include_router(analytics_router.router)  # GET /api/analytics/*
+# app.include_router(analytics_router.router)  # GET /api/analytics/* - TEMPORARIAMENTE DESABILITADO
 # GET /api/external/cnpj/*
-app.include_router(
-    external_router,
-    prefix="/api/external",
-    tags=["External APIs"]
-)
+# app.include_router(
+#     external_router,
+#     prefix="/api/external",
+#     tags=["External APIs"]
+# )
 
 # ============================================================
 # ROOT ENDPOINT - SERVIR INDEX.HTML
@@ -205,13 +205,38 @@ async def root():
     Root endpoint - redireciona para /info em produção
     Serve index.html em desenvolvimento (se frontend existir)
     """
-    index_path = frontend_path / "html" / "index.html"
-    if index_path.exists():
-        return FileResponse(str(index_path))
-    else:
-        # Em produção (sem frontend), redirecionar para /info
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/info")
+    # Possíveis localizações do index.html (ambientes variados)
+    candidate_paths = []
+
+    # 1) Padrão do repositório: frontend/html/index.html
+    candidate_paths.append(frontend_path / "html" / "index.html")
+
+    # 2) Padrão alternativo: frontend/index.html
+    candidate_paths.append(frontend_path / "index.html")
+
+    # 3) Caminho absoluto configurável via ENV (útil em containers/prod)
+    env_path = os.getenv('FRONTEND_STATIC_PATH')
+    if env_path:
+        candidate_paths.append(Path(env_path) / "index.html")
+
+    # 4) Caminhos relativos à raiz do projeto (quando executado fora do package)
+    candidate_paths.append(Path.cwd() / "frontend" / "html" / "index.html")
+    candidate_paths.append(Path.cwd() / "frontend" / "index.html")
+
+    # Retornar o primeiro index.html encontrado
+    for p in candidate_paths:
+        try:
+            if p and p.exists():
+                logger.info(f"📄 Servindo frontend index.html de: {p}")
+                return FileResponse(str(p))
+        except Exception:
+            # ignorar erros de permissão e continuar buscando
+            continue
+
+    # Em produção (sem frontend disponível), redirecionar para /info
+    from fastapi.responses import RedirectResponse
+    logger.info("📡 Frontend não encontrado localmente - redirecionando para /info")
+    return RedirectResponse(url="/info")
 
 
 # ============================================================
@@ -219,35 +244,47 @@ async def root():
 # ============================================================
 
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Executa ao iniciar a aplicação
-    """
-    logger.info("="*60)
-    logger.info("🚀 PLI 2050 - API Sistema de Formulários v2.0.0")
-    logger.info("="*60)
-    logger.info("📡 Framework: FastAPI")
-    logger.info("📊 Database: PostgreSQL (RDS AWS)")
-    logger.info(
-        f"🔒 CORS: {len(allowed_origins)} origens permitidas"
-    )
-    logger.info("")
-    logger.info("🌐 URLs Disponíveis:")
-    logger.info("   🏠 Frontend: http://localhost:8010/")
-    logger.info(
-        "   📋 Formulário: http://localhost:8010/html/index.html"
-    )
-    logger.info(
-        "   📊 Analytics: http://localhost:8010/html/analytics.html"
-    )
-    logger.info(
-        "   📄 Respostas: http://localhost:8010/html/respostas.html"
-    )
-    logger.info("   📚 API Docs: http://localhost:8010/docs")
-    logger.info("   🏥 Health Check: http://localhost:8010/health")
-    logger.info("")
-    logger.info("="*60)
+# @app.on_event("startup")
+# async def startup_event():
+#     """
+#     Executa ao iniciar a aplicação
+#     """
+#     logger.info("="*60)
+#     logger.info("🚀 PLI 2050 - API Sistema de Formulários v2.0.0")
+#     logger.info("="*60)
+#     logger.info("📡 Framework: FastAPI")
+#     logger.info("📊 Database: PostgreSQL (RDS AWS)")
+#     logger.info(
+#         f"🔒 CORS: {len(allowed_origins)} origens permitidas"
+#     )
+#     logger.info("")
+# 
+#     # Testar conexão com banco de dados
+#     try:
+#         logger.info("🔍 Testando conexão com banco de dados...")
+#         # Temporariamente desabilitado para debug
+#         logger.info("✅ Teste de conexão temporariamente desabilitado")
+#     except Exception as e:
+#         logger.error(f"❌ Erro na conexão com banco: {e}")
+#         logger.error("🛑 Servidor será interrompido devido a erro de banco")
+#         # Não levantar exceção aqui pois pode causar problemas no startup
+#         # Apenas logar o erro
+# 
+#     logger.info("🌐 URLs Disponíveis:")
+#     logger.info("   🏠 Frontend: http://localhost:8010/")
+#     logger.info(
+#         "   📋 Formulário: http://localhost:8010/html/index.html"
+#     )
+#     logger.info(
+#         "   📊 Analytics: http://localhost:8010/html/analytics.html"
+#     )
+#     logger.info(
+#         "   📄 Respostas: http://localhost:8010/html/respostas.html"
+#     )
+#     logger.info("   📚 API Docs: http://localhost:8010/docs")
+#     logger.info("   🏥 Health Check: http://localhost:8010/health")
+#     logger.info("")
+#     logger.info("="*60)
 
 
 # ============================================================
@@ -255,13 +292,13 @@ async def startup_event():
 # ============================================================
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """
-    Executa ao desligar a aplicação
-    """
-    logger.info("⏹️  Desligando API PLI 2050...")
-    logger.info("✅ API finalizada")
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     """
+#     Executa ao desligar a aplicação
+#     """
+#     logger.info("⏹️  Desligando API PLI 2050...")
+#     logger.info("✅ API finalizada")
 
 
 # ============================================================
@@ -275,13 +312,12 @@ if __name__ == "__main__":
     # Configurações
     host = os.getenv("UVICORN_HOST", "127.0.0.1")
     port = int(os.getenv("UVICORN_PORT", "8000"))
-    reload = os.getenv("UVICORN_RELOAD", "true").lower() == "true"
     
     # Rodar servidor
     uvicorn.run(
-        "main:app",
+        "main:app",  # String path
         host=host,
         port=port,
-        reload=reload,
+        reload=False,  # Reload desabilitado para testes
         log_level="info"
     )
