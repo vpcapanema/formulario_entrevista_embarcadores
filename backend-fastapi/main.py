@@ -121,62 +121,67 @@ class CacheControlMiddleware(BaseHTTPMiddleware):
 # Caminho para o frontend (relativo ao backend-fastapi)
 frontend_path = Path(__file__).parent.parent / "frontend"
 
-# # Montar arquivos estáticos APENAS se diretórios existirem
-# # Em produção (Render/Railway), frontend não existe no container
-# if frontend_path.exists():
-#     try:
-#         if (frontend_path / "css").exists():
-#             app.mount(
-#                 "/css",
-#                 StaticFiles(directory=str(frontend_path / "css")),
-#                 name="css"
-#             )
-#         if (frontend_path / "js").exists():
-#             app.mount(
-#                 "/js",
-#                 StaticFiles(directory=str(frontend_path / "js")),
-#                 name="js"
-#             )
-#         if (frontend_path / "assets").exists():
-#             app.mount(
-#                 "/assets",
-#                 StaticFiles(directory=str(frontend_path / "assets")),
-#                 name="assets"
-#             )
-#         if (frontend_path / "vendor").exists():
-#             app.mount(
-#                 "/vendor",
-#                 StaticFiles(directory=str(frontend_path / "vendor")),
-#                 name="vendor"
-#             )
-#         if (frontend_path / "html").exists():
-#             app.mount(
-#                 "/html",
-#                 StaticFiles(directory=str(frontend_path / "html"), html=True),
-#                 name="html"
-#             )
+# Montar arquivos estáticos APENAS se diretórios existirem
+# Em produção, quando o repositório incluir o frontend, isso permite servir
+if frontend_path.exists():
+    try:
+        # CSS
+        if (frontend_path / "css").exists():
+            app.mount(
+                "/css",
+                StaticFiles(directory=str(frontend_path / "css")),
+                name="css"
+            )
 
-#         # NOVO: Montar JSONs estáticos de listas (cache habilitado)
-# #         lists_path = frontend_path / "html" / "lists"
-#         if lists_path.exists():
-#             app.mount(
-#                 "/lists",
-#                 StaticFiles(directory=str(lists_path)),
-#                 name="lists"
-#             )
-#             logger.info("📂 JSONs de listas disponíveis em: /lists/")
+        # JS
+        if (frontend_path / "js").exists():
+            app.mount(
+                "/js",
+                StaticFiles(directory=str(frontend_path / "js")),
+                name="js"
+            )
 
-#         logger.info(f"📁 Frontend estático montado de: {frontend_path}")
-#     except Exception as e:
-#         logger.warning(f"⚠️  Erro ao montar frontend: {e}")
-#         logger.warning(
-#             "⚠️  API rodando SEM arquivos estáticos (modo API-only)"
-#         )
-# else:
-#     logger.info(
-#         "📡 Modo API-only (frontend não encontrado - normal em produção)"
-#     )
-#     logger.info("📡 Frontend servido separadamente via GitHub Pages")
+        # Assets
+        if (frontend_path / "assets").exists():
+            app.mount(
+                "/assets",
+                StaticFiles(directory=str(frontend_path / "assets")),
+                name="assets"
+            )
+
+        # Vendor
+        if (frontend_path / "vendor").exists():
+            app.mount(
+                "/vendor",
+                StaticFiles(directory=str(frontend_path / "vendor")),
+                name="vendor"
+            )
+
+        # HTML (páginas estáticas)
+        if (frontend_path / "html").exists():
+            app.mount(
+                "/html",
+                StaticFiles(directory=str(frontend_path / "html"), html=True),
+                name="html"
+            )
+
+        # JSONs de listas (frontend/html/lists)
+        lists_path = frontend_path / "html" / "lists"
+        if lists_path.exists():
+            app.mount(
+                "/lists",
+                StaticFiles(directory=str(lists_path)),
+                name="lists"
+            )
+            logger.info("📂 JSONs de listas disponíveis em: /lists/")
+
+        logger.info(f"📁 Frontend estático montado de: {frontend_path}")
+    except Exception as e:
+        logger.warning(f"⚠️  Erro ao montar frontend: {e}")
+        logger.warning("⚠️  API rodando SEM arquivos estáticos (modo API-only)")
+else:
+    logger.info("📡 Modo API-only (frontend não encontrado - normal em produção)")
+    logger.info("📡 Frontend servido separadamente via GitHub Pages")
 
 # ============================================================
 # REGISTRAR ROUTERS (MODULARIZADOS)
