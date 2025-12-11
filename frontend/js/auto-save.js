@@ -336,7 +336,7 @@ const AutoSave = {
                     window.getAutosaveLastTime = AutoSave.getLastSaveTime;
 
                     AutoSave.init();
-     */
+                    
             } catch (e) {
                 // não bloquear o fluxo principal se pré-load falhar
                 console.debug('AutoSave: pré-load de listas falhou (não bloqueante)', e);
