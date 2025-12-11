@@ -427,7 +427,13 @@ const AutoSave = {
                     // Pular labels (não são campos reais, só para export)
                     if (name.endsWith('-label')) return;
                     
-                    const element = form.querySelector(`[name="${name}"]`);
+                    // Procura por name, fallback para id e variações com '-' / '_'
+                    let element = form.querySelector(`[name="${name}"]`);
+                    if (!element) element = form.querySelector(`#${name}`);
+                    if (!element) element = form.querySelector(`[name="${name.replace(/_/g,'-')}"]`);
+                    if (!element) element = form.querySelector(`#${name.replace(/_/g,'-')}`);
+                    if (!element) element = form.querySelector(`[name="${name.replace(/-/g,'_')}"]`);
+                    if (!element) element = form.querySelector(`#${name.replace(/-/g,'_')}`);
                     if (element && element.tagName !== 'SELECT' && element.tagName !== 'TEXTAREA') {
                         const oldValue = element.value;
                         element.value = data.fields[name] || '';
@@ -767,17 +773,23 @@ const AutoSave = {
             produtos: []
         };
         
-        // Coletar inputs de texto/número - salvar TODOS os campos (mesmo vazios)
-        form.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="tel"]').forEach(input => {
-            if (input.name) {
+        // Coletar inputs - salvar TODOS os campos relevantes (mesmo vazios)
+        // Excluir apenas controles que não representam dados do usuário
+        form.querySelectorAll('input').forEach(input => {
+            const excludeTypes = ['submit','button','reset','file'];
+            if (!input.name) return;
+            if (excludeTypes.includes(String(input.type).toLowerCase())) return;
+            try {
                 data.fields[input.name] = input.value == null ? '' : String(input.value);
+            } catch (err) {
+                data.fields[input.name] = '';
             }
         });
-        
-        // Coletar textareas
+
+        // Coletar textareas (salvar mesmo vazios)
         form.querySelectorAll('textarea').forEach(textarea => {
-            if (textarea.name && textarea.value) {
-                data.fields[textarea.name] = textarea.value;
+            if (textarea.name) {
+                data.fields[textarea.name] = textarea.value == null ? '' : String(textarea.value);
             }
         });
         

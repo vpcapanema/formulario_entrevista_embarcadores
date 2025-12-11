@@ -1,0 +1,11 @@
+{
+  "name": "pli2050-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:autosave": "node ./frontend/tests/autosave_puppeteer_test.js",
+    "test:legacy": "python ./backend-fastapi/testar_endpoint_legacy.py",
+    "test:divided": "python ./backend-fastapi/testar_endpoint_divided.py",
+    "test:all": "npm run test:divided && npm run test:legacy && npm run test:autosave"
+  }
+}
