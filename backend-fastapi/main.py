@@ -244,6 +244,65 @@ async def root():
     return RedirectResponse(url="/info")
 
 
+@app.get("/debug/frontend-files")
+async def debug_frontend_files():
+    """Endpoint temporário de debug que lista possíveis caminhos e arquivos encontrados."""
+    results = {}
+
+    candidate_paths = {
+        'repo_frontend_html': frontend_path / 'html',
+        'repo_frontend_root': frontend_path,
+        'cwd_frontend_html': Path.cwd() / 'frontend' / 'html',
+        'cwd_frontend_root': Path.cwd() / 'frontend'
+    }
+
+    env_path = os.getenv('FRONTEND_STATIC_PATH')
+    if env_path:
+        candidate_paths['env_frontend'] = Path(env_path)
+
+    for name, p in candidate_paths.items():
+        try:
+            exists = p.exists()
+            files = []
+            if exists and p.is_dir():
+                # listar até 100 itens para evitar payload grande
+                for i, child in enumerate(sorted(p.iterdir())):
+                    if i >= 100:
+                        files.append('...')
+                        break
+                    files.append(child.name)
+            results[name] = {
+                'path': str(p),
+                'exists': exists,
+                'is_dir': p.is_dir() if p.exists() else False,
+                'sample_files': files
+            }
+        except Exception as e:
+            results[name] = {'path': str(p), 'error': str(e)}
+
+    # Checar especificamente por index.html e lists/estados.json nas localizações mais prováveis
+    checks = []
+    check_paths = [
+        frontend_path / 'html' / 'index.html',
+        frontend_path / 'index.html',
+        frontend_path / 'html' / 'lists' / 'estados.json',
+    ]
+    if env_path:
+        check_paths.extend([Path(env_path) / 'index.html', Path(env_path) / 'lists' / 'estados.json'])
+
+    for cp in check_paths:
+        try:
+            checks.append({'path': str(cp), 'exists': cp.exists(), 'size': cp.stat().st_size if cp.exists() else None})
+        except Exception:
+            checks.append({'path': str(cp), 'exists': False, 'error': 'stat failed'})
+
+    return {
+        'summary': 'debug frontend files',
+        'candidates': results,
+        'checks': checks
+    }
+
+
 # ============================================================
 # STARTUP EVENT
 # ============================================================
