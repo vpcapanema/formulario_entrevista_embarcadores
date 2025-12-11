@@ -238,10 +238,11 @@ async def root():
             # ignorar erros de permissão e continuar buscando
             continue
 
-    # Em produção (sem frontend disponível), redirecionar para /info
+    # Em produção (sem frontend disponível), redirecionar para GitHub Pages se configurado
     from fastapi.responses import RedirectResponse
-    logger.info("📡 Frontend não encontrado localmente - redirecionando para /info")
-    return RedirectResponse(url="/info")
+    pages_url = os.getenv('FRONTEND_PAGES_URL') or 'https://vpcapanema.github.io/formulario_entrevista_embarcadores/html/index.html'
+    logger.info(f"📡 Frontend não encontrado localmente - redirecionando para {pages_url}")
+    return RedirectResponse(url=pages_url)
 
 
 @app.get("/debug/frontend-files")
