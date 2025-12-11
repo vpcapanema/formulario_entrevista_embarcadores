@@ -12,7 +12,7 @@ import logging
 import httpx
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/api/external", tags=["external"])
+router = APIRouter(tags=["external"])
 logger = logging.getLogger(__name__)
 
 # URL base da BrasilAPI
@@ -55,16 +55,16 @@ async def consultar_cnpj(cnpj: str) -> CNPJResponse:
             )
             
             if response.status_code == 404:
-                return CNPJResponse(
-                    success=False,
-                    message="CNPJ não encontrado na base da Receita Federal"
+                raise HTTPException(
+                    status_code=404,
+                    detail="CNPJ não encontrado na base da Receita Federal"
                 )
             
             if response.status_code != 200:
                 logger.error(f"❌ BrasilAPI retornou status {response.status_code}: {response.text}")
-                return CNPJResponse(
-                    success=False,
-                    message=f"Erro ao consultar CNPJ (status {response.status_code})"
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Erro ao consultar CNPJ (status {response.status_code})"
                 )
             
             dados_api = response.json()
@@ -106,23 +106,26 @@ async def consultar_cnpj(cnpj: str) -> CNPJResponse:
                 data=dados_formatados
             )
             
+    except HTTPException:
+        # Re-levantar HTTPException para que FastAPI trate corretamente
+        raise
     except httpx.TimeoutException:
         logger.error("❌ Timeout ao consultar BrasilAPI")
-        return CNPJResponse(
-            success=False,
-            message="Timeout: BrasilAPI demorou muito para responder (>10s)"
+        raise HTTPException(
+            status_code=504,
+            detail="Timeout: BrasilAPI demorou muito para responder (>10s)"
         )
     except httpx.RequestError as e:
         logger.error(f"❌ Erro de rede ao consultar BrasilAPI: {e}")
-        return CNPJResponse(
-            success=False,
-            message=f"Erro de conexão com BrasilAPI: {str(e)}"
+        raise HTTPException(
+            status_code=503,
+            detail=f"Erro de conexão com BrasilAPI: {str(e)}"
         )
     except Exception as e:
         logger.error(f"❌ Erro inesperado ao consultar CNPJ: {e}")
-        return CNPJResponse(
-            success=False,
-            message=f"Erro interno: {str(e)}"
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erro interno: {str(e)}"
         )
 
 
