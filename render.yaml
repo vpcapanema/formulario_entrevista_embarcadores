@@ -2,10 +2,23 @@ version: "1"
 services:
   - type: web
     name: pli2050-backend
-    runtime: node
+    # Usar runtime Python para rodar FastAPI + Uvicorn
+    runtime: python
     region: oregon
     plan: free
     branch: main
+    buildCommand: >-
+      # Instalar dependências Python e copiar pasta frontend para dentro do backend
+      if [ -f backend-fastapi/requirements.txt ]; then
+        python -m pip install --upgrade pip && python -m pip install -r backend-fastapi/requirements.txt;
+      fi
+      # Garantir que o diretório frontend esteja disponível para o backend
+      if [ -d frontend ]; then
+        rm -rf backend-fastapi/frontend || true; mkdir -p backend-fastapi; cp -R frontend backend-fastapi/frontend || true;
+      fi
+    startCommand: >-
+      # Start Uvicorn apontando para backend-fastapi.main
+      uvicorn backend-fastapi.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PGHOST
         value: sigma-pli-postgresql-db.cwlmgwc4igdh.us-east-1.rds.amazonaws.com
