@@ -368,48 +368,76 @@ const PDFGenerator = {
         
         yPosition += 12;
         
-        // Tabela usando autoTable
-        const tableData = produtos.map(p => [
-            p.carga || '-',
-            p.movimentacao ? `${p.movimentacao.toLocaleString('pt-BR')} ton/ano` : '-',
-            p.origem || '-',
-            p.destino || '-',
-            p.distancia ? `${p.distancia} km` : '-',
-            p.modalidade || '-',
-            p.observacoes || '-'
-        ]);
-        
+        // Tabela usando autoTable - expandida para conter todos os campos do schema
+        const tableData = produtos.map(p => {
+            // origem/destino: aceitar campos compactos (origem/destino) ou detalhados (origem_pais, origem_estado,...)
+            const origemPais = p.origem_pais || (p.origem && p.origem.pais) || p.origem || '-';
+            const origemEstado = p.origem_estado || (p.origem && p.origem.estado) || p.origem_estado || '-';
+            const origemMunicipio = p.origem_municipio || (p.origem && p.origem.municipio) || p.origem_municipio || '-';
+
+            const destinoPais = p.destino_pais || (p.destino && p.destino.pais) || p.destino || '-';
+            const destinoEstado = p.destino_estado || (p.destino && p.destino.estado) || p.destino_estado || '-';
+            const destinoMunicipio = p.destino_municipio || (p.destino && p.destino.municipio) || p.destino_municipio || '-';
+
+            return [
+                p.carga || '-',
+                p.movimentacao != null ? `${Number(p.movimentacao).toLocaleString('pt-BR')} ton/ano` : '-',
+                p.acondicionamento || '-',
+                p.ordem != null ? String(p.ordem) : '-',
+                origemPais,
+                origemEstado,
+                origemMunicipio,
+                destinoPais,
+                destinoEstado,
+                destinoMunicipio,
+                p.distancia != null ? `${p.distancia} km` : '-',
+                p.modalidade || '-',
+                p.observacoes || '-'
+            ];
+        });
+
         doc.autoTable({
             startY: yPosition,
-            head: [['Produto', 'Movimentação', 'Origem', 'Destino', 'Distância', 'Modal', 'Observações']],
+            head: [[
+                'Produto', 'Movimentação', 'Acondicionamento', 'Ordem',
+                'Origem (País)', 'Origem (Estado)', 'Origem (Município)',
+                'Destino (País)', 'Destino (Estado)', 'Destino (Município)',
+                'Distância', 'Modal', 'Observações'
+            ]],
             body: tableData,
             margin: { left: 15, right: 15 },
             theme: 'grid',
             headStyles: {
                 fillColor: [59, 130, 246],
                 textColor: [255, 255, 255],
-                fontSize: 9,
+                fontSize: 8,
                 fontStyle: 'bold',
                 halign: 'left'
             },
             bodyStyles: {
-                fontSize: 8,
+                fontSize: 7.5,
                 textColor: [31, 41, 55]
             },
             alternateRowStyles: {
                 fillColor: [249, 250, 251]
             },
             columnStyles: {
-                0: { cellWidth: 40 },
-                1: { cellWidth: 30 },
-                2: { cellWidth: 35 },
-                3: { cellWidth: 35 },
-                4: { cellWidth: 20 },
-                5: { cellWidth: 20 },
-                6: { cellWidth: 40 }
+                0: { cellWidth: 36 }, // Produto
+                1: { cellWidth: 24 }, // Movimentação
+                2: { cellWidth: 28 }, // Acondicionamento
+                3: { cellWidth: 12 }, // Ordem
+                4: { cellWidth: 22 }, // Origem País
+                5: { cellWidth: 18 }, // Origem Estado
+                6: { cellWidth: 28 }, // Origem Município
+                7: { cellWidth: 22 }, // Destino País
+                8: { cellWidth: 18 }, // Destino Estado
+                9: { cellWidth: 28 }, // Destino Município
+                10: { cellWidth: 16 }, // Distância
+                11: { cellWidth: 20 }, // Modal
+                12: { cellWidth: 40 }  // Observações
             }
         });
-        
+
         return doc.lastAutoTable.finalY + 10;
     },
     

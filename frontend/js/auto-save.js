@@ -80,29 +80,48 @@ const AutoSave = {
             try {
                 const data = JSON.parse(savedData);
                 const timestamp = new Date(savedTimestamp);
-                
+
                 // Verificar se os dados são recentes (menos de 7 dias)
                 const daysDiff = (new Date() - timestamp) / (1000 * 60 * 60 * 24);
-                if (daysDiff <= 7) {
-                    // Há um rascunho válido - CARREGAR AUTOMATICAMENTE
-                    console.log('🔄 Rascunho encontrado - carregando automaticamente...');
-                    this._restoreData(data);
-                    this._createStatusIndicator();
-                    this._attachFieldListeners(form);
-                    this._initialized = true;
-                    
-                    // Adicionar botão "Nova Pesquisa" na interface
-                    this._addNewResearchButton();
-                    
-                    // Salvar antes de fechar a página
-                    window.addEventListener('beforeunload', (e) => {
-                        if (this._hasUnsavedData()) {
-                            this._saveNow();
-                        }
-                    });
-                    
-                    console.log('✅ AutoSave inicializado - Rascunho carregado');
-                    return;
+
+                // Se houver rascunho válido (mesmo que seja antigo, vamos perguntar ao usuário)
+                if (daysDiff <= 365) { // permitir rascunhos até 1 ano para pergunta de carregamento
+                    // Perguntar ao usuário: carregar rascunho ou iniciar nova pesquisa
+                    const formatted = timestamp.toLocaleString('pt-BR');
+                    const mensagem = `Foi encontrado um rascunho salvo em ${formatted}.\n\nDeseja carregar o último rascunho salvo?\n(OK = Carregar rascunho / Cancelar = Iniciar nova pesquisa)`;
+
+                    // Usar confirm: OK -> carregar; Cancel -> iniciar nova pesquisa
+                    const carregar = confirm(mensagem);
+
+                    if (carregar) {
+                        console.log('🔄 Usuário escolheu carregar o rascunho...');
+                        this._restoreData(data);
+                        this._createStatusIndicator();
+                        this._attachFieldListeners(form);
+                        this._initialized = true;
+
+                        // Adicionar botão "Nova Pesquisa" na interface para permitir limpeza manual
+                        this._addNewResearchButton();
+
+                        // Salvar antes de fechar a página
+                        window.addEventListener('beforeunload', (e) => {
+                            if (this._hasUnsavedData()) {
+                                this._saveNow();
+                            }
+                        });
+
+                        console.log('✅ AutoSave inicializado - Rascunho carregado por escolha do usuário');
+                        return;
+                    } else {
+                        // Usuário escolheu iniciar nova pesquisa -> limpar storage e recarregar
+                        console.log('🆕 Usuário escolheu iniciar nova pesquisa - limpando rascunho e recarregando...');
+                        this.clear();
+                        // Garantir que formulário seja limpo antes do reload
+                        this._clearFormFields(form);
+                        // Forçar reload para iniciar fluxo limpo (autosave reiniciará sem rascunho)
+                        location.reload();
+                        return; // evitar continuar execução (será recarregado)
+                    }
                 }
             } catch (error) {
                 console.error('❌ AutoSave: Erro ao verificar rascunho', error);
