@@ -640,8 +640,10 @@ const AutoSave = {
             console.log('🔍 Role a página para verificar os valores restaurados.');
             console.log('');
             
-            // Toast notification para feedback visual
-            this._showToast('✅ Rascunho carregado com sucesso!', 'success');
+            // Alert visual simples para feedback
+            setTimeout(() => {
+                alert('✅ Rascunho carregado com sucesso!\n\n📋 Todos os campos foram restaurados.\n🔍 Role a página para verificar os valores.');
+            }, 500);
             
             // Scroll para o topo para o usuário ver os dados
             window.scrollTo({ top: 0, behavior: 'smooth' });
