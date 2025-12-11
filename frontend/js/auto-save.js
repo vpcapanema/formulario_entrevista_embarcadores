@@ -658,32 +658,58 @@ const AutoSave = {
      * Adiciona listeners em todos os campos do formulário
      */
     _attachFieldListeners(form) {
+        console.log('🎯 Anexando listeners de autosave nos campos...');
+        
+        let inputCount = 0, selectCount = 0, radioCount = 0, checkboxCount = 0, textareaCount = 0;
+        
         // Inputs de texto, número, email, tel
         form.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="tel"]').forEach(input => {
-            input.addEventListener('input', () => this._scheduleAutoSave());
+            input.addEventListener('input', () => {
+                console.log(`💾 AutoSave disparado por input em: ${input.name || input.id}`);
+                this._scheduleAutoSave();
+            });
             input.addEventListener('change', () => this._scheduleAutoSave());
+            inputCount++;
         });
         
         // Selects
         form.querySelectorAll('select').forEach(select => {
-            select.addEventListener('change', () => this._scheduleAutoSave());
+            select.addEventListener('change', () => {
+                console.log(`💾 AutoSave disparado por select: ${select.name || select.id}`);
+                this._scheduleAutoSave();
+            });
+            selectCount++;
         });
         
         // Radio buttons
         form.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('change', () => this._scheduleAutoSave());
+            radio.addEventListener('change', () => {
+                console.log(`💾 AutoSave disparado por radio: ${radio.name}`);
+                this._scheduleAutoSave();
+            });
+            radioCount++;
         });
         
         // Checkboxes
         form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', () => this._scheduleAutoSave());
+            checkbox.addEventListener('change', () => {
+                console.log(`💾 AutoSave disparado por checkbox: ${checkbox.name}`);
+                this._scheduleAutoSave();
+            });
+            checkboxCount++;
         });
         
         // Textareas
         form.querySelectorAll('textarea').forEach(textarea => {
-            textarea.addEventListener('input', () => this._scheduleAutoSave());
+            textarea.addEventListener('input', () => {
+                console.log(`💾 AutoSave disparado por textarea: ${textarea.name || textarea.id}`);
+                this._scheduleAutoSave();
+            });
             textarea.addEventListener('change', () => this._scheduleAutoSave());
+            textareaCount++;
         });
+        
+        console.log(`✅ Listeners anexados: ${inputCount} inputs, ${textareaCount} textareas, ${selectCount} selects, ${radioCount} radios, ${checkboxCount} checkboxes`);
         
         // Observer para novos campos (tabela de produtos dinâmica)
         this._observeNewFields(form);
@@ -718,8 +744,12 @@ const AutoSave = {
      * Agenda salvamento com debounce
      */
     _scheduleAutoSave() {
-        if (this._isRestoring) return;
+        if (this._isRestoring) {
+            console.log('⏸️ AutoSave: pulando (restaurando dados)');
+            return;
+        }
         
+        console.log('⏰ AutoSave agendado (500ms)');
         clearTimeout(this._debounceTimer);
         this._debounceTimer = setTimeout(() => {
             this._saveNow();
