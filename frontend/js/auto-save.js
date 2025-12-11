@@ -108,244 +108,20 @@ const AutoSave = {
                     if (typeof window.CoreAPI.getPaises === 'function') promises.push(window.CoreAPI.getPaises());
                     if (typeof window.CoreAPI.getEstados === 'function') promises.push(window.CoreAPI.getEstados());
                     if (typeof window.CoreAPI.getEntrevistadores === 'function') promises.push(window.CoreAPI.getEntrevistadores());
-
-                    /* Minimal AutoSave
-                       - saves form data to localStorage (key: pli2050_formulario_autosave)
-                       - debounced saves on input/change
-                       - prompts to load draft on page load
-                       - restores basic fields (input/select/textarea/checkbox/radio)
-                       - creates fallback <option> when select option not present
-                       - exposes simple globals for manual testing
-                    */
-
-                    const AutoSave = (function () {
-                        const STORAGE_KEY = 'pli2050_formulario_autosave';
-                        const TIMESTAMP_KEY = 'pli2050_formulario_autosave_timestamp';
-                        const DEBOUNCE_MS = 500;
-
-                        let _timer = null;
-                        let _isRestoring = false;
-
-                        function init() {
-                            if (document.readyState === 'loading') {
-                                document.addEventListener('DOMContentLoaded', _setup);
-                            } else {
-                                _setup();
-                            }
-                        }
-
-                        function _setup() {
-                            const form = document.getElementById('entrevista-form');
-                            if (!form) return console.warn('AutoSave: form #entrevista-form not found');
-
-                            // Show prompt if a draft exists
-                            const saved = localStorage.getItem(STORAGE_KEY);
-                            if (saved) {
-                                try {
-                                    const meta = localStorage.getItem(TIMESTAMP_KEY);
-                                    const when = meta ? new Date(meta).toLocaleString('pt-BR') : 'anterior';
-                                    const ok = confirm(`Foi encontrado um rascunho salvo em ${when}.\nOK = Carregar rascunho / Cancelar = Iniciar nova pesquisa`);
-                                    if (ok) {
-                                        try { _restore(JSON.parse(saved), form); } catch (e) { console.error('AutoSave: restore failed', e); }
-                                    } else {
-                                        clear();
-                                        _clearForm(form);
-                                    }
-                                } catch (e) {
-                                    console.error('AutoSave: error parsing saved data', e);
-                                }
-                            }
-
-                            _attachListeners(form);
-
-                            window.addEventListener('beforeunload', () => {
-                                // ensure save before leaving
-                                if (!_isRestoring) _saveNow(form);
-                            });
-                        }
-
-                        function _attachListeners(form) {
-                            const inputs = form.querySelectorAll('input, textarea, select');
-                            inputs.forEach(el => {
-                                const ev = (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'radio') ? 'change' : 'input';
-                                el.addEventListener(ev, () => _scheduleSave(form));
-                            });
-
-                            // MutationObserver for dynamic fields (simple)
-                            const observer = new MutationObserver(() => {
-                                // reattach minimal listeners to new inputs
-                                form.querySelectorAll('input, textarea, select').forEach(el => {
-                                    if (!el._autosaveAttached) {
-                                        const ev = (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'radio') ? 'change' : 'input';
-                                        el.addEventListener(ev, () => _scheduleSave(form));
-                                        el._autosaveAttached = true;
-                                    }
-                                });
-                            });
-                            observer.observe(form, { childList: true, subtree: true });
-                        }
-
-                        function _scheduleSave(form) {
-                            if (_isRestoring) return;
-                            clearTimeout(_timer);
-                            _timer = setTimeout(() => _saveNow(form), DEBOUNCE_MS);
-                        }
-
-                        function _saveNow(form) {
-                            try {
-                                const data = _collectFormData(form);
-                                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                                localStorage.setItem(TIMESTAMP_KEY, new Date().toISOString());
-                                // small console hint
-                                console.debug('AutoSave: saved', new Date().toLocaleTimeString());
-                            } catch (e) {
-                                console.error('AutoSave: save error', e);
-                            }
-                        }
-
-                        function _collectFormData(form) {
-                            const data = { fields: {}, radios: {}, checkboxes: {}, selects: {} };
-
-                            form.querySelectorAll('input').forEach(inp => {
-                                if (!inp.name) return;
-                                const type = (inp.type || '').toLowerCase();
-                                if (type === 'radio') {
-                                    if (inp.checked) data.radios[inp.name] = inp.value;
-                                } else if (type === 'checkbox') {
-                                    if (!data.checkboxes[inp.name]) data.checkboxes[inp.name] = [];
-                                    if (inp.checked) data.checkboxes[inp.name].push(inp.value);
-                                } else {
-                                    data.fields[inp.name] = inp.value || '';
-                                }
-                            });
-
-                            form.querySelectorAll('textarea').forEach(t => { if (t.name) data.fields[t.name] = t.value || ''; });
-
-                            form.querySelectorAll('select').forEach(s => {
-                                if (!s.name) return;
-                                if (s.multiple) data.selects[s.name] = Array.from(s.selectedOptions).map(o => o.value);
-                                else data.selects[s.name] = s.value || '';
-                            });
-
-                            return data;
-                        }
-
-                        function _restore(saved, form) {
-                            if (!saved || !form) return;
-                            _isRestoring = true;
-                            try {
-                                // fields (inputs / textarea)
-                                if (saved.fields) {
-                                    Object.keys(saved.fields).forEach(name => {
-                                        const el = form.querySelector(`[name="${name}"]`);
-                                        if (el && el.tagName !== 'SELECT') {
-                                            el.value = saved.fields[name] || '';
-                                            el.dispatchEvent(new Event('input', { bubbles: true }));
-                                            el.dispatchEvent(new Event('change', { bubbles: true }));
-                                        }
-                                    });
-                                }
-
-                                // radios
-                                if (saved.radios) {
-                                    Object.keys(saved.radios).forEach(name => {
-                                        const val = saved.radios[name];
-                                        const r = form.querySelector(`input[type=\"radio\"][name=\"${name}\"][value=\"${val}\"]`);
-                                        if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
-                                    });
-                                }
-
-                                // checkboxes
-                                if (saved.checkboxes) {
-                                    Object.keys(saved.checkboxes).forEach(name => {
-                                        const vals = saved.checkboxes[name] || [];
-                                        form.querySelectorAll(`input[type=\"checkbox\"][name=\"${name}\"]`).forEach(cb => {
-                                            cb.checked = vals.includes(cb.value);
-                                            cb.dispatchEvent(new Event('change', { bubbles: true }));
-                                        });
-                                    });
-                                }
-
-                                // selects
-                                if (saved.selects) {
-                                    Object.keys(saved.selects).forEach(name => {
-                                        const target = saved.selects[name];
-                                        const sel = form.querySelector(`select[name=\"${name}\"]`);
-                                        if (!sel) return;
-
-                                        if (sel.multiple) {
-                                            const vals = Array.isArray(target) ? target : [target];
-                                            Array.from(sel.options).forEach(o => { o.selected = vals.includes(o.value); });
-                                        } else {
-                                            // try by value
-                                            let matched = Array.from(sel.options).some(o => String(o.value) === String(target));
-                                            if (!matched && target) {
-                                                // try by displayed text
-                                                const byText = Array.from(sel.options).find(o => String(o.textContent).trim().toLowerCase() === String(target).trim().toLowerCase());
-                                                if (byText) { sel.value = byText.value; matched = true; }
-                                            }
-                                            if (!matched && target) {
-                                                // create fallback option
-                                                try {
-                                                    const opt = document.createElement('option');
-                                                    opt.value = target;
-                                                    opt.textContent = target;
-                                                    sel.appendChild(opt);
-                                                    sel.value = target;
-                                                } catch (e) { console.warn('AutoSave: fallback option failed', e); }
-                                            } else if (matched) {
-                                                sel.value = sel.value || target;
-                                            }
-                                            sel.dispatchEvent(new Event('change', { bubbles: true }));
-                                        }
-                                    });
-                                }
-
-                                console.info('AutoSave: rascunho restaurado');
-                            } finally {
-                                _isRestoring = false;
-                            }
-                        }
-
-                        function _clearForm(form) {
-                            form.querySelectorAll('input[type=text], input[type=email], input[type=tel], input[type=number], textarea').forEach(i => i.value = '');
-                            form.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
-                            form.querySelectorAll('input[type=checkbox], input[type=radio]').forEach(i => i.checked = false);
-                        }
-
-                        function clear() { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIMESTAMP_KEY); }
-                        function getSavedData() { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : null; }
-                        function getLastSaveTime() { const t = localStorage.getItem(TIMESTAMP_KEY); return t ? new Date(t) : null; }
-                        function saveManual() { const f = document.getElementById('entrevista-form'); if (f) _saveNow(f); }
-
-                        // expose public
-                        return {
-                            init,
-                            clear,
-                            getSavedData,
-                            getLastSaveTime,
-                            saveManual
-                        };
-                    })();
-
-                    // expose globals for debugging
-                    window.AutoSave = AutoSave;
-                    window.autosaveForm = AutoSave.saveManual;
-                    window.getAutosaveData = AutoSave.getSavedData;
-                    window.clearAutosave = AutoSave.clear;
-                    window.getAutosaveLastTime = AutoSave.getLastSaveTime;
-
-                    AutoSave.init();
-                    
+                    await Promise.allSettled(promises);
+                }
             } catch (e) {
                 // não bloquear o fluxo principal se pré-load falhar
                 console.debug('AutoSave: pré-load de listas falhou (não bloqueante)', e);
             }
+        })();
 
         // Garantir salvamento ao sair da página
         window.addEventListener('beforeunload', () => {
             if (!this._isRestoring) this._saveNow();
         });
+    }
+
     _clearFormFields(form) {
         // Limpar inputs de texto
         form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], textarea').forEach(el => {
@@ -372,7 +148,7 @@ const AutoSave = {
         form.querySelectorAll('.invalid').forEach(el => {
             el.classList.remove('invalid');
         });
-    },
+    }
     
 
     
