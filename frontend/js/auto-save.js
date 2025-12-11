@@ -72,6 +72,34 @@ const AutoSave = {
             return;
         }
         
+        // ⭐ MELHORADO: tentar pré-carregar listas auxiliares (paises/estados/entrevistadores)
+        // Isso ajuda a garantir que os <select>s existam antes de restaurar o rascunho
+        (async () => {
+            try {
+                if (window.CoreAPI) {
+                    // Não bloquear se falhar
+                    const promises = [];
+                    if (typeof window.CoreAPI.getPaises === 'function') promises.push(window.CoreAPI.getPaises());
+                    if (typeof window.CoreAPI.getEstados === 'function') promises.push(window.CoreAPI.getEstados());
+                    if (typeof window.CoreAPI.getEntrevistadores === 'function') promises.push(window.CoreAPI.getEntrevistadores());
+
+                    const results = await Promise.allSettled(promises);
+                    // Popular cache do DropdownManager quando disponível
+                    if (window.DropdownManager && !window.DropdownManager._cache) window.DropdownManager._cache = {};
+                    results.forEach(res => {
+                        if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+                            // Tentar inferir qual lista é (paises/estados/entrevistadores) pelo tamanho
+                            if (res.value.length > 50) window.DropdownManager._cache.paises = res.value;
+                            else if (res.value.length === 27) window.DropdownManager._cache.estados = res.value;
+                            else window.DropdownManager._cache.entrevistadores = res.value;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn('AutoSave: pré-carregamento de listas falhou (não bloqueante)', err);
+            }
+        })();
+
         // ⭐ MELHORADO: Carregar rascunho automaticamente se existir
         const savedData = localStorage.getItem(this.STORAGE_KEY);
         const savedTimestamp = localStorage.getItem(this.TIMESTAMP_KEY);
@@ -550,22 +578,36 @@ const AutoSave = {
                             const oldValue = element.value;
                             const targetValue = data.selects[name] || '';
 
-                            // Se a option não existir (listas não carregaram), inserir opção fallback
-                            const hasOption = Array.from(element.options).some(o => String(o.value) === String(targetValue));
-                            if (targetValue !== '' && !hasOption) {
+                            // Primeiro, tentar encontrar option pelo value
+                            let hasOption = Array.from(element.options).some(o => String(o.value) === String(targetValue));
+                            // Se não encontrou por value, tentar por label/textContent (case-insensitive)
+                            if (!hasOption && targetValue !== '') {
+                                const fallbackLabel = (data.fields && data.fields[`${name}-label`]) || targetValue;
+                                const matchByText = Array.from(element.options).find(o => String(o.textContent).trim().toLowerCase() === String(fallbackLabel).trim().toLowerCase());
+                                if (matchByText) {
+                                    element.value = matchByText.value;
+                                    hasOption = true;
+                                    console.log(`🔎 Select ${name}: matched option by text "${fallbackLabel}" -> value="${matchByText.value}"`);
+                                }
+                            }
+
+                            // Se ainda não encontrou, criar option fallback usando label salvo
+                            if (!hasOption && targetValue !== '') {
                                 try {
                                     const fallbackLabel = (data.fields && data.fields[`${name}-label`]) || targetValue;
                                     const opt = document.createElement('option');
                                     opt.value = targetValue;
                                     opt.textContent = fallbackLabel;
                                     element.appendChild(opt);
+                                    element.value = targetValue;
                                     console.warn(`⚠️ Option criada para select ${name}: value=${targetValue} label=${fallbackLabel}`);
                                 } catch (err) {
                                     console.error(`❌ Erro ao criar option fallback para ${name}:`, err);
                                 }
+                            } else if (hasOption) {
+                                // se já foi setado acima por matchByText, element.value já está configurado
+                                if (element.value === '' || element.value === undefined) element.value = targetValue;
                             }
-
-                            element.value = targetValue;
                             console.log(`✅ Select restaurado: ${name} = "${element.value}" (era: "${oldValue}")`);
                         }
                         // Disparar change para cascata funcionar
