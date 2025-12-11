@@ -83,156 +83,233 @@ const AutoSave = {
                     if (typeof window.CoreAPI.getEstados === 'function') promises.push(window.CoreAPI.getEstados());
                     if (typeof window.CoreAPI.getEntrevistadores === 'function') promises.push(window.CoreAPI.getEntrevistadores());
 
-                    const results = await Promise.allSettled(promises);
-                    // Popular cache do DropdownManager quando disponível
-                    if (window.DropdownManager && !window.DropdownManager._cache) window.DropdownManager._cache = {};
-                    results.forEach(res => {
-                        if (res.status === 'fulfilled' && Array.isArray(res.value)) {
-                            // Tentar inferir qual lista é (paises/estados/entrevistadores) pelo tamanho
-                            if (res.value.length > 50) window.DropdownManager._cache.paises = res.value;
-                            else if (res.value.length === 27) window.DropdownManager._cache.estados = res.value;
-                            else window.DropdownManager._cache.entrevistadores = res.value;
+                    /* Minimal AutoSave
+                       - saves form data to localStorage (key: pli2050_formulario_autosave)
+                       - debounced saves on input/change
+                       - prompts to load draft on page load
+                       - restores basic fields (input/select/textarea/checkbox/radio)
+                       - creates fallback <option> when select option not present
+                       - exposes simple globals for manual testing
+                    */
+
+                    const AutoSave = (function () {
+                        const STORAGE_KEY = 'pli2050_formulario_autosave';
+                        const TIMESTAMP_KEY = 'pli2050_formulario_autosave_timestamp';
+                        const DEBOUNCE_MS = 500;
+
+                        let _timer = null;
+                        let _isRestoring = false;
+
+                        function init() {
+                            if (document.readyState === 'loading') {
+                                document.addEventListener('DOMContentLoaded', _setup);
+                            } else {
+                                _setup();
+                            }
                         }
-                    });
-                }
-            } catch (err) {
-                console.warn('AutoSave: pré-carregamento de listas falhou (não bloqueante)', err);
-            }
-        })();
 
-        // ⭐ MELHORADO: Carregar rascunho automaticamente se existir
-        const savedData = localStorage.getItem(this.STORAGE_KEY);
-        const savedTimestamp = localStorage.getItem(this.TIMESTAMP_KEY);
+                        function _setup() {
+                            const form = document.getElementById('entrevista-form');
+                            if (!form) return console.warn('AutoSave: form #entrevista-form not found');
 
-        // Se houver qualquer rascunho salvo, perguntar obrigatoriamente ao usuário
-        if (savedData) {
-            try {
-                const data = JSON.parse(savedData);
+                            // Show prompt if a draft exists
+                            const saved = localStorage.getItem(STORAGE_KEY);
+                            if (saved) {
+                                try {
+                                    const meta = localStorage.getItem(TIMESTAMP_KEY);
+                                    const when = meta ? new Date(meta).toLocaleString('pt-BR') : 'anterior';
+                                    const ok = confirm(`Foi encontrado um rascunho salvo em ${when}.\nOK = Carregar rascunho / Cancelar = Iniciar nova pesquisa`);
+                                    if (ok) {
+                                        try { _restore(JSON.parse(saved), form); } catch (e) { console.error('AutoSave: restore failed', e); }
+                                    } else {
+                                        clear();
+                                        _clearForm(form);
+                                    }
+                                } catch (e) {
+                                    console.error('AutoSave: error parsing saved data', e);
+                                }
+                            }
 
-                // Mostrar informação de timestamp se disponível
-                const formatted = savedTimestamp ? new Date(savedTimestamp).toLocaleString('pt-BR') : 'um rascunho anterior';
-                const mensagem = `Foi encontrado um rascunho salvo em ${formatted}.\n\nDeseja carregar o último rascunho salvo?\n(OK = Carregar rascunho / Cancelar = Iniciar nova pesquisa)`;
+                            _attachListeners(form);
 
-                // Usar confirm: OK -> carregar; Cancel -> iniciar nova pesquisa
-                const carregar = confirm(mensagem);
-
-                if (carregar) {
-                    console.log('🔄 Usuário escolheu carregar o rascunho...');
-                    this._restoreData(data);
-                    this._createStatusIndicator();
-                    this._attachFieldListeners(form);
-                    this._initialized = true;
-
-                    // Adicionar botão "Nova Pesquisa" na interface para permitir limpeza manual
-                    this._addNewResearchButton();
-
-                    // Salvar antes de fechar a página
-                    window.addEventListener('beforeunload', (e) => {
-                        if (this._hasUnsavedData()) {
-                            this._saveNow();
+                            window.addEventListener('beforeunload', () => {
+                                // ensure save before leaving
+                                if (!_isRestoring) _saveNow(form);
+                            });
                         }
-                    });
 
-                    console.log('✅ AutoSave inicializado - Rascunho carregado por escolha do usuário');
-                    return;
-                } else {
-                    // Usuário escolheu iniciar nova pesquisa -> limpar storage e recarregar
-                    console.log('🆕 Usuário escolheu iniciar nova pesquisa - limpando rascunho e recarregando...');
-                    this.clear();
-                    // Garantir que formulário seja limpo antes do reload
-                    this._clearFormFields(form);
-                    // Forçar reload para iniciar fluxo limpo (autosave reiniciará sem rascunho)
-                    location.reload();
-                    return; // evitar continuar execução (será recarregado)
-                }
-            } catch (error) {
-                console.error('❌ AutoSave: Erro ao verificar rascunho', error);
-            }
-        }
-        
-        // Nenhum rascunho válido - começar novo
-        this._clearFormFields(form);
-        this.clear();
-        
-        // Criar indicador visual
-        this._createStatusIndicator();
-        
-        // Adicionar listeners para todos os campos do formulário
-        this._attachFieldListeners(form);
-        
-        // Salvar antes de fechar a página
-        window.addEventListener('beforeunload', (e) => {
-            if (this._hasUnsavedData()) {
-                this._saveNow();
-            }
-        });
-        
-        this._initialized = true;
-        console.log('✅ AutoSave inicializado - Nova pesquisa');
-    },
-    
-    /**
-     * Adiciona botão "Nova Pesquisa" quando há rascunho carregado
-     */
-    _addNewResearchButton() {
-        // Verificar se já existe
-        if (document.getElementById('new-research-btn')) return;
-        
-        const container = document.querySelector('.page-header') || document.querySelector('.container');
-        if (!container) return;
-        
-        const button = document.createElement('button');
-        button.id = 'new-research-btn';
-        button.innerHTML = '🆕 Nova Pesquisa';
-        button.style.cssText = `
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 8px 16px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(231, 76, 60, 0.2);
-            z-index: 1000;
-        `;
-        
-        button.onmouseover = () => {
-            button.style.background = '#c0392b';
-            button.style.transform = 'translateY(-1px)';
-            button.style.boxShadow = '0 4px 8px rgba(231, 76, 60, 0.3)';
-        };
-        
-        button.onmouseout = () => {
-            button.style.background = '#e74c3c';
-            button.style.transform = 'translateY(0)';
-            button.style.boxShadow = '0 2px 4px rgba(231, 76, 60, 0.2)';
-        };
-        
-        button.onclick = () => {
-            if (confirm('⚠️ Tem certeza que deseja iniciar uma nova pesquisa?\n\nTodos os dados atuais serão perdidos.')) {
-                const form = document.getElementById('entrevista-form');
-                this.clear();
-                this._clearFormFields(form);
-                button.remove();
-                console.log('🆕 Nova pesquisa iniciada pelo usuário');
-            }
-        };
-        
-        // Tornar container relativo se não for
-        if (getComputedStyle(container).position === 'static') {
-            container.style.position = 'relative';
-        }
-        
-        container.appendChild(button);
-    },
-    
-    /**
-     * Limpa todos os campos do formulário
+                        function _attachListeners(form) {
+                            const inputs = form.querySelectorAll('input, textarea, select');
+                            inputs.forEach(el => {
+                                const ev = (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'radio') ? 'change' : 'input';
+                                el.addEventListener(ev, () => _scheduleSave(form));
+                            });
+
+                            // MutationObserver for dynamic fields (simple)
+                            const observer = new MutationObserver(() => {
+                                // reattach minimal listeners to new inputs
+                                form.querySelectorAll('input, textarea, select').forEach(el => {
+                                    if (!el._autosaveAttached) {
+                                        const ev = (el.tagName === 'SELECT' || el.type === 'checkbox' || el.type === 'radio') ? 'change' : 'input';
+                                        el.addEventListener(ev, () => _scheduleSave(form));
+                                        el._autosaveAttached = true;
+                                    }
+                                });
+                            });
+                            observer.observe(form, { childList: true, subtree: true });
+                        }
+
+                        function _scheduleSave(form) {
+                            if (_isRestoring) return;
+                            clearTimeout(_timer);
+                            _timer = setTimeout(() => _saveNow(form), DEBOUNCE_MS);
+                        }
+
+                        function _saveNow(form) {
+                            try {
+                                const data = _collectFormData(form);
+                                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                                localStorage.setItem(TIMESTAMP_KEY, new Date().toISOString());
+                                // small console hint
+                                console.debug('AutoSave: saved', new Date().toLocaleTimeString());
+                            } catch (e) {
+                                console.error('AutoSave: save error', e);
+                            }
+                        }
+
+                        function _collectFormData(form) {
+                            const data = { fields: {}, radios: {}, checkboxes: {}, selects: {} };
+
+                            form.querySelectorAll('input').forEach(inp => {
+                                if (!inp.name) return;
+                                const type = (inp.type || '').toLowerCase();
+                                if (type === 'radio') {
+                                    if (inp.checked) data.radios[inp.name] = inp.value;
+                                } else if (type === 'checkbox') {
+                                    if (!data.checkboxes[inp.name]) data.checkboxes[inp.name] = [];
+                                    if (inp.checked) data.checkboxes[inp.name].push(inp.value);
+                                } else {
+                                    data.fields[inp.name] = inp.value || '';
+                                }
+                            });
+
+                            form.querySelectorAll('textarea').forEach(t => { if (t.name) data.fields[t.name] = t.value || ''; });
+
+                            form.querySelectorAll('select').forEach(s => {
+                                if (!s.name) return;
+                                if (s.multiple) data.selects[s.name] = Array.from(s.selectedOptions).map(o => o.value);
+                                else data.selects[s.name] = s.value || '';
+                            });
+
+                            return data;
+                        }
+
+                        function _restore(saved, form) {
+                            if (!saved || !form) return;
+                            _isRestoring = true;
+                            try {
+                                // fields (inputs / textarea)
+                                if (saved.fields) {
+                                    Object.keys(saved.fields).forEach(name => {
+                                        const el = form.querySelector(`[name="${name}"]`);
+                                        if (el && el.tagName !== 'SELECT') {
+                                            el.value = saved.fields[name] || '';
+                                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                                        }
+                                    });
+                                }
+
+                                // radios
+                                if (saved.radios) {
+                                    Object.keys(saved.radios).forEach(name => {
+                                        const val = saved.radios[name];
+                                        const r = form.querySelector(`input[type=\"radio\"][name=\"${name}\"][value=\"${val}\"]`);
+                                        if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
+                                    });
+                                }
+
+                                // checkboxes
+                                if (saved.checkboxes) {
+                                    Object.keys(saved.checkboxes).forEach(name => {
+                                        const vals = saved.checkboxes[name] || [];
+                                        form.querySelectorAll(`input[type=\"checkbox\"][name=\"${name}\"]`).forEach(cb => {
+                                            cb.checked = vals.includes(cb.value);
+                                            cb.dispatchEvent(new Event('change', { bubbles: true }));
+                                        });
+                                    });
+                                }
+
+                                // selects
+                                if (saved.selects) {
+                                    Object.keys(saved.selects).forEach(name => {
+                                        const target = saved.selects[name];
+                                        const sel = form.querySelector(`select[name=\"${name}\"]`);
+                                        if (!sel) return;
+
+                                        if (sel.multiple) {
+                                            const vals = Array.isArray(target) ? target : [target];
+                                            Array.from(sel.options).forEach(o => { o.selected = vals.includes(o.value); });
+                                        } else {
+                                            // try by value
+                                            let matched = Array.from(sel.options).some(o => String(o.value) === String(target));
+                                            if (!matched && target) {
+                                                // try by displayed text
+                                                const byText = Array.from(sel.options).find(o => String(o.textContent).trim().toLowerCase() === String(target).trim().toLowerCase());
+                                                if (byText) { sel.value = byText.value; matched = true; }
+                                            }
+                                            if (!matched && target) {
+                                                // create fallback option
+                                                try {
+                                                    const opt = document.createElement('option');
+                                                    opt.value = target;
+                                                    opt.textContent = target;
+                                                    sel.appendChild(opt);
+                                                    sel.value = target;
+                                                } catch (e) { console.warn('AutoSave: fallback option failed', e); }
+                                            } else if (matched) {
+                                                sel.value = sel.value || target;
+                                            }
+                                            sel.dispatchEvent(new Event('change', { bubbles: true }));
+                                        }
+                                    });
+                                }
+
+                                console.info('AutoSave: rascunho restaurado');
+                            } finally {
+                                _isRestoring = false;
+                            }
+                        }
+
+                        function _clearForm(form) {
+                            form.querySelectorAll('input[type=text], input[type=email], input[type=tel], input[type=number], textarea').forEach(i => i.value = '');
+                            form.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+                            form.querySelectorAll('input[type=checkbox], input[type=radio]').forEach(i => i.checked = false);
+                        }
+
+                        function clear() { localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIMESTAMP_KEY); }
+                        function getSavedData() { const d = localStorage.getItem(STORAGE_KEY); return d ? JSON.parse(d) : null; }
+                        function getLastSaveTime() { const t = localStorage.getItem(TIMESTAMP_KEY); return t ? new Date(t) : null; }
+                        function saveManual() { const f = document.getElementById('entrevista-form'); if (f) _saveNow(f); }
+
+                        // expose public
+                        return {
+                            init,
+                            clear,
+                            getSavedData,
+                            getLastSaveTime,
+                            saveManual
+                        };
+                    })();
+
+                    // expose globals for debugging
+                    window.AutoSave = AutoSave;
+                    window.autosaveForm = AutoSave.saveManual;
+                    window.getAutosaveData = AutoSave.getSavedData;
+                    window.clearAutosave = AutoSave.clear;
+                    window.getAutosaveLastTime = AutoSave.getLastSaveTime;
+
+                    AutoSave.init();
      */
     _clearFormFields(form) {
         // Limpar inputs de texto
