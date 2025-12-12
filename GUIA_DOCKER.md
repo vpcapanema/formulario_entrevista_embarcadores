@@ -1,4 +1,5 @@
 # 🐳 GUIA DE TESTE COM DOCKER
+
 ## Sistema PLI 2050 - Formulários de Entrevista
 
 ---
@@ -6,6 +7,7 @@
 ## 📋 PRÉ-REQUISITOS
 
 1. **Docker Desktop instalado e rodando**
+
    - Windows: Abra o Docker Desktop (ícone da baleia na bandeja)
    - Aguarde até aparecer "Docker Desktop is running"
 
@@ -29,6 +31,7 @@ notepad .env
 ```
 
 **Exemplo de `.env`**:
+
 ```env
 PGHOST=pli2050-rds.xxxx.us-east-1.rds.amazonaws.com
 PGPORT=5432
@@ -51,6 +54,7 @@ docker-compose build
 ```
 
 **O que acontece**:
+
 - ✅ Baixa imagem base Python 3.11
 - ✅ Instala dependências do sistema (gcc, postgresql-client)
 - ✅ Instala pacotes Python (FastAPI, SQLAlchemy, etc)
@@ -70,6 +74,7 @@ docker-compose up
 ```
 
 **Saída esperada**:
+
 ```
 ✔ Network pli2050-network    Created
 ✔ Container pli2050-backend  Started
@@ -91,6 +96,7 @@ curl http://localhost:8000/health
 ```
 
 **Resposta esperada** (`/health`):
+
 ```json
 {
   "status": "OK",
@@ -119,18 +125,21 @@ start http://localhost:8000/docs
 ## 🧪 TESTES IMPORTANTES
 
 ### Teste 1: Conexão com Banco
+
 ```powershell
 # Ver logs do container
 docker-compose logs backend | Select-String -Pattern "database"
 ```
 
 **Busque por**:
+
 - ✅ `"database": "Connected"`
 - ❌ `Error connecting to database`
 
 ---
 
 ### Teste 2: CORS Configurado
+
 ```powershell
 # Verificar variável de ambiente
 docker exec pli2050-backend env | Select-String ALLOWED_ORIGINS
@@ -139,6 +148,7 @@ docker exec pli2050-backend env | Select-String ALLOWED_ORIGINS
 ---
 
 ### Teste 3: Endpoints Funcionando
+
 ```powershell
 # Testar submissão (mock - precisa de dados válidos)
 Invoke-RestMethod -Uri "http://localhost:8000/api/lists/estados" -Method GET
@@ -149,6 +159,7 @@ Invoke-RestMethod -Uri "http://localhost:8000/api/lists/estados" -Method GET
 ## 🔍 COMANDOS ÚTEIS
 
 ### Ver Logs
+
 ```powershell
 # Logs em tempo real
 docker-compose logs -f
@@ -163,6 +174,7 @@ docker-compose logs backend
 ---
 
 ### Entrar no Container
+
 ```powershell
 # Shell interativo
 docker exec -it pli2050-backend bash
@@ -176,6 +188,7 @@ docker exec -it pli2050-backend bash
 ---
 
 ### Parar/Remover
+
 ```powershell
 # Parar containers
 docker-compose stop
@@ -195,12 +208,15 @@ docker-compose build --no-cache
 ## 🐛 TROUBLESHOOTING
 
 ### Problema: "Cannot connect to Docker daemon"
+
 **Solução**: Abra o Docker Desktop e aguarde iniciar completamente
 
 ---
 
 ### Problema: "Error connecting to database"
+
 **Soluções**:
+
 1. Verifique credenciais no `.env`
 2. Teste conexão fora do Docker:
    ```powershell
@@ -212,7 +228,9 @@ docker-compose build --no-cache
 ---
 
 ### Problema: "Port 8000 is already allocated"
+
 **Solução**: Parar processo na porta 8000
+
 ```powershell
 # Ver processo usando porta 8000
 Get-NetTCPConnection -LocalPort 8000 | Format-Table
@@ -224,7 +242,9 @@ Stop-Process -Id <PID> -Force
 ---
 
 ### Problema: Build muito lento
+
 **Solução**: Limpar cache do Docker
+
 ```powershell
 # Limpar build cache
 docker builder prune
@@ -238,6 +258,7 @@ docker system prune -a --volumes
 ## 📊 VERIFICAÇÃO FINAL
 
 Checklist de sucesso:
+
 - [ ] Docker Desktop rodando
 - [ ] `.env` configurado com credenciais corretas
 - [ ] `docker-compose build` sem erros
