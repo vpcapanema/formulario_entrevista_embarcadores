@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI
+  backend:
+    build:
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: pli2050-backend
+    ports:
+      - "8000:8000"
+    environment:
+      # Variáveis de ambiente do banco (substitua com suas credenciais)
+      - PGHOST=${PGHOST:-seu-host-rds.amazonaws.com}
+      - PGPORT=${PGPORT:-5432}
+      - PGDATABASE=${PGDATABASE:-formulario_pli2050}
+      - PGUSER=${PGUSER:-postgres}
+      - PGPASSWORD=${PGPASSWORD:-sua-senha}
+      - DATABASE_URL=postgresql://${PGUSER:-postgres}:${PGPASSWORD:-sua-senha}@${PGHOST:-seu-host-rds.amazonaws.com}:${PGPORT:-5432}/${PGDATABASE:-formulario_pli2050}
+      
+      # CORS - origens permitidas
+      - ALLOWED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,https://vpcapanema.github.io
+      
+      # Ambiente
+      - ENVIRONMENT=development
+      - LOG_LEVEL=debug
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    restart: unless-stopped
+    
+    networks:
+      - pli2050-network
+
+networks:
+  pli2050-network:
+    driver: bridge
