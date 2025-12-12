@@ -339,11 +339,21 @@ const FormCollector = {
         const tipoResponsavel = document.querySelector('input[name="tipo-responsavel"]:checked');
         data.tipoResponsavel = tipoResponsavel ? tipoResponsavel.value : 'entrevistado'; // Default
         
-        // idResponsavel NÃO é enviado pelo frontend - será calculado pelo backend:
-        // - Se 'entrevistado': usa id_entrevistado após INSERT
-        // - Se 'entrevistador': usa ID fixo ou de tabela entrevistadores
-        // Por enquanto enviamos null e o backend decide
-        data.idResponsavel = null; // Backend resolverá a lógica
+        // ⭐ idResponsavel: OBRIGATÓRIO pelo backend
+        // - Se 'entrevistador': usa valor do select 'id-entrevistador'
+        // - Se 'entrevistado': será preenchido pelo backend após INSERT na tabela entrevistados
+        if (data.tipoResponsavel === 'entrevistador') {
+            const idEntrevistadorValue = this._getInteger('id-entrevistador');
+            if (idEntrevistadorValue) {
+                data.idResponsavel = idEntrevistadorValue;
+            } else {
+                console.error('❌ ERRO: tipo_responsavel é "entrevistador" mas id-entrevistador não foi selecionado');
+                data.idResponsavel = null; // Backend vai rejeitar
+            }
+        } else {
+            // 'entrevistado': backend resolverá após INSERT
+            data.idResponsavel = null; // Será preenchido pelo backend
+        }
         
         // ==== SEÇÃO 1: Dados do Entrevistado ====
         data.nome = this._getValue('nome');

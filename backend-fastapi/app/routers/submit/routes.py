@@ -216,12 +216,30 @@ async def submit_form_divided(data: DividedSubmitPayload, db: Session = Depends(
         # ETAPA 3: PESQUISA (INSERT com campos manuais)
         # ====================================================
 
+        # ⭐ LÓGICA: id_responsavel OBRIGATÓRIO
+        # - Se tipo_responsavel = 'entrevistador': usa data.pesquisa.id_responsavel (deve vir do frontend)
+        # - Se tipo_responsavel = 'entrevistado': usa id_entrevistado recém-criado (ignora frontend)
+        id_responsavel_final = None
+        if data.pesquisa.tipo_responsavel == 'entrevistador':
+            # ENTREVISTADOR: frontend DEVE ter enviado id_responsavel
+            if data.pesquisa.id_responsavel is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="tipo_responsavel='entrevistador' requer id_responsavel preenchido no frontend"
+                )
+            id_responsavel_final = data.pesquisa.id_responsavel
+        else:
+            # ENTREVISTADO: usa id do entrevistado recém-criado
+            id_responsavel_final = entrevistado.id_entrevistado
+        
+        logger.info(f"✅ id_responsavel calculado: {id_responsavel_final} (tipo: {data.pesquisa.tipo_responsavel})")
+
         pesquisa = Pesquisa(
             id_empresa=id_empresa,
             id_entrevistado=entrevistado.id_entrevistado,
             # Campos obrigatórios conforme PesquisaPayload
             tipo_responsavel=data.pesquisa.tipo_responsavel,
-            id_responsavel=data.pesquisa.id_responsavel,
+            id_responsavel=id_responsavel_final,  # ⭐ CALCULADO acima
             produto_principal=data.pesquisa.produto_principal,
             agrupamento_produto=data.pesquisa.agrupamento_produto,
             tipo_transporte=data.pesquisa.tipo_transporte,

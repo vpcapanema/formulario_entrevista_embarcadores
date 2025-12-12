@@ -4,9 +4,12 @@ from typing import Optional, List
 
 class PesquisaPayload(BaseModel):
     """EXATAMENTE como está no banco: 34 NOT NULL + 54 OPCIONAIS = 88 campos"""
-    # NOT NULL (34 campos)
+    # NOT NULL (34 campos) - EXCETO id_responsavel que é calculado pelo backend
     tipo_responsavel: str
-    id_responsavel: int
+    # ⭐ id_responsavel: Opcional no payload (backend calcula automaticamente)
+    # - Se tipo_responsavel='entrevistador': frontend DEVE enviar valor
+    # - Se tipo_responsavel='entrevistado': backend usa id_entrevistado recém-criado
+    id_responsavel: Optional[int] = None
     produto_principal: str
     agrupamento_produto: str
     tipo_transporte: str
