@@ -346,6 +346,31 @@ const FormCollector = {
             const idEntrevistadorValue = this._getInteger('id-entrevistador');
             if (idEntrevistadorValue) {
                 data.idResponsavel = idEntrevistadorValue;
+                data.idEntrevistador = idEntrevistadorValue;
+                
+                // ⭐ NOVO: Buscar dados completos do entrevistador para Card 0 do PDF
+                if (window.DropdownManager && window.DropdownManager._cache.entrevistadores) {
+                    const entrevistador = window.DropdownManager._cache.entrevistadores.find(
+                        e => e.id_entrevistador === idEntrevistadorValue
+                    );
+                    if (entrevistador) {
+                        data.entrevistadorNome = entrevistador.nome_completo;
+                        data.entrevistadorEmail = entrevistador.email;
+                        data.entrevistadorIdInstituicao = entrevistador.id_instituicao;
+                        
+                        // ⭐ Buscar dados da instituição do cache
+                        if (entrevistador.id_instituicao && window.DropdownManager && window.DropdownManager._cache.instituicoes) {
+                            const instituicao = window.DropdownManager._cache.instituicoes.find(
+                                i => i.id_instituicao === entrevistador.id_instituicao
+                            );
+                            if (instituicao) {
+                                data.instituicaoNome = instituicao.nome_instituicao;
+                                data.instituicaoTipo = instituicao.tipo_instituicao;
+                                data.instituicaoCnpj = instituicao.cnpj;
+                            }
+                        }
+                    }
+                }
             } else {
                 console.error('❌ ERRO: tipo_responsavel é "entrevistador" mas id-entrevistador não foi selecionado');
                 data.idResponsavel = null; // Backend vai rejeitar

@@ -42,13 +42,30 @@ const PDFGenerator = {
             // ===== INFORMAÇÕES DA PESQUISA =====
             yPosition = this._addPesquisaInfo(doc, yPosition, response);
             
-            // ===== CARD 0: RESPONSÁVEL PELO PREENCHIMENTO =====
+                        // ===== CARD 0: RESPONSÁVEL PELO PREENCHIMENTO =====
             const tipoResponsavel = formData.tipoResponsavel || 'Não informado';
             const camposCard0 = [
-                { label: 'Q0. Quem está preenchendo', value: tipoResponsavel === 'entrevistador' ? 'Entrevistador' : 'Entrevistado' }
+                { label: 'Tipo de Responsável', value: tipoResponsavel === 'entrevistador' ? 'Entrevistador (Consultor/Pesquisador)' : 'Entrevistado (Representante da Empresa)' }
             ];
-            if (tipoResponsavel === 'entrevistador' && formData.idEntrevistador) {
-                camposCard0.push({ label: 'ID do Entrevistador', value: formData.idEntrevistador });
+            
+            // Se for entrevistador, exibir todos os dados do entrevistador + instituição
+            if (tipoResponsavel === 'entrevistador') {
+                camposCard0.push(
+                    { label: 'ID do Entrevistador', value: formData.idEntrevistador || 'N/A' },
+                    { label: 'Nome do Entrevistador', value: formData.entrevistadorNome || 'N/A' },
+                    { label: 'E-mail do Entrevistador', value: formData.entrevistadorEmail || 'N/A' }
+                );
+                
+                // Dados da Instituição (se disponíveis)
+                if (formData.instituicaoNome || formData.entrevistadorIdInstituicao) {
+                    camposCard0.push(
+                        { label: '--- INSTITUIÇÃO ---', value: '' },
+                        { label: 'ID da Instituição', value: formData.entrevistadorIdInstituicao || 'N/A' },
+                        { label: 'Nome da Instituição', value: formData.instituicaoNome || 'N/A' },
+                        { label: 'Tipo da Instituição', value: formData.instituicaoTipo || 'N/A' },
+                        { label: 'CNPJ da Instituição', value: formData.instituicaoCnpj || 'N/A' }
+                    );
+                }
             }
             yPosition = this._addSection(doc, yPosition, 'CARD 0 - RESPONSÁVEL PELO PREENCHIMENTO', formData, camposCard0);
             

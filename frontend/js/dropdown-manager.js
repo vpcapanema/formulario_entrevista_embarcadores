@@ -33,7 +33,8 @@ const DropdownManager = {
         paises: null,
         estados: null,
         funcoes: null,
-        entrevistadores: null
+        entrevistadores: null,
+        instituicoes: null
     },
 
     // ============================================================
@@ -48,11 +49,12 @@ const DropdownManager = {
             console.log('🔄 DropdownManager: Carregando listas iniciais...');
             
             // Carregar em paralelo usando CoreAPI
-            const [paises, estados, funcoes, entrevistadores] = await Promise.all([
+            const [paises, estados, funcoes, entrevistadores, instituicoes] = await Promise.all([
                 CoreAPI.getPaises(),
                 CoreAPI.getEstados(),
                 CoreAPI.getFuncoes(),
-                CoreAPI.getEntrevistadores()
+                CoreAPI.getEntrevistadores(),
+                CoreAPI.getInstituicoes()
             ]);
 
             // Salvar no cache
@@ -60,12 +62,14 @@ const DropdownManager = {
             this._cache.estados = estados;
             this._cache.funcoes = funcoes;
             this._cache.entrevistadores = entrevistadores;
+            this._cache.instituicoes = instituicoes;
 
             console.log('✅ DropdownManager: Listas carregadas:', {
                 paises: paises.length,
                 estados: estados.length,
                 funcoes: funcoes.length,
-                entrevistadores: entrevistadores.length
+                entrevistadores: entrevistadores.length,
+                instituicoes: instituicoes.length
             });
 
             return true;
