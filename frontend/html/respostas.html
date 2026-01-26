@@ -590,7 +590,7 @@
         let ordemId = 'desc'; // 'asc' ou 'desc' - padrão decrescente
         
         // Auto-detecção de ambiente (igual ao core-api.js)
-        const API_BASE_URL = window.location.hostname.includes('github.io') 
+        const API_BASE_URL = (window.location.hostname.includes('github.io') || window.location.hostname.includes('onrender.com'))
             ? 'https://formulario-entrevista-embarcadores.onrender.com'
             : 'http://localhost:8000';
         
