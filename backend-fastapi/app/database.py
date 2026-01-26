@@ -10,20 +10,29 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from typing import Generator
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# ============================================================
+# CARREGA .env DO DIRETÓRIO CORRETO (backend-fastapi/)
+# ============================================================
+# Detecta diretório do arquivo atual e carrega .env do pai (backend-fastapi/)
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path, override=True)
 
-# Database URL
+print(f"📁 Carregando .env de: {env_path}")
+print(f"🔗 DATABASE_URL configurada: {os.getenv('DATABASE_URL', 'NÃO DEFINIDA')[:50]}...")
+
+# Database URL - Render PostgreSQL (PRODUÇÃO)
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://sigma_admin:Malditas131533*@sigma-pli-postgresql-db.cwlmgwc4igdh.us-east-1.rds.amazonaws.com:5432/sigma_pli"
+    "postgresql://sigma_user:pzRszi7xZ4IzjehPVNdCR73DNCJ9jiq5@dpg-d5rc90pr0fns73e2q4n0-a.oregon-postgres.render.com:5432/sigma_pli_qr53"
 )
 
 # Schema name
 SCHEMA_NAME = os.getenv("SCHEMA_NAME", "formulario_embarcadores")
 
-# Engine com pool otimizado para RDS (AWS)
+# Engine com pool otimizado para Render PostgreSQL
 engine = create_engine(
     DATABASE_URL,
     # ============================================================
@@ -42,13 +51,13 @@ engine = create_engine(
     echo_pool=False,           # Logs de pool (False em produção)
     
     # ============================================================
-    # POSTGRESQL ESPECÍFICO
+    # POSTGRESQL ESPECÍFICO - Render
     # ============================================================
     connect_args={
         "options": f"-csearch_path={SCHEMA_NAME},public -c timezone=America/Sao_Paulo",
-        "sslmode": "require",          # SSL obrigatório para AWS RDS
-        "connect_timeout": 10,         # ✅ NOVO: Timeout de conexão
-        "application_name": "PLI2050_FastAPI"  # ✅ NOVO: Identificação no pg_stat_activity
+        "sslmode": "require",          # SSL obrigatório para Render PostgreSQL
+        "connect_timeout": 10,         # Timeout de conexão
+        "application_name": "PLI2050_FastAPI"  # Identificação no pg_stat_activity
     }
 )
 

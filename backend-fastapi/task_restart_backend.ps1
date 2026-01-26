@@ -25,7 +25,8 @@ if ($connections) {
     }
 
     Write-Host "✅ Processos na porta 8000 finalizados" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "ℹ️  Nenhum processo encontrado na porta 8000" -ForegroundColor Blue
 }
 
@@ -48,6 +49,22 @@ if ($stillOccupied) {
 
 # Passo 3: Iniciar backend com debug detalhado
 Write-Host "🚀 Iniciando Backend com debug detalhado..." -ForegroundColor Cyan
+Write-Host ""
+
+# ============================================================
+# CONFIGURAÇÃO DO BANCO DE DADOS - RENDER POSTGRESQL
+# ============================================================
+$env:DATABASE_URL = "postgresql://sigma_user:pzRszi7xZ4IzjehPVNdCR73DNCJ9jiq5@dpg-d5rc90pr0fns73e2q4n0-a.oregon-postgres.render.com:5432/sigma_pli_qr53"
+$env:PGHOST = "dpg-d5rc90pr0fns73e2q4n0-a.oregon-postgres.render.com"
+$env:PGPORT = "5432"
+$env:PGDATABASE = "sigma_pli_qr53"
+$env:PGUSER = "sigma_user"
+$env:PGPASSWORD = "pzRszi7xZ4IzjehPVNdCR73DNCJ9jiq5"
+$env:SCHEMA_NAME = "formulario_embarcadores"
+
+Write-Host "✅ Banco de dados: Render PostgreSQL" -ForegroundColor Green
+Write-Host "   - Host: dpg-d5rc90pr0fns73e2q4n0-a.oregon-postgres.render.com" -ForegroundColor Yellow
+Write-Host "   - Database: sigma_pli_qr53" -ForegroundColor Yellow
 Write-Host ""
 
 # Configurar variável de ambiente ALLOWED_ORIGINS
