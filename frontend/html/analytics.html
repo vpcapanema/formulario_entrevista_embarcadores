@@ -19,6 +19,7 @@
     
     <link rel="stylesheet" href="../css/index.css?v=20251107">
     <link rel="stylesheet" href="../css/pages.css?v=20251107">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -50,8 +51,8 @@
 
     <div class="container page-top-space">
         <div class="page-header">
-            <h2>📈 Analytics - Análise de Dados</h2>
-            <p>Análise consolidada de todas as pesquisas cadastradas</p>
+            <h2><i class="fas fa-chart-bar"></i> Analytics - Análise de Dados</h2>
+            <p>Análise quantitativa consolidada - Variáveis Numéricas</p>
         </div>
         
         <!-- KPIs -->
@@ -59,31 +60,39 @@
             <div class="loading">⏳ Carregando KPIs...</div>
         </div>
 
-        <!-- Gráficos -->
+        <!-- Gráficos - FOCO NUMÉRICO + SPIDER -->
         <div class="charts-grid">
             <div class="card chart-card">
-                <h3>Distribuição Modal</h3>
+                <h3><i class="fas fa-box"></i> Volume (kg) por Produto</h3>
                 <canvas id="chart-modal"></canvas>
             </div>
             <div class="card chart-card">
-                <h3>Top 10 Produtos</h3>
+                <h3><i class="fas fa-dollar-sign"></i> Custo Total (R$) por Estado de Origem</h3>
                 <canvas id="chart-produtos"></canvas>
             </div>
             <div class="card chart-card">
-                <h3>Tipo de Transporte</h3>
-                <canvas id="chart-embalagem"></canvas>
+                <h3><i class="fas fa-ruler"></i> Distribuição de Distância (km)</h3>
+                <canvas id="chart-estados"></canvas>
             </div>
             <div class="card chart-card">
-                <h3>Importância dos Fatores</h3>
+                <h3><i class="fas fa-chart-pie"></i> Importância dos Fatores Logísticos</h3>
+                <canvas id="chart-spider"></canvas>
+            </div>
+            <div class="card chart-card">
+                <h3><i class="fas fa-tachometer-alt"></i> Capacidade Utilizada (%) por Modal</h3>
                 <canvas id="chart-fatores"></canvas>
             </div>
             <div class="card chart-card">
-                <h3>Frequência</h3>
-                <canvas id="chart-frequencia"></canvas>
+                <h3><i class="fas fa-chart-line"></i> Custo x Distância (Correlação)</h3>
+                <canvas id="chart-dificuldades"></canvas>
             </div>
             <div class="card chart-card">
-                <h3>Dificuldades</h3>
-                <canvas id="chart-dificuldades"></canvas>
+                <h3><i class="fas fa-money-bill-wave"></i> Valor de Carga (R$) por Tipo</h3>
+                <canvas id="chart-custo-distancia"></canvas>
+            </div>
+            <div class="card chart-card">
+                <h3><i class="fas fa-truck"></i> Distribuição por Modal de Transporte</h3>
+                <canvas id="chart-modal-dist"></canvas>
             </div>
         </div>
     </div>
@@ -92,7 +101,7 @@
     <script src="../js/spa-router.js?v=20251108"></script>
     <script src="../js/navbar.js?v=20251108"></script>
     <script src="../js/auth-simple.js?v=20251108"></script>
-    <script src="../js/page-analytics.js?v=20251107"></script>
+    <script src="../js/page-analytics.js?v=20251108"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (window.PageAnalytics) {

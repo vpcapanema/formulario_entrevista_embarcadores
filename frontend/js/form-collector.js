@@ -1490,14 +1490,6 @@ window.confirmarProduto = confirmarProduto;
 window.removeProdutoRow = removeProdutoRow;
 window.handleProdutoAcondicionamentoChange = handleProdutoAcondicionamentoChange;
 
-// Funções do preview de produto
-window.mostrarPreviewProduto = mostrarPreviewProduto;
-window.coletarDadosProdutoParaPreview = coletarDadosProdutoParaPreview;
-window.mapearParaSchemaBanco = mapearParaSchemaBanco;
-window.renderizarPreviewTabela = renderizarPreviewTabela;
-window.fecharPreviewProduto = fecharPreviewProduto;
-window.confirmarProdutoFinal = confirmarProdutoFinal;
-
 // Exportar para uso global
 window.FormCollector = FormCollector;
 // Compatibilidade com código antigo

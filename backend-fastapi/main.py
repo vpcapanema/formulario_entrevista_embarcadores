@@ -61,20 +61,21 @@ app = FastAPI(
 allowed_origins_str = os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:5500,http://127.0.0.1:5500,"
+    "http://localhost:8000,http://127.0.0.1:8000,"
     "http://localhost:8010,http://127.0.0.1:8010,"
     "https://vpcapanema.github.io"
 )
 allowed_origins = [origin.strip() for origin in allowed_origins_str.split(',')]
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=allowed_origins,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# logger.info(f"✅ CORS habilitado para: {allowed_origins}")
+logger.info(f"✅ CORS habilitado para: {allowed_origins}")
 
 # ============================================================
 # MIDDLEWARE DE CACHE PARA ARQUIVOS ESTÁTICOS
@@ -192,9 +193,9 @@ else:
 app.include_router(health_router.router)    # GET /health, /info
 app.include_router(submit_router.router)    # POST /api/submit-form, /api/submit-form-divided
 app.include_router(entrevistadores_router.router)  # GET /api/entrevistadores, /api/entrevistadores/{id}
-# app.include_router(pesquisas_router)        # GET /api/pesquisas/* (NOVO) - TEMPORARIAMENTE DESABILITADO
+app.include_router(pesquisas_router)        # GET /api/pesquisas/* - Listagem e visualização
+app.include_router(analytics_router.router)  # GET /api/analytics/* - KPIs e gráficos
 # app.include_router(lists_router.router)   # DEPRECATED: JSONs estáticos
-# app.include_router(analytics_router.router)  # GET /api/analytics/* - TEMPORARIAMENTE DESABILITADO
 
 # GET /api/external/cnpj/* - Consulta CNPJ na Receita Federal via BrasilAPI
 app.include_router(

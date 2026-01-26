@@ -131,13 +131,13 @@
                         <div class="pesquisa-card">
                             <strong>Pesquisa ${i + 1}:</strong><br>
                             <strong>ID:</strong> ${p.id_pesquisa}<br>
-                            <strong>Empresa:</strong> ${p.razao_social || p.nome_empresa}<br>
-                            <strong>CNPJ:</strong> ${p.cnpj || 'N/A'}<br>
-                            <strong>Entrevistado:</strong> ${p.nome_entrevistado}<br>
-                            <strong>Função:</strong> ${p.funcao_entrevistado}<br>
+                            <strong>Empresa:</strong> ${p.empresa_razao_social || 'N/A'}<br>
+                            <strong>CNPJ:</strong> ${p.empresa_cnpj || 'N/A'}<br>
+                            <strong>Entrevistado:</strong> ${p.entrevistado_nome || 'N/A'}<br>
+                            <strong>Função:</strong> ${p.entrevistado_funcao_nome || 'N/A'}<br>
                             <strong>Data:</strong> ${p.data_entrevista || 'N/A'}<br>
-                            <strong>Produto Principal:</strong> ${p.produto_principal}<br>
-                            <strong>Tipo Transporte:</strong> ${p.tipo_transporte}
+                            <strong>Produto Principal:</strong> ${p.produto_principal || 'N/A'}<br>
+                            <strong>Tipo Transporte:</strong> ${p.tipo_transporte || 'N/A'}
                         </div>
                     `;
                 });

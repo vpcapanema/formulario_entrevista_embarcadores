@@ -624,15 +624,15 @@
         function atualizarEstatisticas() {
             const dados = dadosFiltrados;
             document.getElementById('stat-total').textContent = dados.length;
-            const empresasUnicas = new Set(dados.map(d => d.nome_empresa)).size;
+            const empresasUnicas = new Set(dados.map(d => d.empresa_razao_social)).size;
             document.getElementById('stat-empresas').textContent = empresasUnicas;
             const produtosUnicos = new Set(dados.map(d => d.produto_principal)).size;
             document.getElementById('stat-produtos').textContent = produtosUnicos;
-            const estadosUnicos = new Set(dados.map(d => d.origem_estado).filter(e => e)).size;
+            const estadosUnicos = new Set(dados.map(d => d.origem_estado_nome).filter(e => e)).size;
             document.getElementById('stat-estados').textContent = estadosUnicos;
         }
         function popularFiltros() {
-            const produtos = [...new Set(dadosOriginais.map(d => d.produto_principal))].sort();
+            const produtos = [...new Set(dadosOriginais.map(d => d.produto_principal).filter(p => p))].sort();
             const selectProduto = document.getElementById('filter-produto');
             produtos.forEach(produto => {
                 const option = document.createElement('option');
@@ -640,7 +640,7 @@
                 option.textContent = produto;
                 selectProduto.appendChild(option);
             });
-            const estados = [...new Set(dadosOriginais.map(d => d.origem_estado).filter(e => e))].sort();
+            const estados = [...new Set(dadosOriginais.map(d => d.origem_estado_nome).filter(e => e))].sort();
             const selectEstado = document.getElementById('filter-estado');
             estados.forEach(estado => {
                 const option = document.createElement('option');
@@ -649,437 +649,252 @@
                 selectEstado.appendChild(option);
             });
         }
-        // Mapeamento de campos para nomes amigáveis
+        // ============================================================
+        // MAPEAMENTO DE CAMPOS - VIEW v_pesquisas_completa (118 colunas)
+        // ============================================================
         const camposAmigaveis = {
+            // Identificação
             'id_pesquisa': 'ID',
-            'entrevistador_nome': 'Entrevistador',
-            'entrevistador_email': 'Email Entrevistador',
-            'entrevistador_instituicao': 'Instituição',
-            'entrevistador_cnpj': 'CNPJ Instituição',
             'data_entrevista': 'Data Entrevista',
             'data_atualizacao': 'Data Atualização',
-            'status_pesquisa': 'Status',
+            'status': 'Status',
+            
+            // Responsável
+            'tipo_responsavel': 'Tipo Responsável',
+            'nome_responsavel': 'Responsável',
+            'instituicao_responsavel': 'Instituição',
+            
+            // Empresa
+            'empresa_razao_social': 'Empresa',
+            'empresa_nome_fantasia': 'Nome Fantasia',
+            'empresa_cnpj': 'CNPJ',
+            'empresa_tipo': 'Tipo Empresa',
+            'empresa_municipio': 'Município Empresa',
+            'empresa_estado': 'Estado Empresa',
+            
+            // Entrevistado
             'entrevistado_nome': 'Entrevistado',
-            'entrevistado_funcao': 'Função',
+            'entrevistado_funcao_nome': 'Função',
             'entrevistado_telefone': 'Telefone',
             'entrevistado_email': 'Email',
-            'responsavel_principal': 'Responsável Principal',
-            'nome_empresa': 'Empresa',
-            'tipo_empresa': 'Tipo Empresa',
-            'outro_tipo_empresa': 'Outro Tipo',
-            'cnpj_empresa': 'CNPJ',
-            'municipio_empresa': 'Município Empresa',
-            'estado_empresa': 'Estado Empresa',
-            'agrupamento_produto': 'Agrupamento',
+            
+            // Produto
             'produto_principal': 'Produto',
+            'agrupamento_produto': 'Agrupamento',
             'outro_produto': 'Outro Produto',
+            
+            // Origem
             'tipo_transporte': 'Tipo Transporte',
-            'origem_pais': 'País Origem',
-            'origem_estado': 'Estado Origem',
-            'origem_municipio': 'Município Origem',
-            'origem_completa': 'Origem Completa',
-            'destino_pais': 'País Destino',
-            'destino_estado': 'Estado Destino',
-            'destino_municipio': 'Município Destino',
-            'destino_completa': 'Destino Completo',
+            'origem_pais_nome': 'País Origem',
+            'origem_estado_nome': 'Estado Origem',
+            'origem_municipio_nome': 'Município Origem',
+            'origem_instalacao': 'Instalação Origem',
+            
+            // Destino
+            'destino_pais_nome': 'País Destino',
+            'destino_estado_nome': 'Estado Destino',
+            'destino_municipio_nome': 'Município Destino',
+            'destino_instalacao': 'Instalação Destino',
+            
+            // Transporte
             'distancia': 'Distância (km)',
-            'num_paradas': 'Paradas',
-            'num_paradas_exato': 'Nº Paradas',
-            'modais': 'Modais',
-            'configuracao_veiculo': 'Configuração Veículo',
+            'tem_paradas': 'Tem Paradas',
+            'num_paradas': 'Nº Paradas',
+            'modos_texto': 'Modais',
+            'config_veiculo': 'Config. Veículo',
             'capacidade_utilizada': 'Capacidade (%)',
             'peso_carga': 'Peso (ton)',
+            'unidade_peso': 'Unidade Peso',
             'custo_transporte': 'Custo (R$)',
             'valor_carga': 'Valor Carga (R$)',
-            'custo_por_tonelada': 'Custo/ton (R$)',
             'tipo_embalagem': 'Embalagem',
             'carga_perigosa': 'Carga Perigosa',
-            'tempo_viagem': 'Tempo Viagem',
-            'tempo_total_minutos': 'Tempo (min)',
+            
+            // Tempo
+            'tempo_total_formatado': 'Tempo Total',
+            
+            // Frequência
             'frequencia': 'Frequência',
             'frequencia_diaria': 'Freq. Diária',
             'frequencia_outra': 'Outra Freq.',
+            
+            // Importâncias
             'importancia_custo': 'Imp. Custo',
-            'variacao_custo': 'Var. Custo (%)',
             'importancia_tempo': 'Imp. Tempo',
-            'variacao_tempo': 'Var. Tempo (%)',
             'importancia_confiabilidade': 'Imp. Confiabilidade',
-            'variacao_confiabilidade': 'Var. Confiabilidade (%)',
             'importancia_seguranca': 'Imp. Segurança',
-            'variacao_seguranca': 'Var. Segurança (%)',
             'importancia_capacidade': 'Imp. Capacidade',
-            'variacao_capacidade': 'Var. Capacidade (%)',
+            
+            // Variações
+            'variacao_custo': 'Var. Custo',
+            'variacao_tempo': 'Var. Tempo',
+            'variacao_confiabilidade': 'Var. Confiabilidade',
+            'variacao_seguranca': 'Var. Segurança',
+            'variacao_capacidade': 'Var. Capacidade',
+            
+            // Outros
             'tipo_cadeia': 'Tipo Cadeia',
-            'modais_alternativos': 'Modais Alternativos',
+            'modais_alternativos_texto': 'Modais Alternativos',
             'fator_adicional': 'Fator Adicional',
-            'dificuldades': 'Dificuldades',
+            'dificuldades_texto': 'Dificuldades',
             'detalhe_dificuldade': 'Detalhe Dificuldade',
-            'observacoes': 'Observações',
-            'qtd_produtos': 'Qtd. Produtos'
+            'observacoes': 'Observações'
         };
 
         // Mapeamento de campos para grupos (cores)
         const campoGrupos = {
-            // Grupo 1: Identificação (azul claro)
+            // Grupo 1: Identificação
             'id_pesquisa': 'identificacao',
+            'data_entrevista': 'identificacao',
+            'data_atualizacao': 'identificacao',
+            'status': 'identificacao',
             
-            // Grupo 2: Entrevistador (roxo claro)
-            'entrevistador_nome': 'entrevistador',
-            'entrevistador_email': 'entrevistador',
-            'entrevistador_instituicao': 'entrevistador',
-            'entrevistador_cnpj': 'entrevistador',
-            'data_entrevista': 'entrevistador',
-            'data_atualizacao': 'entrevistador',
-            'status_pesquisa': 'entrevistador',
+            // Grupo 2: Responsável/Entrevistador
+            'tipo_responsavel': 'entrevistador',
+            'nome_responsavel': 'entrevistador',
+            'instituicao_responsavel': 'entrevistador',
             
-            // Grupo 3: Entrevistado (verde claro)
+            // Grupo 3: Entrevistado
             'entrevistado_nome': 'entrevistado',
-            'entrevistado_funcao': 'entrevistado',
+            'entrevistado_funcao_nome': 'entrevistado',
             'entrevistado_telefone': 'entrevistado',
             'entrevistado_email': 'entrevistado',
-            'responsavel_principal': 'entrevistado',
             
-            // Grupo 4: Empresa (laranja claro)
-            'nome_empresa': 'empresa',
-            'tipo_empresa': 'empresa',
-            'outro_tipo_empresa': 'empresa',
-            'cnpj_empresa': 'empresa',
-            'municipio_empresa': 'empresa',
-            'estado_empresa': 'empresa',
+            // Grupo 4: Empresa
+            'empresa_razao_social': 'empresa',
+            'empresa_nome_fantasia': 'empresa',
+            'empresa_cnpj': 'empresa',
+            'empresa_tipo': 'empresa',
+            'empresa_municipio': 'empresa',
+            'empresa_estado': 'empresa',
             
-            // Grupo 5: Produto (rosa claro)
+            // Grupo 5: Produto
             'agrupamento_produto': 'produto',
             'produto_principal': 'produto',
             'outro_produto': 'produto',
             
-            // Grupo 6: Origem (verde água)
-            'origem_pais': 'origem',
-            'origem_estado': 'origem',
-            'origem_municipio': 'origem',
-            'origem_completa': 'origem',
+            // Grupo 6: Origem
+            'tipo_transporte': 'origem',
+            'origem_pais_nome': 'origem',
+            'origem_estado_nome': 'origem',
+            'origem_municipio_nome': 'origem',
+            'origem_instalacao': 'origem',
             
-            // Grupo 7: Destino (ciano claro)
-            'destino_pais': 'destino',
-            'destino_estado': 'destino',
-            'destino_municipio': 'destino',
-            'destino_completa': 'destino',
+            // Grupo 7: Destino
+            'destino_pais_nome': 'destino',
+            'destino_estado_nome': 'destino',
+            'destino_municipio_nome': 'destino',
+            'destino_instalacao': 'destino',
             
-            // Grupo 8: Transporte (amarelo claro)
-            'tipo_transporte': 'transporte',
+            // Grupo 8: Transporte
             'distancia': 'transporte',
+            'tem_paradas': 'transporte',
             'num_paradas': 'transporte',
-            'num_paradas_exato': 'transporte',
-            'modais': 'transporte',
-            'configuracao_veiculo': 'transporte',
+            'modos_texto': 'transporte',
+            'config_veiculo': 'transporte',
             'tipo_embalagem': 'transporte',
             'carga_perigosa': 'transporte',
             
-            // Grupo 9: Custos (lima)
+            // Grupo 9: Custos
             'capacidade_utilizada': 'custos',
             'peso_carga': 'custos',
+            'unidade_peso': 'custos',
             'custo_transporte': 'custos',
             'valor_carga': 'custos',
-            'custo_por_tonelada': 'custos',
             
-            // Grupo 10: Tempo (lavanda)
-            'tempo_viagem': 'tempo',
-            'tempo_total_minutos': 'tempo',
+            // Grupo 10: Tempo
+            'tempo_total_formatado': 'tempo',
             'tipo_cadeia': 'tempo',
             
-            // Grupo 11: Frequência (dourado claro)
+            // Grupo 11: Frequência
             'frequencia': 'frequencia',
             'frequencia_diaria': 'frequencia',
             'frequencia_outra': 'frequencia',
             
-            // Grupo 12: Importâncias (cinza claro)
+            // Grupo 12: Importâncias
             'importancia_custo': 'importancias',
             'importancia_tempo': 'importancias',
             'importancia_confiabilidade': 'importancias',
             'importancia_seguranca': 'importancias',
             'importancia_capacidade': 'importancias',
             
-            // Grupo 13: Variações (rosa claro)
+            // Grupo 13: Variações            // Grupo 13: Variações
             'variacao_custo': 'variacoes',
             'variacao_tempo': 'variacoes',
             'variacao_confiabilidade': 'variacoes',
             'variacao_seguranca': 'variacoes',
             'variacao_capacidade': 'variacoes',
             
-            // Grupo 14: Outros (menta)
-            'modais_alternativos': 'outros',
+            // Grupo 14: Outros
+            'modais_alternativos_texto': 'outros',
             'fator_adicional': 'outros',
-            'dificuldades': 'outros',
+            'dificuldades_texto': 'outros',
             'detalhe_dificuldade': 'outros',
-            'observacoes': 'outros',
-            'qtd_produtos': 'outros'
-        };
-
-        // Mapeamentos de valores codificados para textos legíveis
-        const mapeamentoValores = {
-            // Países (ISO Alpha-2)
-            pais: {
-                'BR': 'Brasil',
-                'US': 'Estados Unidos',
-                'AR': 'Argentina',
-                'CL': 'Chile',
-                'UY': 'Uruguai',
-                'PY': 'Paraguai',
-                'CN': 'China',
-                'DE': 'Alemanha',
-                'FR': 'França',
-                'IT': 'Itália',
-                'ES': 'Espanha',
-                'GB': 'Reino Unido',
-                'JP': 'Japão',
-                'MX': 'México',
-                'CO': 'Colômbia',
-                'PE': 'Peru',
-                'BO': 'Bolívia',
-                'VE': 'Venezuela'
-            },
-            
-            // Estados brasileiros (UF)
-            estado: {
-                'SP': 'São Paulo',
-                'RJ': 'Rio de Janeiro',
-                'MG': 'Minas Gerais',
-                'ES': 'Espírito Santo',
-                'PR': 'Paraná',
-                'SC': 'Santa Catarina',
-                'RS': 'Rio Grande do Sul',
-                'BA': 'Bahia',
-                'SE': 'Sergipe',
-                'AL': 'Alagoas',
-                'PE': 'Pernambuco',
-                'PB': 'Paraíba',
-                'RN': 'Rio Grande do Norte',
-                'CE': 'Ceará',
-                'PI': 'Piauí',
-                'MA': 'Maranhão',
-                'PA': 'Pará',
-                'AP': 'Amapá',
-                'RR': 'Roraima',
-                'AM': 'Amazonas',
-                'AC': 'Acre',
-                'RO': 'Rondônia',
-                'TO': 'Tocantins',
-                'MT': 'Mato Grosso',
-                'MS': 'Mato Grosso do Sul',
-                'GO': 'Goiás',
-                'DF': 'Distrito Federal'
-            },
-            
-            // Tipo de empresa
-            tipo_empresa: {
-                'embarcador': 'Embarcador (dono da carga)',
-                'transportador': 'Transportador',
-                'ambos': 'Ambos (Embarcador e Transportador)',
-                'outro': 'Outro'
-            },
-            
-            // Tipo de transporte
-            tipo_transporte: {
-                'importacao': 'Importação',
-                'exportacao': 'Exportação',
-                'local': 'Local (dentro do Estado)',
-                'nacional': 'Nacional (entre Estados)',
-                'internacional': 'Internacional'
-            },
-            
-            // Frequência de transporte
-            frequencia: {
-                'diaria': 'Diária',
-                'mais-1x-semana': 'Mais de 1x por semana',
-                'semanal': 'Semanal',
-                'quinzenal': 'Quinzenal',
-                'mensal': 'Mensal',
-                'bimestral': 'Bimestral',
-                'trimestral': 'Trimestral',
-                'semestral': 'Semestral',
-                'anual': 'Anual',
-                'eventual': 'Eventual'
-            },
-            
-            // Importância dos fatores
-            importancia: {
-                'muito-alta': 'Muito Alta',
-                'alta': 'Alta',
-                'media': 'Média',
-                'baixa': 'Baixa',
-                'muito-baixa': 'Muito Baixa'
-            },
-            
-            // Variação dos fatores
-            variacao: {
-                'aumentou-muito': 'Aumentou muito',
-                'aumentou': 'Aumentou',
-                'estavel': 'Estável',
-                'diminuiu': 'Diminuiu',
-                'diminuiu-muito': 'Diminuiu muito',
-                'nao-sei': 'Não sei / Não se aplica'
-            },
-            
-            // Tipo de cadeia logística
-            tipo_cadeia: {
-                'porta-porta': 'Porta a Porta',
-                'porto-porta': 'Porto a Porta',
-                'porto-porto': 'Porto a Porto',
-                'porta-porto': 'Porta a Porto',
-                'outra': 'Outra configuração'
-            },
-            
-            // Sim/Não
-            simNao: {
-                'sim': 'Sim',
-                'nao': 'Não',
-                's': 'Sim',
-                'n': 'Não',
-                'true': 'Sim',
-                'false': 'Não',
-                '1': 'Sim',
-                '0': 'Não'
-            },
-            
-            // Modais de transporte
-            modais: {
-                'rodoviario': 'Rodoviário',
-                'ferroviario': 'Ferroviário',
-                'aquaviario': 'Aquaviário',
-                'aereo': 'Aéreo',
-                'dutoviario': 'Dutoviário',
-                'multimodal': 'Multimodal'
-            },
-            
-            // Configuração de veículo
-            config_veiculo: {
-                'truck': 'Truck',
-                'toco': 'Toco',
-                'carreta': 'Carreta',
-                'bitrem': 'Bitrem',
-                'rodotrem': 'Rodotrem',
-                'outro': 'Outro'
-            },
-            
-            // Tipo de carga
-            tipo_carga: {
-                'geral': 'Carga Geral',
-                'granel-solido': 'Granel Sólido',
-                'granel-liquido': 'Granel Líquido',
-                'conteiner': 'Contêiner',
-                'refrigerada': 'Refrigerada',
-                'perigosa': 'Perigosa',
-                'outro': 'Outro'
-            },
-            
-            // Tipo de embalagem
-            tipo_embalagem: {
-                'sacaria': 'Sacaria',
-                'big-bag': 'Big Bag',
-                'palete': 'Palete',
-                'conteiner': 'Contêiner',
-                'granel': 'Granel',
-                'caixa': 'Caixa',
-                'engradado': 'Engradado',
-                'outro': 'Outro'
-            }
+            'observacoes': 'outros'
         };
 
         /**
-         * Formata um valor codificado para texto legível
-         * @param {string} campo - Nome do campo
-         * @param {any} valor - Valor a ser formatado
-         * @returns {string} - Valor formatado
+         * Formata um valor para exibição na tabela
          */
         function formatarValor(campo, valor) {
             if (valor === null || valor === undefined || valor === '') {
                 return '-';
             }
             
-            // Converter para string para comparação
-            const valorStr = String(valor).toLowerCase().trim();
-            
-            // País (origem_pais, destino_pais)
-            if (campo.includes('pais')) {
-                return mapeamentoValores.pais[valor.toUpperCase()] || valor;
-            }
-            
-            // Estado (origem_estado, destino_estado)
-            if (campo.includes('estado') && !campo.includes('municipio')) {
-                return mapeamentoValores.estado[valor.toUpperCase()] || valor;
-            }
-            
-            // Tipo de empresa
-            if (campo === 'tipo_empresa') {
-                return mapeamentoValores.tipo_empresa[valorStr] || valor;
-            }
-            
-            // Tipo de transporte
-            if (campo === 'tipo_transporte') {
-                return mapeamentoValores.tipo_transporte[valorStr] || valor;
-            }
-            
-            // Frequência
-            if (campo === 'frequencia') {
-                return mapeamentoValores.frequencia[valorStr] || valor;
-            }
-            
-            // Importância (importancia_custo, importancia_tempo, etc.)
-            if (campo.startsWith('importancia_')) {
-                return mapeamentoValores.importancia[valorStr] || valor;
-            }
-            
-            // Variação (variacao_custo, variacao_tempo, etc.)
-            if (campo.startsWith('variacao_')) {
-                return mapeamentoValores.variacao[valorStr] || valor;
-            }
-            
-            // Tipo de cadeia
-            if (campo === 'tipo_cadeia') {
-                return mapeamentoValores.tipo_cadeia[valorStr] || valor;
-            }
-            
-            // Campos sim/não
-            if (campo === 'carga_perigosa' || campo === 'tem_paradas' || 
-                campo === 'possui_armazem' || campo === 'uso_tecnologia') {
-                return mapeamentoValores.simNao[valorStr] || valor;
-            }
-            
-            // Modais (pode ser array ou string separada por vírgula)
-            if (campo === 'modais' || campo === 'modais_alternativos') {
-                if (Array.isArray(valor)) {
-                    return valor.map(m => mapeamentoValores.modais[m.toLowerCase()] || m).join(', ');
-                } else if (typeof valor === 'string' && valor.includes(',')) {
-                    return valor.split(',').map(m => 
-                        mapeamentoValores.modais[m.trim().toLowerCase()] || m.trim()
-                    ).join(', ');
-                } else {
-                    return mapeamentoValores.modais[valorStr] || valor;
+            // Datas
+            if (campo.includes('data_')) {
+                try {
+                    return new Date(valor).toLocaleDateString('pt-BR');
+                } catch (e) {
+                    return valor;
                 }
             }
             
-            // Configuração de veículo
-            if (campo === 'config_veiculo') {
-                return mapeamentoValores.config_veiculo[valorStr] || valor;
+            // Valores monetários
+            if (campo.includes('custo') || campo.includes('valor')) {
+                try {
+                    const num = parseFloat(valor);
+                    if (!isNaN(num)) {
+                        return 'R$ ' + num.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    }
+                } catch (e) {}
             }
             
-            // Tipo de carga
-            if (campo === 'tipo_carga') {
-                return mapeamentoValores.tipo_carga[valorStr] || valor;
+            // Distância
+            if (campo === 'distancia') {
+                try {
+                    const num = parseFloat(valor);
+                    if (!isNaN(num)) {
+                        return num.toFixed(1) + ' km';
+                    }
+                } catch (e) {}
             }
             
-            // Tipo de embalagem
-            if (campo === 'tipo_embalagem') {
-                return mapeamentoValores.tipo_embalagem[valorStr] || valor;
+            // Capacidade
+            if (campo === 'capacidade_utilizada') {
+                try {
+                    const num = parseFloat(valor);
+                    if (!isNaN(num)) {
+                        return num.toFixed(0) + '%';
+                    }
+                } catch (e) {}
             }
             
-            // Dificuldades (pode ser array)
-            if (campo === 'dificuldades') {
-                if (Array.isArray(valor)) {
-                    return valor.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join('; ');
-                }
+            // Peso
+            if (campo === 'peso_carga') {
+                try {
+                    const num = parseFloat(valor);
+                    if (!isNaN(num)) {
+                        return num.toFixed(2) + ' ton';
+                    }
+                } catch (e) {}
             }
             
-            // Retorna valor original se não houver mapeamento
+            // Booleanos
+            if (typeof valor === 'boolean') {
+                return valor ? 'Sim' : 'Não';
+            }
+            
             return valor;
         }
 
@@ -1098,7 +913,7 @@
                 const grupo = campoGrupos[campo] || 'outros';
                 
                 // Coluna ID com controle de ordenação
-                    if (campo === 'id_pesquisa') {
+                if (campo === 'id_pesquisa') {
                     const icone = ordemId === 'asc' ? '↑' : '↓';
                     html += `<th class="group-${grupo} th-sortable" onclick="ordenarPorId()" title="Clique para ordenar">
                         ${camposAmigaveis[campo]} <span class="sort-icon">${icone}</span>
@@ -1115,51 +930,11 @@
                 Object.keys(camposAmigaveis).forEach(campo => {
                     let valor = row[campo];
                     
-                    // Formatação especial por tipo
-                    if (valor === null || valor === undefined || valor === '') {
-                        valor = '-';
-                    } else if (Array.isArray(valor)) {
-                        // Arrays: aplicar formatação se for campo de modais
-                        if (campo === 'modais' || campo === 'modais_alternativos') {
-                            valor = formatarValor(campo, valor);
-                        } else if (campo === 'dificuldades') {
-                            valor = formatarValor(campo, valor);
-                        } else {
-                            valor = valor.join(', ');
-                        }
-                    } else if (campo.includes('data_')) {
-                        try {
-                            valor = new Date(valor).toLocaleDateString('pt-BR');
-                        } catch(e) {
-                            valor = String(valor);
-                        }
-                    } else if (campo.includes('custo') || campo.includes('valor')) {
-                        try {
-                            const num = parseFloat(valor);
-                            if (!isNaN(num)) {
-                                valor = 'R$ ' + num.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                            }
-                        } catch(e) {}
-                    } else if (campo === 'distancia' || campo.includes('variacao')) {
-                        // Distância em km, variação aplicar formatação de valor
-                        if (campo === 'distancia') {
-                            try {
-                                const num = parseFloat(valor);
-                                if (!isNaN(num)) {
-                                    valor = num.toFixed(2) + ' km';
-                                }
-                            } catch(e) {}
-                        } else {
-                            // Variação: formatar código para texto
-                            valor = formatarValor(campo, valor);
-                        }
-                    } else {
-                        // Aplicar formatação de valores codificados
-                        valor = formatarValor(campo, String(valor));
-                    }
+                    // Aplicar formatação
+                    valor = formatarValor(campo, valor);
                     
                     // Badge para status
-                    if (campo === 'status_pesquisa') {
+                    if (campo === 'status') {
                         const statusClass = valor === 'finalizada' ? 'badge-success' : 
                                           valor === 'validada' ? 'badge-info' : 'badge-warning';
                         html += `<td><span class="badge ${statusClass}">${valor}</span></td>`;
@@ -1177,21 +952,23 @@
             html += '</tbody></table></div>';
             wrapper.innerHTML = html;
         }
+        
         function aplicarFiltros() {
             const empresa = document.getElementById('filter-empresa').value.toLowerCase();
             const produto = document.getElementById('filter-produto').value;
             const estado = document.getElementById('filter-estado').value;
             const tipo = document.getElementById('filter-tipo').value;
             dadosFiltrados = dadosOriginais.filter(row => {
-                const matchEmpresa = !empresa || (row.nome_empresa || '').toLowerCase().includes(empresa);
+                const matchEmpresa = !empresa || (row.empresa_razao_social || '').toLowerCase().includes(empresa);
                 const matchProduto = !produto || row.produto_principal === produto;
-                const matchEstado = !estado || row.origem_estado === estado;
+                const matchEstado = !estado || row.origem_estado_nome === estado;
                 const matchTipo = !tipo || row.tipo_transporte === tipo;
                 return matchEmpresa && matchProduto && matchEstado && matchTipo;
             });
             atualizarEstatisticas();
             renderizarTabela();
         }
+        
         function limparFiltros() {
             document.getElementById('filter-empresa').value = '';
             document.getElementById('filter-produto').value = '';

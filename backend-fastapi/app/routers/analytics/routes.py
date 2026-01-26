@@ -1,137 +1,43 @@
 """
-Analytics router (stubbed)
-Endpoints retornam estruturas vazias/seguras enquanto sincronizamos os SQLs com os modelos/DDL.
-Backups em `backups/pre_models_routers_20251211`.
+Analytics Routes - Endpoints para Dashboard Analytics
+Foco em variáveis NUMÉRICAS: distancia, custo_transporte, valor_carga, peso_carga, capacidade_utilizada
 """
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import text
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from app.database import get_db
+from sqlalchemy import text
 import logging
 
+from app.database import get_db
+
+# Logger
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
-router = APIRouter(prefix="/api/analytics", tags=["analytics"])
+router = APIRouter(prefix="/api/analytics", tags=["Analytics"])
 
-
-@router.get("/kpis")
-async def get_kpis():
-    return {"success": True, "data": {}}
-
-
-@router.get("/distribuicao-modal")
-async def get_distribuicao_modal():
-    return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
-
-
-@router.get("/produtos-top")
-async def get_produtos_top():
-    return {"success": True, "data": {"labels": [], "values": [], "volumes": []}}
-
-
-@router.get("/importancias")
-async def get_importancias():
-    return {"success": True, "data": {"labels": [], "muito_importante": [], "importante": []}}
-
-
-@router.get("/frequencia")
-async def get_frequencia():
-    return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
-
-
-@router.get("/dificuldades")
-async def get_dificuldades():
-    return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
-"""
-Analytics router (stubbed)
-Endpoints retornam estruturas vazias/seguras enquanto sincronizamos os SQLs com os modelos/DDL.
-Backups em `backups/pre_models_routers_20251211`.
-"""
-
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/api/analytics", tags=["analytics"])
-
-
-@router.get("/kpis")
-async def get_kpis():
-    return {"success": True, "data": {}}
-
-
-@router.get("/distribuicao-modal")
-async def get_distribuicao_modal():
-    return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
-
-
-@router.get("/produtos-top")
-async def get_produtos_top():
-    return {"success": True, "data": {"labels": [], "values": [], "volumes": []}}
-
-
-@router.get("/importancias")
-async def get_importancias():
-    return {"success": True, "data": {"labels": [], "muito_importante": [], "importante": []}}
-
-
-@router.get("/frequencia")
-async def get_frequencia():
-    return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
-
-
-@router.get("/dificuldades")
-async def get_dificuldades():
-    return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
-"""
-Analytics router (stubbed)
-Endpoints retornam estruturas vazias/seguras enquanto sincronizamos os SQLs com os modelos/DDL.
-Backups em `backups/pre_models_routers_20251211`.
-"""
-
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/api/analytics", tags=["analytics"])
-
-
-@router.get("/kpis")
-async def get_kpis():
-    return {"success": True, "data": {}}
-
-
-@router.get("/distribuicao-modal")
-async def get_distribuicao_modal():
-    return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
-
-
-@router.get("/produtos-top")
-async def get_produtos_top():
-    return {"success": True, "data": {"labels": [], "values": [], "volumes": []}}
 
 # ============================================================
-# IMPORTÂNCIAS (PERCENTUAIS DE "MUITO IMPORTANTE")
+# KPIs - Indicadores Principais (NUMÉRICOS)
 # ============================================================
 
-@router.get("/importancias")
-async def get_importancias(db: Session = Depends(get_db)):
+@router.get("/kpis")
+async def get_kpis(db: Session = Depends(get_db)):
     """
-    Retorna percentual de "muito importante" para cada fator
-    Formato para gráfico radar: labels + datasets
+    Retorna KPIs principais com métricas NUMÉRICAS
     """
     try:
         query = text("""
             SELECT
-                COUNT(*) FILTER (WHERE importancia_custo = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as custo_muito,
-                COUNT(*) FILTER (WHERE importancia_custo = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as custo_importante,
-                COUNT(*) FILTER (WHERE importancia_tempo = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as tempo_muito,
-                COUNT(*) FILTER (WHERE importancia_tempo = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as tempo_importante,
-                COUNT(*) FILTER (WHERE importancia_confiabilidade = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as confiab_muito,
-                COUNT(*) FILTER (WHERE importancia_confiabilidade = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as confiab_importante,
-                COUNT(*) FILTER (WHERE importancia_seguranca = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as segur_muito,
-                COUNT(*) FILTER (WHERE importancia_seguranca = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as segur_importante,
-                COUNT(*) FILTER (WHERE importancia_capacidade = 'muito-importante') * 100.0 / NULLIF(COUNT(*), 0) as capac_muito,
-                COUNT(*) FILTER (WHERE importancia_capacidade = 'importante') * 100.0 / NULLIF(COUNT(*), 0) as capac_importante
-            FROM formulario_embarcadores.pesquisas
-            WHERE status = 'finalizada'
+                COUNT(*) as total_pesquisas,
+                COUNT(DISTINCT empresa_razao_social) as total_empresas,
+                COALESCE(SUM(peso_carga), 0) as volume_total_kg,
+                COALESCE(SUM(custo_transporte), 0) as custo_total,
+                COALESCE(AVG(distancia), 0) as distancia_media,
+                COALESCE(AVG(capacidade_utilizada), 0) as capacidade_media,
+                COALESCE(AVG(custo_transporte), 0) as custo_medio,
+                COALESCE(SUM(valor_carga), 0) as valor_total_carga
+            FROM formulario_embarcadores.v_pesquisas_completa
         """)
         
         result = db.execute(query).fetchone()
@@ -139,452 +45,473 @@ async def get_importancias(db: Session = Depends(get_db)):
         return {
             "success": True,
             "data": {
-                "labels": ["Custo", "Tempo", "Confiabilidade", "Segurança", "Capacidade"],
-                "muito_importante": [
-                    round(float(result[0] or 0), 1),  # Custo
-                    round(float(result[2] or 0), 1),  # Tempo
-                    round(float(result[4] or 0), 1),  # Confiabilidade
-                    round(float(result[6] or 0), 1),  # Segurança
-                    round(float(result[8] or 0), 1)   # Capacidade
-                ],
-                "importante": [
-                    round(float(result[1] or 0), 1),  # Custo
-                    round(float(result[3] or 0), 1),  # Tempo
-                    round(float(result[5] or 0), 1),  # Confiabilidade
-                    round(float(result[7] or 0), 1),  # Segurança
-                    round(float(result[9] or 0), 1)   # Capacidade
-                ]
+                "total_pesquisas": result[0] or 0,
+                "total_empresas": result[1] or 0,
+                "volume_total_kg": round(float(result[2] or 0), 1),
+                "custo_total": round(float(result[3] or 0), 2),
+                "distancia_media": round(float(result[4] or 0), 1),
+                "capacidade_media": round(float(result[5] or 0), 1),
+                "custo_medio": round(float(result[6] or 0), 2),
+                "valor_total_carga": round(float(result[7] or 0), 2)
             }
         }
     except Exception as e:
-        logger.error(f"❌ Erro ao calcular importâncias: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
+        logger.error(f"❌ Erro KPIs: {str(e)}")
+        return {"success": False, "message": str(e), "data": {}}
+
 
 # ============================================================
-# FREQUÊNCIA DE TRANSPORTES
+# GRÁFICO 1: Volume (Peso) por Produto
 # ============================================================
 
-@router.get("/frequencia")
-async def get_frequencia(db: Session = Depends(get_db)):
+@router.get("/volume-por-produto")
+async def get_volume_por_produto(limit: int = Query(10, ge=1, le=20), db: Session = Depends(get_db)):
     """
-    Retorna distribuição de frequências de transporte
-    Formato: {labels: [...], values: [...], percentuais: [...]}
+    Soma de peso_carga agrupado por produto_principal
+    Gráfico de barras horizontais
     """
     try:
         query = text("""
-            SELECT
-                frequencia,
+            SELECT 
+                COALESCE(produto_principal, 'Não informado') as produto,
+                SUM(COALESCE(peso_carga, 0)) as volume_total,
+                COUNT(*) as num_viagens,
+                AVG(COALESCE(peso_carga, 0)) as media_por_viagem
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE peso_carga IS NOT NULL AND peso_carga > 0
+            GROUP BY produto_principal
+            ORDER BY volume_total DESC
+            LIMIT :limit
+        """)
+        
+        results = db.execute(query, {"limit": limit}).fetchall()
+        
+        if not results:
+            return {"success": True, "data": {"labels": [], "volumes": [], "viagens": []}}
+        
+        return {
+            "success": True,
+            "data": {
+                "labels": [r[0] for r in results],
+                "volumes": [round(float(r[1] or 0), 1) for r in results],
+                "viagens": [r[2] for r in results],
+                "medias": [round(float(r[3] or 0), 1) for r in results]
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro volume por produto: {str(e)}")
+        return {"success": False, "message": str(e), "data": {"labels": [], "volumes": []}}
+
+
+# ============================================================
+# GRÁFICO 2: Custo Total por Estado de Origem
+# ============================================================
+
+@router.get("/custo-por-estado")
+async def get_custo_por_estado(limit: int = Query(10, ge=1, le=27), db: Session = Depends(get_db)):
+    """
+    Soma de custo_transporte agrupado por estado de origem
+    Gráfico de barras verticais
+    """
+    try:
+        query = text("""
+            SELECT 
+                COALESCE(origem_estado_nome, 'Não informado') as estado,
+                SUM(COALESCE(custo_transporte, 0)) as custo_total,
+                COUNT(*) as num_viagens,
+                AVG(COALESCE(custo_transporte, 0)) as custo_medio
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE custo_transporte IS NOT NULL AND custo_transporte > 0
+            GROUP BY origem_estado_nome
+            ORDER BY custo_total DESC
+            LIMIT :limit
+        """)
+        
+        results = db.execute(query, {"limit": limit}).fetchall()
+        
+        if not results:
+            return {"success": True, "data": {"labels": [], "custos": [], "medios": []}}
+        
+        return {
+            "success": True,
+            "data": {
+                "labels": [r[0] for r in results],
+                "custos": [round(float(r[1] or 0), 2) for r in results],
+                "viagens": [r[2] for r in results],
+                "medios": [round(float(r[3] or 0), 2) for r in results]
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro custo por estado: {str(e)}")
+        return {"success": False, "message": str(e), "data": {"labels": [], "custos": []}}
+
+
+# ============================================================
+# GRÁFICO 3: Distribuição de Distância (Histograma)
+# ============================================================
+
+@router.get("/distribuicao-distancia")
+async def get_distribuicao_distancia(db: Session = Depends(get_db)):
+    """
+    Histograma de distâncias em faixas
+    """
+    try:
+        query = text("""
+            WITH faixas AS (
+                SELECT 
+                    CASE 
+                        WHEN distancia < 100 THEN '0-100 km'
+                        WHEN distancia >= 100 AND distancia < 300 THEN '100-300 km'
+                        WHEN distancia >= 300 AND distancia < 500 THEN '300-500 km'
+                        WHEN distancia >= 500 AND distancia < 1000 THEN '500-1000 km'
+                        WHEN distancia >= 1000 AND distancia < 2000 THEN '1000-2000 km'
+                        ELSE '2000+ km'
+                    END as faixa,
+                    CASE 
+                        WHEN distancia < 100 THEN 1
+                        WHEN distancia >= 100 AND distancia < 300 THEN 2
+                        WHEN distancia >= 300 AND distancia < 500 THEN 3
+                        WHEN distancia >= 500 AND distancia < 1000 THEN 4
+                        WHEN distancia >= 1000 AND distancia < 2000 THEN 5
+                        ELSE 6
+                    END as ordem,
+                    distancia,
+                    custo_transporte
+                FROM formulario_embarcadores.v_pesquisas_completa
+                WHERE distancia IS NOT NULL AND distancia > 0
+            )
+            SELECT 
+                faixa,
                 COUNT(*) as quantidade,
-                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
-            FROM formulario_embarcadores.pesquisas
-            WHERE status = 'finalizada' AND frequencia IS NOT NULL
-            GROUP BY frequencia
-            ORDER BY quantidade DESC
+                AVG(distancia) as media_faixa,
+                SUM(custo_transporte) as custo_faixa,
+                ordem
+            FROM faixas
+            GROUP BY faixa, ordem
+            ORDER BY ordem
+        """)
+        
+        results = db.execute(query).fetchall()
+        
+        # Garantir todas as faixas existam
+        faixas_ordem = ['0-100 km', '100-300 km', '300-500 km', '500-1000 km', '1000-2000 km', '2000+ km']
+        dados_dict = {r[0]: {"qtd": r[1], "media": r[2], "custo": r[3]} for r in results}
+        
+        labels = faixas_ordem
+        quantidades = [dados_dict.get(f, {"qtd": 0})["qtd"] for f in faixas_ordem]
+        medias = [round(float(dados_dict.get(f, {"media": 0})["media"] or 0), 1) for f in faixas_ordem]
+        custos = [round(float(dados_dict.get(f, {"custo": 0})["custo"] or 0), 2) for f in faixas_ordem]
+        
+        return {
+            "success": True,
+            "data": {
+                "labels": labels,
+                "quantidades": quantidades,
+                "medias": medias,
+                "custos": custos
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Erro distribuição distância: {str(e)}")
+        return {"success": False, "message": str(e), "data": {"labels": [], "quantidades": []}}
+
+
+# ============================================================
+# GRÁFICO 4: Capacidade Utilizada por Modal
+# ============================================================
+
+@router.get("/capacidade-por-modal")
+async def get_capacidade_por_modal(db: Session = Depends(get_db)):
+    """
+    Média de capacidade_utilizada por modal de transporte
+    """
+    try:
+        query = text("""
+            SELECT 
+                UNNEST(modos) as modal,
+                AVG(COALESCE(capacidade_utilizada, 0)) as capacidade_media,
+                COUNT(*) as num_viagens,
+                SUM(COALESCE(peso_carga, 0)) as volume_total
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE modos IS NOT NULL AND capacidade_utilizada IS NOT NULL
+            GROUP BY modal
+            ORDER BY capacidade_media DESC
         """)
         
         results = db.execute(query).fetchall()
         
         if not results:
-            return {
-                "success": True,
-                "data": {
-                    "labels": [],
-                    "values": [],
-                    "percentuais": []
-                }
-            }
+            return {"success": True, "data": {"labels": [], "capacidades": [], "viagens": []}}
+        
+        # Mapear nomes amigáveis
+        nomes_modal = {
+            'rodoviario': 'Rodoviário',
+            'ferroviario': 'Ferroviário',
+            'aquaviario': 'Aquaviário',
+            'aereo': 'Aéreo',
+            'dutoviario': 'Dutoviário'
+        }
         
         return {
             "success": True,
             "data": {
-                "labels": [row[0] for row in results],
-                "values": [row[1] for row in results],
-                "percentuais": [float(row[2]) for row in results]
+                "labels": [nomes_modal.get(r[0], r[0]) for r in results],
+                "capacidades": [round(float(r[1] or 0), 1) for r in results],
+                "viagens": [r[2] for r in results],
+                "volumes": [round(float(r[3] or 0), 1) for r in results]
             }
         }
     except Exception as e:
-        logger.error(f"❌ Erro ao calcular frequência: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
+        logger.error(f"❌ Erro capacidade por modal: {str(e)}")
+        return {"success": False, "message": str(e), "data": {"labels": [], "capacidades": []}}
+
 
 # ============================================================
-# DIFICULDADES REPORTADAS
-# ============================================================
-
-@router.get("/dificuldades")
-async def get_dificuldades(db: Session = Depends(get_db)):
-    """
-    Retorna dificuldades mais reportadas
-    Formato: {labels: [...], values: [...], percentuais: [...]}
-    """
-    try:
-        query = text("""
-            SELECT
-                dificuldades,
-                COUNT(*) as quantidade,
-                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
-            FROM formulario_embarcadores.pesquisas
-            WHERE status = 'finalizada' AND dificuldades IS NOT NULL
-            GROUP BY dificuldades
-            ORDER BY quantidade DESC
-        """)
-        
-        results = db.execute(query).fetchall()
-        
-        if not results:
-            return {
-                "success": True,
-                "data": {
-                    "labels": [],
-                    "values": [],
-                    "percentuais": []
-                }
-            }
-        
-        return {
-            "success": True,
-            "data": {
-                "labels": [row[0] for row in results],
-                "values": [row[1] for row in results],
-                "percentuais": [float(row[2]) for row in results]
-            }
-        }
-    except Exception as e:
-        logger.error(f"❌ Erro ao calcular dificuldades: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
-
-# ============================================================
-# NOVOS ENDPOINTS - ANÁLISES CIENTÍFICAS DE LOGÍSTICA
-# ============================================================
-
-# ============================================================
-# ANÁLISE DE CUSTO POR DISTÂNCIA (SCATTER PLOT)
+# GRÁFICO 5: Custo vs Distância (Scatter Plot)
 # ============================================================
 
 @router.get("/custo-distancia")
 async def get_custo_distancia(db: Session = Depends(get_db)):
     """
-    Retorna relação entre custo e distância para análise de correlação
-    Tipo de gráfico: Scatter plot (dispersão)
-    Variáveis: custo_transporte (R$) vs distancia (km)
+    Dados para scatter plot: custo_transporte vs distancia
     """
     try:
         query = text("""
-            SELECT
-                CAST(REGEXP_REPLACE(distancia, '[^0-9.]', '', 'g') AS FLOAT) as dist_numerica,
-                CAST(REGEXP_REPLACE(custo_transporte, '[^0-9.]', '', 'g') AS FLOAT) as custo_numerico,
-                produto_principal,
-                nome_empresa
-            FROM formulario_embarcadores.v_pesquisas_completa
-            WHERE status_pesquisa = 'finalizada' 
-                AND distancia IS NOT NULL 
-                AND custo_transporte IS NOT NULL
-            ORDER BY dist_numerica
-        """)
-        
-        results = db.execute(query).fetchall()
-        
-        if not results:
-            return {
-                "success": True,
-                "data": {
-                    "distancias": [],
-                    "custos": [],
-                    "produtos": [],
-                    "empresas": []
-                }
-            }
-        
-        return {
-            "success": True,
-            "data": {
-                "distancias": [float(row[0]) for row in results],
-                "custos": [float(row[1]) for row in results],
-                "produtos": [row[2] for row in results],
-                "empresas": [row[3] for row in results]
-            }
-        }
-    except Exception as e:
-        logger.error(f"❌ Erro ao calcular custo vs distância: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
-
-# ============================================================
-# ANÁLISE DE CAPACIDADE UTILIZADA (HISTOGRAMA)
-# ============================================================
-
-@router.get("/capacidade-utilizada")
-async def get_capacidade_utilizada(db: Session = Depends(get_db)):
-    """
-    Retorna distribuição de capacidade utilizada dos veículos
-    Tipo de gráfico: Histograma/Bar chart
-    Variável: capacidade_utilizada (%)
-    """
-    try:
-        query = text("""
-            SELECT
-                CASE
-                    WHEN capacidade_utilizada < 50 THEN '0-50%'
-                    WHEN capacidade_utilizada < 70 THEN '50-70%'
-                    WHEN capacidade_utilizada < 85 THEN '70-85%'
-                    WHEN capacidade_utilizada < 95 THEN '85-95%'
-                    ELSE '95-100%'
-                END as faixa,
-                COUNT(*) as quantidade,
-                AVG(capacidade_utilizada) as media,
-                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
-            FROM formulario_embarcadores.v_pesquisas_completa
-            WHERE status_pesquisa = 'finalizada' AND capacidade_utilizada IS NOT NULL
-            GROUP BY faixa
-            ORDER BY faixa
-        """)
-        
-        results = db.execute(query).fetchall()
-        
-        if not results:
-            return {
-                "success": True,
-                "data": {
-                    "labels": [],
-                    "values": [],
-                    "medias": [],
-                    "percentuais": []
-                }
-            }
-        
-        return {
-            "success": True,
-            "data": {
-                "labels": [row[0] for row in results],
-                "values": [row[1] for row in results],
-                "medias": [round(float(row[2]), 1) for row in results],
-                "percentuais": [float(row[3]) for row in results]
-            }
-        }
-    except Exception as e:
-        logger.error(f"❌ Erro ao calcular capacidade utilizada: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
-
-# ============================================================
-# ANÁLISE DE PESO POR PRODUTO (BAR CHART HORIZONTAL)
-# ============================================================
-
-@router.get("/peso-por-produto")
-async def get_peso_por_produto(db: Session = Depends(get_db)):
-    """
-    Retorna volume total transportado por produto
-    Tipo de gráfico: Bar chart horizontal
-    Variável: peso_carga (toneladas) agregado por produto_principal
-    """
-    try:
-        query = text("""
-            SELECT
-                produto_principal,
-                SUM(peso_carga) as peso_total,
-                COUNT(*) as num_embarques,
-                AVG(peso_carga) as peso_medio
-            FROM formulario_embarcadores.v_pesquisas_completa
-            WHERE status_pesquisa = 'finalizada' AND produto_principal IS NOT NULL
-            GROUP BY produto_principal
-            ORDER BY peso_total DESC
-        """)
-        
-        results = db.execute(query).fetchall()
-        
-        if not results:
-            return {
-                "success": True,
-                "data": {
-                    "labels": [],
-                    "totais": [],
-                    "embarques": [],
-                    "medias": []
-                }
-            }
-        
-        return {
-            "success": True,
-            "data": {
-                "labels": [row[0] for row in results],
-                "totais": [float(row[1]) for row in results],
-                "embarques": [row[2] for row in results],
-                "medias": [round(float(row[3]), 1) for row in results]
-            }
-        }
-    except Exception as e:
-        logger.error(f"❌ Erro ao calcular peso por produto: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
-
-# ============================================================
-# ANÁLISE DE TIPO DE CADEIA (PIE CHART)
-# ============================================================
-
-@router.get("/tipo-cadeia")
-async def get_tipo_cadeia(db: Session = Depends(get_db)):
-    """
-    Retorna distribuição por tipo de cadeia logística
-    Tipo de gráfico: Pie chart (pizza)
-    Variável: tipo_cadeia (simples, complexa, integrada)
-    """
-    try:
-        query = text("""
-            SELECT
-                tipo_cadeia,
-                COUNT(*) as quantidade,
-                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
-            FROM formulario_embarcadores.v_pesquisas_completa
-            WHERE status_pesquisa = 'finalizada' AND tipo_cadeia IS NOT NULL
-            GROUP BY tipo_cadeia
-            ORDER BY quantidade DESC
-        """)
-        
-        results = db.execute(query).fetchall()
-        
-        if not results:
-            return {
-                "success": True,
-                "data": {
-                    "labels": [],
-                    "values": [],
-                    "percentuais": []
-                }
-            }
-        
-        return {
-            "success": True,
-            "data": {
-                "labels": [row[0] for row in results],
-                "values": [row[1] for row in results],
-                "percentuais": [float(row[2]) for row in results]
-            }
-        }
-    except Exception as e:
-        logger.error(f"❌ Erro ao calcular tipo de cadeia: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
-
-# ============================================================
-# ANÁLISE DE TEMPO VS DISTÂNCIA (LINE CHART)
-# ============================================================
-
-@router.get("/tempo-distancia")
-async def get_tempo_distancia(db: Session = Depends(get_db)):
-    """
-    Retorna relação entre tempo de viagem e distância
-    Tipo de gráfico: Line chart (linha com tendência)
-    Variáveis: tempo_total_minutos vs distancia (km)
-    """
-    try:
-        query = text("""
-            SELECT
+            SELECT 
                 distancia,
-                tempo_total_minutos,
-                ROUND(tempo_total_minutos::numeric / NULLIF(distancia, 0), 2) as minutos_por_km,
-                produto_principal
+                custo_transporte,
+                produto_principal,
+                empresa_razao_social,
+                CASE WHEN distancia > 0 THEN custo_transporte / distancia ELSE 0 END as custo_por_km
             FROM formulario_embarcadores.v_pesquisas_completa
-            WHERE status_pesquisa = 'finalizada' 
-                AND distancia IS NOT NULL 
-                AND tempo_total_minutos IS NOT NULL
+            WHERE distancia IS NOT NULL 
+              AND distancia > 0
+              AND custo_transporte IS NOT NULL 
+              AND custo_transporte > 0
             ORDER BY distancia
+            LIMIT 100
         """)
         
         results = db.execute(query).fetchall()
         
         if not results:
-            return {
-                "success": True,
-                "data": {
-                    "distancias": [],
-                    "tempos": [],
-                    "velocidades": [],
-                    "produtos": []
-                }
-            }
+            return {"success": True, "data": {"pontos": [], "custo_medio_por_km": 0}}
+        
+        pontos = []
+        for r in results:
+            pontos.append({
+                "x": float(r[0]),
+                "y": float(r[1]),
+                "produto": r[2] or "N/A",
+                "empresa": r[3] or "N/A",
+                "custo_km": round(float(r[4] or 0), 2)
+            })
+        
+        # Estatísticas
+        total_custo = sum(p["y"] for p in pontos)
+        total_dist = sum(p["x"] for p in pontos)
+        custo_por_km = total_custo / total_dist if total_dist > 0 else 0
         
         return {
             "success": True,
             "data": {
-                "distancias": [float(row[0]) for row in results],
-                "tempos": [float(row[1]) for row in results],
-                "velocidades": [float(row[2] or 0) for row in results],
-                "produtos": [row[3] for row in results]
+                "pontos": pontos,
+                "custo_medio_por_km": round(custo_por_km, 2),
+                "total_registros": len(pontos),
+                "distancia_total": round(total_dist, 1),
+                "custo_total": round(total_custo, 2)
             }
         }
     except Exception as e:
-        logger.error(f"❌ Erro ao calcular tempo vs distância: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
+        logger.error(f"❌ Erro custo-distancia: {str(e)}")
+        return {"success": False, "message": str(e), "data": {"pontos": []}}
+
 
 # ============================================================
-# ANÁLISE DE CARGA PERIGOSA (DOUGHNUT CHART)
+# GRÁFICO 6: Valor de Carga por Tipo de Transporte
 # ============================================================
 
-@router.get("/carga-perigosa")
-async def get_carga_perigosa(db: Session = Depends(get_db)):
+@router.get("/valor-por-tipo")
+async def get_valor_por_tipo(db: Session = Depends(get_db)):
     """
-    Retorna proporção de cargas perigosas
-    Tipo de gráfico: Doughnut chart (rosca)
-    Variável: carga_perigosa (sim/não)
+    Soma de valor_carga por tipo_transporte (local/importação/exportação)
     """
     try:
         query = text("""
-            SELECT
-                CASE 
-                    WHEN carga_perigosa = true THEN 'Sim - Carga Perigosa'
-                    ELSE 'Não - Carga Normal'
-                END as tipo,
-                COUNT(*) as quantidade,
-                ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) as percentual
+            SELECT 
+                tipo_transporte,
+                SUM(COALESCE(valor_carga, 0)) as valor_total,
+                COUNT(*) as num_viagens,
+                AVG(COALESCE(valor_carga, 0)) as valor_medio,
+                SUM(COALESCE(peso_carga, 0)) as volume_total
             FROM formulario_embarcadores.v_pesquisas_completa
-            WHERE status_pesquisa = 'finalizada'
-            GROUP BY carga_perigosa
-            ORDER BY carga_perigosa DESC
+            WHERE tipo_transporte IS NOT NULL AND valor_carga > 0
+            GROUP BY tipo_transporte
+            ORDER BY valor_total DESC
         """)
         
         results = db.execute(query).fetchall()
         
         if not results:
-            return {
-                "success": True,
-                "data": {
-                    "labels": [],
-                    "values": [],
-                    "percentuais": []
-                }
-            }
+            return {"success": True, "data": {"labels": [], "valores": [], "viagens": []}}
+        
+        nomes = {
+            'local': 'Transporte Local',
+            'importacao': 'Importação',
+            'exportacao': 'Exportação'
+        }
         
         return {
             "success": True,
             "data": {
-                "labels": [row[0] for row in results],
-                "values": [row[1] for row in results],
-                "percentuais": [float(row[2]) for row in results]
+                "labels": [nomes.get(r[0], r[0]) for r in results],
+                "valores": [round(float(r[1] or 0), 2) for r in results],
+                "viagens": [r[2] for r in results],
+                "medios": [round(float(r[3] or 0), 2) for r in results],
+                "volumes": [round(float(r[4] or 0), 1) for r in results]
             }
         }
     except Exception as e:
-        logger.error(f"❌ Erro ao calcular carga perigosa: {str(e)}")
-        return {
-            "success": False,
-            "message": f"Erro: {str(e)}"
-        }
+        logger.error(f"❌ Erro valor por tipo: {str(e)}")
+        return {"success": False, "message": str(e), "data": {"labels": [], "valores": []}}
 
+
+# ============================================================
+# ENDPOINTS LEGADOS (manter compatibilidade)
+# ============================================================
+
+@router.get("/distribuicao-modal")
+async def get_distribuicao_modal(db: Session = Depends(get_db)):
+    """Distribuição por modal (compatibilidade)"""
+    try:
+        query = text("""
+            SELECT UNNEST(modos) as modal, COUNT(*) as quantidade
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE modos IS NOT NULL
+            GROUP BY modal ORDER BY quantidade DESC
+        """)
+        results = db.execute(query).fetchall()
+        if not results:
+            return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
+        total = sum(r[1] for r in results)
+        return {
+            "success": True,
+            "data": {
+                "labels": [r[0] for r in results],
+                "values": [r[1] for r in results],
+                "percentuais": [round(100 * r[1] / total, 1) for r in results]
+            }
+        }
+    except Exception as e:
+        return {"success": False, "message": str(e), "data": {"labels": [], "values": []}}
+
+
+@router.get("/produtos-top")
+async def get_produtos_top(limit: int = Query(10), db: Session = Depends(get_db)):
+    """Top produtos (compatibilidade)"""
+    try:
+        query = text("""
+            SELECT produto_principal, COUNT(*) as quantidade, SUM(peso_carga) as volume
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE produto_principal IS NOT NULL
+            GROUP BY produto_principal ORDER BY quantidade DESC LIMIT :limit
+        """)
+        results = db.execute(query, {"limit": limit}).fetchall()
+        return {
+            "success": True,
+            "data": {
+                "labels": [r[0] for r in results],
+                "values": [r[1] for r in results],
+                "volumes": [float(r[2] or 0) for r in results]
+            }
+        }
+    except Exception as e:
+        return {"success": False, "message": str(e), "data": {"labels": [], "values": []}}
+
+
+@router.get("/importancias")
+async def get_importancias(db: Session = Depends(get_db)):
+    """Importância dos fatores (compatibilidade)"""
+    try:
+        query = text("""
+            SELECT
+                COUNT(*) FILTER (WHERE importancia_custo IN ('muito-alta', 'muito-importante')) * 100.0 / NULLIF(COUNT(*), 0),
+                COUNT(*) FILTER (WHERE importancia_tempo IN ('muito-alta', 'muito-importante')) * 100.0 / NULLIF(COUNT(*), 0),
+                COUNT(*) FILTER (WHERE importancia_confiabilidade IN ('muito-alta', 'muito-importante')) * 100.0 / NULLIF(COUNT(*), 0),
+                COUNT(*) FILTER (WHERE importancia_seguranca IN ('muito-alta', 'muito-importante')) * 100.0 / NULLIF(COUNT(*), 0),
+                COUNT(*) FILTER (WHERE importancia_capacidade IN ('muito-alta', 'muito-importante')) * 100.0 / NULLIF(COUNT(*), 0)
+            FROM formulario_embarcadores.v_pesquisas_completa
+        """)
+        result = db.execute(query).fetchone()
+        return {
+            "success": True,
+            "data": {
+                "labels": ["Custo", "Tempo", "Confiabilidade", "Segurança", "Capacidade"],
+                "muito_importante": [round(float(result[i] or 0), 1) for i in range(5)]
+            }
+        }
+    except Exception as e:
+        return {"success": False, "message": str(e), "data": {"labels": [], "muito_importante": []}}
+
+
+@router.get("/dificuldades")
+async def get_dificuldades(db: Session = Depends(get_db)):
+    """Dificuldades reportadas (compatibilidade)"""
+    try:
+        query = text("""
+            SELECT UNNEST(dificuldades) as dificuldade, COUNT(*) as quantidade
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE dificuldades IS NOT NULL
+            GROUP BY dificuldade ORDER BY quantidade DESC
+        """)
+        results = db.execute(query).fetchall()
+        if not results:
+            return {"success": True, "data": {"labels": [], "values": [], "percentuais": []}}
+        total = sum(r[1] for r in results)
+        return {
+            "success": True,
+            "data": {
+                "labels": [r[0] for r in results],
+                "values": [r[1] for r in results],
+                "percentuais": [round(100 * r[1] / total, 1) for r in results]
+            }
+        }
+    except Exception as e:
+        return {"success": False, "message": str(e), "data": {"labels": [], "values": []}}
+
+
+@router.get("/estados")
+async def get_estados(db: Session = Depends(get_db)):
+    """Fluxo por estados (compatibilidade)"""
+    try:
+        query_origem = text("""
+            SELECT origem_estado_nome, COUNT(*), SUM(custo_transporte) as custo
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE origem_estado_nome IS NOT NULL 
+            GROUP BY origem_estado_nome ORDER BY COUNT(*) DESC LIMIT 10
+        """)
+        query_destino = text("""
+            SELECT destino_estado_nome, COUNT(*), SUM(custo_transporte) as custo
+            FROM formulario_embarcadores.v_pesquisas_completa
+            WHERE destino_estado_nome IS NOT NULL 
+            GROUP BY destino_estado_nome ORDER BY COUNT(*) DESC LIMIT 10
+        """)
+        origens = db.execute(query_origem).fetchall()
+        destinos = db.execute(query_destino).fetchall()
+        return {
+            "success": True,
+            "data": {
+                "origens": {
+                    "labels": [r[0] for r in origens],
+                    "values": [r[1] for r in origens],
+                    "custos": [float(r[2] or 0) for r in origens]
+                },
+                "destinos": {
+                    "labels": [r[0] for r in destinos],
+                    "values": [r[1] for r in destinos],
+                    "custos": [float(r[2] or 0) for r in destinos]
+                }
+            }
+        }
+    except Exception as e:
+        return {"success": False, "message": str(e), "data": {"origens": {}, "destinos": {}}}
