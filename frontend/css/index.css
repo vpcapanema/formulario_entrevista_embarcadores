@@ -745,72 +745,40 @@ select.table-input[multiple] {
 /* ============================================
    MODAL DE PRÉVIA DO PRODUTO (Q8)
    ============================================ */
-.produto-preview-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.produto-preview-content {
-  background: white;
+.produtos-confirmados-container {
+  background: #f8f9fa;
+  border: 2px solid var(--primary-color);
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 700px;
-  width: 90%;
-  max-height: 80vh;
-  overflow: hidden;
-  animation: slideUp 0.3s ease-out;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.produtos-confirmados-container:not(.hidden-field) {
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.produto-preview-header {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #1a5276 100%);
-  color: white;
-  padding: 1.2rem 1.5rem;
+.produtos-confirmados-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
 }
 
-.produto-preview-header h4 {
+.produtos-confirmados-header h4 {
   margin: 0;
-  font-size: 1.1rem;
+  color: var(--primary-color);
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
-.produto-preview-close {
-  background: rgba(255, 255, 255, 0.2);
+.produtos-confirmados-close {
+  background: rgba(220, 53, 69, 0.1);
   border: none;
-  color: white;
+  color: #dc3545;
   font-size: 1.5rem;
   width: 32px;
   height: 32px;
@@ -822,24 +790,22 @@ select.table-input[multiple] {
   transition: all 0.2s;
 }
 
-.produto-preview-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+.produtos-confirmados-close:hover {
+  background: rgba(220, 53, 69, 0.2);
   transform: scale(1.1);
 }
 
-.produto-preview-body {
-  padding: 1.5rem;
-  max-height: 50vh;
-  overflow-y: auto;
+.produtos-confirmados-body {
+  margin-bottom: 1rem;
 }
 
-.produto-preview-intro {
+.produtos-confirmados-intro {
   color: #666;
   margin-bottom: 1rem;
   font-size: 0.95rem;
 }
 
-.produto-preview-intro code {
+.produtos-confirmados-intro code {
   background: #e8f4fd;
   color: var(--primary-color);
   padding: 2px 8px;
@@ -848,95 +814,106 @@ select.table-input[multiple] {
   font-weight: 600;
 }
 
-.produto-preview-table {
-  width: 100%;
-  border-collapse: collapse;
+.produto-confirmado-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.produto-confirmado-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1a5276 100%);
+  color: white;
+  padding: 0.8rem 1rem;
+  font-weight: 600;
   font-size: 0.9rem;
 }
 
-.produto-preview-table th,
-.produto-preview-table td {
-  padding: 0.8rem 1rem;
+.produto-confirmado-body {
+  padding: 1rem;
+}
+
+.produto-confirmado-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.produto-confirmado-table th,
+.produto-confirmado-table td {
+  padding: 0.6rem 0.8rem;
   text-align: left;
   border-bottom: 1px solid #e9ecef;
 }
 
-.produto-preview-table th {
+.produto-confirmado-table th {
   background: #f8f9fa;
   font-weight: 600;
   color: #495057;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  width: 40%;
 }
 
-.produto-preview-table tr:hover td {
+.produto-confirmado-table tr:hover td {
   background: #f8f9fa;
 }
 
-.produto-preview-table td:first-child {
+.produto-confirmado-table td:first-child {
   font-family: "Courier New", monospace;
   color: var(--primary-color);
   font-weight: 500;
-  white-space: nowrap;
 }
 
-.produto-preview-table td:last-child {
+.produto-confirmado-table td:last-child {
   color: #2c3e50;
   word-break: break-word;
 }
 
-.preview-value-empty {
+.produto-confirmado-valor-vazio {
   color: #adb5bd;
   font-style: italic;
 }
 
-.preview-value-array {
-  background: #e8f8f5;
-  padding: 3px 8px;
-  border-radius: 4px;
+.produto-confirmado-valor-array {
+  background: #e8f5e8;
+  padding: 2px 6px;
+  border-radius: 3px;
   display: inline-block;
+  font-size: 0.8rem;
 }
 
-.produto-preview-footer {
-  padding: 1rem 1.5rem;
-  background: #f8f9fa;
+.produtos-confirmados-footer {
+  text-align: center;
+  padding-top: 1rem;
   border-top: 1px solid #e9ecef;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
 }
 
-.btn-preview-cancel {
+.btn-produtos-close {
   background: #6c757d;
   color: white;
   border: none;
-  padding: 0.7rem 1.5rem;
+  padding: 0.7rem 2rem;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
 }
 
-.btn-preview-cancel:hover {
+.btn-produtos-close:hover {
   background: #5a6268;
 }
 
-.btn-preview-confirm {
-  background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
-  color: white;
-  border: none;
-  padding: 0.7rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
-}
-
-.btn-preview-confirm:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+.produtos-confirmados-empty {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 1rem 0;
 }
 
 .btn-delete {

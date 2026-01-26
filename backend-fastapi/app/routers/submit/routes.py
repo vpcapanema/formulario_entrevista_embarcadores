@@ -5,18 +5,19 @@ ROUTER: SUBMIT FORM - FastAPI PLI 2050
 Endpoint crítico para salvar pesquisa completa (4 tabelas)
 """
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import func
 from app.database import get_db
-from app.schemas import SubmitFormData, SubmitFormResponse, DividedSubmitPayload, EmpresaPayload, EntrevistadoPayload, PesquisaPayload, ProdutoTransportadoPayload
+from app.schemas import SubmitFormData, SubmitFormResponse, DividedSubmitPayload
 from app.models import (
     Empresa, Entrevistado, Pesquisa, ProdutoTransportado
 )
-from app.utils.timezone import now_brasilia
-import logging
+from app.utils.convert_payload import legacy_to_divided
 
 router = APIRouter(prefix="/api", tags=["submit"])
 logger = logging.getLogger(__name__)
@@ -28,19 +29,17 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
     e delega para o mesmo fluxo de `submit_form_divided` (mantém compatibilidade).
     """
     try:
-        from app.utils.convert_payload import legacy_to_divided
-
         divided = legacy_to_divided(data)
 
         # Delegar ao fluxo existente do endpoint dividido
         return await submit_form_divided(divided, db)
 
     except Exception as e:
-        logger.error(f"❌ Erro ao converter/encaminhar payload legado: {e}")
+        logger.error("❌ Erro ao converter/encaminhar payload legado: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro interno ao processar payload legado: {str(e)}"
-        )
+        ) from e
 
 
 @router.post("/submit-form-divided", response_model=SubmitFormResponse, status_code=status.HTTP_201_CREATED)
@@ -393,37 +392,37 @@ async def submit_form_divided(data: DividedSubmitPayload, db: Session = Depends(
     except IntegrityError as e:
         db.rollback()
         error_str = str(e)
-        logger.error(f"❌ Erro de integridade: {error_str}")
+        logger.error("❌ Erro de integridade: %s", error_str)
 
         # Identificar tipo de erro
         if "cnpj" in error_str.lower():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="CNPJ já cadastrado no sistema"
-            )
+            ) from e
         elif "email" in error_str.lower():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email já cadastrado para esta empresa"
-            )
+            ) from e
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Erro de validação: {error_str[:200]}"
-            )
+            ) from e
 
     except SQLAlchemyError as e:
         db.rollback()
-        logger.error(f"❌ Erro de banco de dados: {str(e)}")
+        logger.error("❌ Erro de banco de dados: %s", str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao salvar no banco de dados: {str(e)}"
-        )
+        ) from e
 
     except Exception as e:
         db.rollback()
-        logger.error(f"❌ Erro inesperado: {str(e)}")
+        logger.error("❌ Erro inesperado: %s", str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro interno: {str(e)}"
-        )
+        ) from e

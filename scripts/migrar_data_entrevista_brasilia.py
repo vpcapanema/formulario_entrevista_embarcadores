@@ -4,9 +4,9 @@ Script de migração: Adicionar data_entrevista com timezone de Brasília
 Sistema PLI 2050 - Formulário de Entrevistas
 """
 
+import os
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-import os
 from pathlib import Path
 
 # Carregar variáveis de ambiente
@@ -18,7 +18,7 @@ if env_path.exists():
 # Configurações do banco
 DB_CONFIG = {
     'host': os.getenv('PGHOST', 'dpg-d5rc90pr0fns73e2q4n0-a.oregon-postgres.render.com'),
-    'port': int(os.getenv('PGPORT', 5432)),
+    'port': int(os.getenv('PGPORT', '5432')),
     'database': os.getenv('PGDATABASE', 'sigma_pli_qr53'),
     'user': os.getenv('PGUSER', 'sigma_user'),
     'password': os.getenv('PGPASSWORD', 'pzRszi7xZ4IzjehPVNdCR73DNCJ9jiq5'),
@@ -107,12 +107,12 @@ def executar_migracao():
         print("\n✅ Migração concluída com sucesso!")
         print("🎯 Agora data_entrevista será preenchida automaticamente com horário de Brasília")
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"❌ Erro durante migração: {e}")
         return False
 
     return True
 
 if __name__ == "__main__":
-    sucesso = executar_migracao()
-    exit(0 if sucesso else 1)
+    SUCESSO = executar_migracao()
+    exit(0 if SUCESSO else 1)

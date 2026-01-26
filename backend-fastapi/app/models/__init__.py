@@ -7,13 +7,14 @@ SQLALCHEMY MODELS - FastAPI PLI 2050
 ============================================================
 Models para todas as tabelas do schema formulario_embarcadores
 """
+# pylint: disable=E1102
 
 from sqlalchemy import (
     Column, Integer, String, Numeric, Boolean, Text, Date,
     TIMESTAMP, ForeignKey, ARRAY, CheckConstraint, Index, DateTime
 )
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func  # pylint: disable=E1102
 from app.database import Base
 
 # Schema name
@@ -25,6 +26,7 @@ SCHEMA = "formulario_embarcadores"
 
 
 class Instituicao(Base):
+    """Modelo para instituições parceiras do projeto PLI 2050."""
     __tablename__ = "instituicoes"
     __table_args__ = {"schema": SCHEMA}
 
@@ -35,6 +37,7 @@ class Instituicao(Base):
 
 
 class EstadoBrasil(Base):
+    """Modelo para estados brasileiros."""
     __tablename__ = "estados_brasil"
     __table_args__ = {"schema": SCHEMA}
 
@@ -45,6 +48,7 @@ class EstadoBrasil(Base):
 
 
 class Pais(Base):
+    """Modelo para países."""
     __tablename__ = "paises"
     __table_args__ = {"schema": SCHEMA}
 
@@ -78,6 +82,7 @@ class MunicipioBrasil(Base):
 
 
 class FuncaoEntrevistado(Base):
+    """Modelo para funções dos entrevistados."""
     __tablename__ = "funcoes_entrevistado"
     __table_args__ = {"schema": SCHEMA}
 
@@ -90,6 +95,7 @@ class FuncaoEntrevistado(Base):
 
 
 class Entrevistador(Base):
+    """Modelo para entrevistadores."""
     __tablename__ = "entrevistadores"
     __table_args__ = {"schema": SCHEMA}
 
@@ -107,6 +113,7 @@ class Entrevistador(Base):
 
 
 class Empresa(Base):
+    """Modelo para empresas embarcadoras e transportadoras."""
     __tablename__ = "empresas"
     __table_args__ = (
         CheckConstraint(
@@ -170,6 +177,7 @@ class Empresa(Base):
 
 
 class Entrevistado(Base):
+    """Modelo para entrevistados das empresas."""
     __tablename__ = "entrevistados"
     __table_args__ = (
         CheckConstraint(
@@ -190,7 +198,6 @@ class Entrevistado(Base):
     email = Column(String(255), nullable=True)
     principal = Column(Boolean, default=False)
     # timestamps and email_lower removed to match schemas
-    
     # Campos de naturalidade e estado civil (adicionados em 20251114)
     estado_civil = Column(String(20))
     nacionalidade = Column(String(20))
@@ -207,6 +214,7 @@ class Entrevistado(Base):
 
 
 class Pesquisa(Base):
+    """Modelo para pesquisas de formulários PLI 2050."""
     __tablename__ = "pesquisas"
     __table_args__ = (
         CheckConstraint(
@@ -259,8 +267,8 @@ class Pesquisa(Base):
     id_responsavel = Column(Integer, nullable=False)
 
     # Timestamps
-    data_entrevista = Column(DateTime(timezone=True), default=func.now())
-    data_atualizacao = Column(DateTime(timezone=True), onupdate=func.now())
+    data_entrevista = Column(DateTime(timezone=True), default=func.now())  # pylint: disable=not-callable
+    data_atualizacao = Column(DateTime(timezone=True), onupdate=func.now())  # pylint: disable=not-callable
     status = Column(String(20), default="finalizada")
 
     # Produto
@@ -396,6 +404,7 @@ class Pesquisa(Base):
 
 
 class ProdutoTransportado(Base):
+    """Modelo para produtos transportados nas pesquisas."""
     __tablename__ = "produtos_transportados"
     __table_args__ = (
         Index("idx_produtos_pesquisa", "id_pesquisa"),

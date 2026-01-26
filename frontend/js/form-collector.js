@@ -93,6 +93,9 @@
  */
 
 const FormCollector = {
+    // Produtos confirmados (armazenamento global)
+    produtosConfirmados: new Map(), // rowId -> dadosProduto
+    
     // ============================================================
     // INICIALIZAÇÃO
     // ============================================================
@@ -1187,12 +1190,12 @@ function confirmarProduto(rowId) {
     const confirmado = row.dataset.confirmado === 'true';
     
     if (!confirmado) {
-        // Exibir prévia antes de confirmar
-        mostrarPreviewProduto(rowId);
+        // Adicionar produto aos confirmados e mostrar container
+        adicionarProdutoConfirmado(rowId);
+        mostrarContainerProdutos();
     } else {
-        // Desmarcar confirmação (toggle)
-        row.dataset.confirmado = 'false';
-        row.classList.remove('produto-confirmado');
+        // Remover produto dos confirmados
+        removerProdutoConfirmado(rowId);
         
         // Atualizar botão
         const btnConfirm = row.querySelector('.btn-confirm');
@@ -1206,9 +1209,9 @@ function confirmarProduto(rowId) {
 }
 
 /**
- * Exibe o modal de prévia com os dados que serão inseridos no banco
+ * Adiciona um produto à lista de confirmados
  */
-function mostrarPreviewProduto(rowId) {
+function adicionarProdutoConfirmado(rowId) {
     const row = document.getElementById(rowId);
     if (!row) return;
     
@@ -1221,25 +1224,67 @@ function mostrarPreviewProduto(rowId) {
     // Mapear para o schema do banco
     const dadosBanco = mapearParaSchemaBanco(dadosProduto);
     
-    // Renderizar no modal
-    renderizarPreviewTabela(dadosBanco);
+    // Adicionar aos produtos confirmados
+    FormCollector.produtosConfirmados.set(rowId, {
+        rowId,
+        rowNumber,
+        dadosProduto,
+        dadosBanco,
+        timestamp: new Date().toISOString()
+    });
     
-    // Mostrar modal
-    const modal = document.getElementById('produto-preview-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-        
-        // Configurar botão de confirmação
-        const btnConfirmar = document.getElementById('btn-confirmar-produto-final');
-        if (btnConfirmar) {
-            btnConfirmar.onclick = () => {
-                confirmarProdutoFinal(rowId);
-                fecharPreviewProduto();
-            };
-        }
+    // Marcar como confirmado visualmente
+    row.dataset.confirmado = 'true';
+    row.classList.add('produto-confirmado');
+    
+    // Atualizar botão
+    const btnConfirm = row.querySelector('.btn-confirm');
+    if (btnConfirm) {
+        btnConfirm.classList.add('btn-confirm-ativo');
+        btnConfirm.title = 'Produto confirmado (clique para remover)';
     }
     
-    console.log(`📋 Prévia exibida para: ${rowId}`, dadosBanco);
+    console.log(`✅ Produto adicionado aos confirmados: ${rowId}`);
+}
+
+/**
+ * Remove um produto da lista de confirmados
+ */
+function removerProdutoConfirmado(rowId) {
+    FormCollector.produtosConfirmados.delete(rowId);
+    
+    // Atualizar visual
+    const row = document.getElementById(rowId);
+    if (row) {
+        row.dataset.confirmado = 'false';
+        row.classList.remove('produto-confirmado');
+    }
+    
+    console.log(`🗑️ Produto removido dos confirmados: ${rowId}`);
+}
+
+/**
+ * Mostra o container de produtos confirmados
+ */
+function mostrarContainerProdutos() {
+    const container = document.getElementById('produtos-confirmados-container');
+    if (container) {
+        renderizarProdutosConfirmados();
+        container.classList.remove('hidden-field');
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        console.log('📋 Container de produtos confirmados exibido');
+    }
+}
+
+/**
+ * Fecha o container de produtos confirmados
+ */
+function fecharContainerProdutos() {
+    const container = document.getElementById('produtos-confirmados-container');
+    if (container) {
+        container.classList.add('hidden-field');
+        console.log('🚪 Container de produtos confirmados fechado');
+    }
 }
 
 /**
@@ -1335,71 +1380,79 @@ function mapearParaSchemaBanco(dados) {
 }
 
 /**
- * Renderiza a tabela de prévia no modal
+ * Renderiza todos os produtos confirmados no container
  */
-function renderizarPreviewTabela(dados) {
-    const tbody = document.getElementById('produto-preview-tbody');
-    if (!tbody) return;
+function renderizarProdutosConfirmados() {
+    const container = document.getElementById('produtos-confirmados-list');
+    if (!container) return;
     
-    tbody.innerHTML = dados.map(item => {
-        let valorFormatado;
+    if (FormCollector.produtosConfirmados.size === 0) {
+        container.innerHTML = '<p class="produtos-confirmados-empty">Nenhum produto confirmado ainda.</p>';
+        return;
+    }
+    
+    const produtosHtml = Array.from(FormCollector.produtosConfirmados.values()).map((produto, index) => {
+        const dadosBanco = produto.dadosBanco;
         
-        if (item.valor === null || item.valor === undefined || item.valor === '') {
-            valorFormatado = '<span class="preview-value-empty">(não informado)</span>';
-        } else if (item.isArray) {
-            valorFormatado = `<span class="preview-value-array">${item.valor}</span>`;
-        } else {
-            valorFormatado = `<strong>${item.valor}</strong>`;
-        }
+        const tabelaHtml = dadosBanco.map(item => {
+            let valorFormatado;
+            
+            if (item.valor === null || item.valor === undefined || item.valor === '') {
+                valorFormatado = '<span class="produto-confirmado-valor-vazio">(não informado)</span>';
+            } else if (item.isArray) {
+                valorFormatado = `<span class="produto-confirmado-valor-array">${item.valor}</span>`;
+            } else {
+                valorFormatado = `<strong>${item.valor}</strong>`;
+            }
+            
+            return `
+                <tr>
+                    <td title="${item.descricao}">${item.campo}</td>
+                    <td>${valorFormatado}</td>
+                </tr>
+            `;
+        }).join('');
         
         return `
-            <tr>
-                <td title="${item.descricao}">${item.campo}</td>
-                <td>${valorFormatado}</td>
-            </tr>
+            <div class="produto-confirmado-item">
+                <div class="produto-confirmado-header">
+                    Produto ${index + 1}: ${produto.dadosProduto.carga || 'Sem nome'}
+                </div>
+                <div class="produto-confirmado-body">
+                    <table class="produto-confirmado-table">
+                        <thead>
+                            <tr>
+                                <th>Campo no Banco</th>
+                                <th>Valor a Inserir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tabelaHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         `;
     }).join('');
-}
-
-/**
- * Fecha o modal de prévia
- */
-function fecharPreviewProduto() {
-    const modal = document.getElementById('produto-preview-modal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-/**
- * Confirma o produto após visualização da prévia
- */
-function confirmarProdutoFinal(rowId) {
-    const row = document.getElementById(rowId);
-    if (!row) return;
     
-    // Marcar como confirmado
-    row.dataset.confirmado = 'true';
-    row.classList.add('produto-confirmado');
-    
-    // Atualizar botão
-    const btnConfirm = row.querySelector('.btn-confirm');
-    if (btnConfirm) {
-        btnConfirm.classList.add('btn-confirm-ativo');
-        btnConfirm.title = 'Produto confirmado (clique para desfazer)';
-    }
-    
-    console.log(`✅ Produto confirmado: ${rowId}`);
+    container.innerHTML = produtosHtml;
+    console.log(`📋 Renderizados ${FormCollector.produtosConfirmados.size} produtos confirmados`);
 }
 
 /**
  * Remove uma linha da tabela de produtos
  */
 function removeProdutoRow(rowId) {
+    // Remover dos produtos confirmados se estiver lá
+    removerProdutoConfirmado(rowId);
+    
+    // Remover a linha da tabela
     const row = document.getElementById(rowId);
     if (row) {
         row.remove();
     }
+    
+    console.log(`🗑️ Linha de produto removida: ${rowId}`);
 }
 
 /**

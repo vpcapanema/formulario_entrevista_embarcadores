@@ -3,7 +3,6 @@
 Script simples para migrar data_entrevista para timezone de Brasília
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -11,14 +10,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "backend-fastapi"))
 
 try:
-    from app.database import engine
+    from app.database import engine  # pylint: disable=import-error
     from sqlalchemy import text
 
     print("🔄 Iniciando migração de data_entrevista para Brasília...")
 
     with engine.connect() as conn:
         # Executar migração
-        sql = """
+        SQL = """
         SET search_path TO formulario_embarcadores, public;
 
         -- Remover default atual
@@ -35,7 +34,7 @@ try:
         WHERE data_entrevista IS NULL;
         """
 
-        conn.execute(text(sql))
+        conn.execute(text(SQL))
         conn.commit()
 
         print("✅ Migração executada com sucesso!")
@@ -49,6 +48,6 @@ try:
         print(f"📊 Total de pesquisas: {result[0]}")
         print(f"📅 Com data_entrevista: {result[1]}")
 
-except Exception as e:
+except Exception as e:  # pylint: disable=broad-exception-caught
     print(f"❌ Erro: {e}")
     sys.exit(1)
