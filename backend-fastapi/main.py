@@ -250,6 +250,60 @@ async def root():
     return RedirectResponse(url=pages_url)
 
 
+# ============================================================
+# ROTAS PARA PÁGINAS HTML (fallback para navegação SPA)
+# ============================================================
+
+@app.get("/respostas.html")
+@app.get("/respostas")
+async def serve_respostas():
+    """Serve a página de respostas"""
+    html_path = frontend_path / "html" / "respostas.html"
+    if html_path.exists():
+        return FileResponse(str(html_path))
+    return {"error": "Página não encontrada", "path": str(html_path)}
+
+
+@app.get("/analytics.html")
+@app.get("/analytics")
+async def serve_analytics():
+    """Serve a página de analytics"""
+    html_path = frontend_path / "html" / "analytics.html"
+    if html_path.exists():
+        return FileResponse(str(html_path))
+    return {"error": "Página não encontrada", "path": str(html_path)}
+
+
+@app.get("/instrucoes.html")
+@app.get("/instrucoes")
+async def serve_instrucoes():
+    """Serve a página de instruções"""
+    html_path = frontend_path / "html" / "instrucoes.html"
+    if html_path.exists():
+        return FileResponse(str(html_path))
+    return {"error": "Página não encontrada", "path": str(html_path)}
+
+
+@app.get("/visualizador_dados.html")
+@app.get("/visualizador")
+async def serve_visualizador():
+    """Serve a página do visualizador"""
+    html_path = frontend_path / "html" / "visualizador_dados.html"
+    if html_path.exists():
+        return FileResponse(str(html_path))
+    return {"error": "Página não encontrada", "path": str(html_path)}
+
+
+@app.get("/index.html")
+@app.get("/formulario")
+async def serve_formulario():
+    """Serve a página do formulário"""
+    html_path = frontend_path / "html" / "index.html"
+    if html_path.exists():
+        return FileResponse(str(html_path))
+    return {"error": "Página não encontrada", "path": str(html_path)}
+
+
 @app.get("/debug/frontend-files")
 async def debug_frontend_files():
     """Endpoint temporário de debug que lista possíveis caminhos e arquivos encontrados."""
