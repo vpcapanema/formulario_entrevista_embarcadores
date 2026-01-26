@@ -42,39 +42,47 @@ const PDFGenerator = {
             // ===== INFORMAÇÕES DA PESQUISA =====
             yPosition = this._addPesquisaInfo(doc, yPosition, response);
             
-                        // ===== CARD 0: RESPONSÁVEL PELO PREENCHIMENTO =====
+            // ===== CARD 0: RESPONSÁVEL PELO PREENCHIMENTO =====
+            // ⭐ ATUALIZADO: Exibe TODOS os dados do entrevistador + instituição
             const tipoResponsavel = formData.tipoResponsavel || 'Não informado';
             const camposCard0 = [
-                { label: 'Tipo de Responsável', value: tipoResponsavel === 'entrevistador' ? 'Entrevistador (Consultor/Pesquisador)' : 'Entrevistado (Representante da Empresa)' }
+                { label: 'Q0. Quem está preenchendo', value: tipoResponsavel === 'entrevistador' ? 'Entrevistador' : 'Entrevistado' }
             ];
             
-            // Se for entrevistador, exibir todos os dados do entrevistador + instituição
+            // Se for entrevistador, adicionar TODOS os dados do entrevistador e instituição
             if (tipoResponsavel === 'entrevistador') {
-                camposCard0.push(
-                    { label: 'ID do Entrevistador', value: formData.idEntrevistador || 'N/A' },
-                    { label: 'Nome do Entrevistador', value: formData.entrevistadorNome || 'N/A' },
-                    { label: 'E-mail do Entrevistador', value: formData.entrevistadorEmail || 'N/A' }
-                );
-                
-                // Dados da Instituição (se disponíveis)
-                if (formData.instituicaoNome || formData.entrevistadorIdInstituicao) {
-                    camposCard0.push(
-                        { label: '--- INSTITUIÇÃO ---', value: '' },
-                        { label: 'ID da Instituição', value: formData.entrevistadorIdInstituicao || 'N/A' },
-                        { label: 'Nome da Instituição', value: formData.instituicaoNome || 'N/A' },
-                        { label: 'Tipo da Instituição', value: formData.instituicaoTipo || 'N/A' },
-                        { label: 'CNPJ da Instituição', value: formData.instituicaoCnpj || 'N/A' }
-                    );
+                if (formData.entrevistadorCompleto && formData.entrevistadorCompleto.entrevistador) {
+                    const ent = formData.entrevistadorCompleto.entrevistador;
+                    
+                    // Dados do Entrevistador
+                    camposCard0.push({ label: 'ID do Entrevistador', value: ent.id_entrevistador || 'N/I' });
+                    camposCard0.push({ label: 'Nome Completo do Entrevistador', value: ent.nome_completo || 'N/I' });
+                    camposCard0.push({ label: 'E-mail do Entrevistador', value: ent.email || 'N/I' });
+                    
+                    // Dados da Instituição (se existir)
+                    if (formData.entrevistadorCompleto.instituicao) {
+                        const inst = formData.entrevistadorCompleto.instituicao;
+                        camposCard0.push({ label: '--- INSTITUIÇÃO ---', value: '' });
+                        camposCard0.push({ label: 'ID da Instituição', value: inst.id_instituicao || 'N/I' });
+                        camposCard0.push({ label: 'Nome da Instituição', value: inst.nome_instituicao || 'N/I' });
+                        camposCard0.push({ label: 'Tipo da Instituição', value: inst.tipo_instituicao || 'N/I' });
+                        camposCard0.push({ label: 'CNPJ da Instituição', value: this._formatCNPJ(inst.cnpj) || 'N/I' });
+                    }
+                } else if (formData.idResponsavel) {
+                    // Fallback: apenas ID se dados completos não disponíveis
+                    camposCard0.push({ label: 'ID do Entrevistador', value: formData.idResponsavel });
                 }
             }
             yPosition = this._addSection(doc, yPosition, 'CARD 0 - RESPONSÁVEL PELO PREENCHIMENTO', formData, camposCard0);
             
             // ===== CARD 1: DADOS DO ENTREVISTADO =====
+            // ⭐ Usar funcaoNome (texto legível) ao invés de funcao (código)
+            const funcaoExibir = formData.funcaoNome || formData.funcao || 'Não informado';
             const camposCard1 = [
                 { label: 'Q1. Nome', value: formData.nome },
-                { label: 'Q2. Função', value: formData.funcao }
+                { label: 'Q2. Função', value: funcaoExibir }
             ];
-            if (formData.funcao === 'outro' || formData.funcao === 'Outro') {
+            if (formData.funcao === 'outro' || formData.funcao === 'Outro' || funcaoExibir.toLowerCase().includes('outro')) {
                 camposCard1.push({ label: 'Q2b. Outra Função (especificada)', value: formData.outraFuncao });
             }
             camposCard1.push(
@@ -84,10 +92,12 @@ const PDFGenerator = {
             yPosition = this._addSection(doc, yPosition, 'CARD 1 - DADOS DO ENTREVISTADO', formData, camposCard1);
             
             // ===== CARD 2: DADOS DA EMPRESA =====
+            // ⭐ Usar tipoEmpresaNome (texto legível) ao invés de tipoEmpresa (código)
+            const tipoEmpresaExibir = formData.tipoEmpresaNome || formData.tipoEmpresa || 'Não informado';
             const camposCard2 = [
-                { label: 'Q5. Tipo de Empresa', value: formData.tipoEmpresa }
+                { label: 'Q5. Tipo de Empresa', value: tipoEmpresaExibir }
             ];
-            if (formData.tipoEmpresa === 'outro') {
+            if (formData.tipoEmpresa === 'outro' || tipoEmpresaExibir.toLowerCase().includes('outro')) {
                 camposCard2.push({ label: 'Q5b. Outro Tipo (especificado)', value: formData.outroTipo });
             }
             camposCard2.push(
@@ -96,7 +106,7 @@ const PDFGenerator = {
                 { label: 'Q6c. Nome Fantasia (Receita Federal)', value: formData.nomeFantasiaReceita || 'Não informado' },
                 { label: 'Q6d. Situação Cadastral (Receita Federal)', value: formData.situacaoCadastralReceita || 'Não informado' },
                 { label: 'Q6e. Atividade Principal CNAE (Receita Federal)', value: formData.atividadePrincipalReceita || 'Não informado' },
-                { label: 'Q7. Município da Empresa', value: formData.municipio }
+                { label: 'Q7. Município da Empresa', value: formData.municipioNome || formData.municipio || 'Não informado' }
             );
             yPosition = this._addSection(doc, yPosition, 'CARD 2 - DADOS DA EMPRESA', formData, camposCard2);
             
@@ -110,11 +120,13 @@ const PDFGenerator = {
             }
             
             // ===== CARD 4: PRODUTO PRINCIPAL =====
+            // ⭐ Usar agrupamentoProdutoNome ao invés de código
+            const agrupamentoExibir = formData.agrupamentoProdutoNome || formData.agrupamentoProduto || 'Não informado';
             const camposCard4 = [
                 { label: 'Q9. Produto Mais Representativo', value: formData.produtoPrincipal },
-                { label: 'Q10. Agrupamento do Produto', value: formData.agrupamentoProduto }
+                { label: 'Q10. Agrupamento do Produto', value: agrupamentoExibir }
             ];
-            if (formData.agrupamentoProduto === 'outro-produto') {
+            if (formData.agrupamentoProduto === 'outro-produto' || agrupamentoExibir.toLowerCase().includes('outro')) {
                 camposCard4.push({ label: 'Q10b. Outro Produto (especificado)', value: formData.outroProduto });
             }
             if (formData.observacoesProdutoPrincipal) {
@@ -123,14 +135,16 @@ const PDFGenerator = {
             yPosition = this._addSection(doc, yPosition, 'CARD 4 - PRODUTO PRINCIPAL', formData, camposCard4);
             
             // ===== CARD 5: CARACTERÍSTICAS DO TRANSPORTE =====
+            // ⭐ IMPORTANTE: Usar campos *Nome (ex: origemPaisNome) para PDF, não códigos!
+            const tipoTransporteExibir = formData.tipoTransporteNome || this._formatTipoTransporte(formData.tipoTransporte);
             const camposCard5 = [
-                { label: 'Q11. Tipo de Transporte', value: this._formatTipoTransporte(formData.tipoTransporte) },
-                { label: 'Q12. Origem - País', value: formData.origemPais || 'Não informado' },
-                { label: 'Q12b. Origem - Estado', value: formData.origemEstado || 'Não informado' },
-                { label: 'Q12c. Origem - Município', value: formData.origemMunicipio || 'Não informado' },
-                { label: 'Q13. Destino - País', value: formData.destinoPais || 'Não informado' },
-                { label: 'Q13b. Destino - Estado', value: formData.destinoEstado || 'Não informado' },
-                { label: 'Q13c. Destino - Município', value: formData.destinoMunicipio || 'Não informado' },
+                { label: 'Q11. Tipo de Transporte', value: tipoTransporteExibir },
+                { label: 'Q12. Origem - País', value: formData.origemPaisNome || formData.origemPais || 'Não informado' },
+                { label: 'Q12b. Origem - Estado', value: formData.origemEstadoNome || formData.origemEstado || 'Não informado' },
+                { label: 'Q12c. Origem - Município', value: formData.origemMunicipioNome || formData.origemMunicipio || 'Não informado' },
+                { label: 'Q13. Destino - País', value: formData.destinoPaisNome || formData.destinoPais || 'Não informado' },
+                { label: 'Q13b. Destino - Estado', value: formData.destinoEstadoNome || formData.destinoEstado || 'Não informado' },
+                { label: 'Q13c. Destino - Município', value: formData.destinoMunicipioNome || formData.destinoMunicipio || 'Não informado' },
                 { label: 'Q14. Distância do Deslocamento', value: formData.distancia ? `${formData.distancia} km` : 'Não informado' },
                 { label: 'Q15. Tem Paradas?', value: formData.temParadas === 'sim' ? 'Sim' : (formData.temParadas === 'nao' ? 'Não' : 'Não informado') }
             ];
@@ -140,18 +154,20 @@ const PDFGenerator = {
             }
             camposCard5.push({ label: 'Q17. Modais Utilizados', value: this._formatModais(formData.modos) });
             if (formData.modos && formData.modos.includes('rodoviario')) {
-                camposCard5.push({ label: 'Q18. Configuração do Veículo Rodoviário', value: formData.configVeiculo || 'Não informado' });
+                // Usar configVeiculoNome se disponível
+                const configVeiculoExibir = formData.configVeiculoNome || formData.configVeiculo || 'Não informado';
+                camposCard5.push({ label: 'Q18. Configuração do Veículo Rodoviário', value: configVeiculoExibir });
             }
             camposCard5.push(
                 { label: 'Q19. Capacidade Utilizada (%)', value: formData.capacidadeUtilizada ? `${formData.capacidadeUtilizada}%` : 'Não informado' },
                 { label: 'Q20. Peso da Carga', value: formData.pesoCarga ? `${formData.pesoCarga}` : 'Não informado' },
-                { label: 'Q21. Unidade de Peso', value: formData.unidadePeso || 'Não informado' },
+                { label: 'Q21. Unidade de Peso', value: formData.unidadePesoNome || formData.unidadePeso || 'Não informado' },
                 { label: 'Q22. Custo Total do Transporte', value: this._formatMoeda(formData.custoTransporte) },
                 { label: 'Q23. Valor Total da Carga', value: this._formatMoeda(formData.valorCarga) },
-                { label: 'Q24. Tipo de Embalagem', value: formData.tipoEmbalagem || 'Não informado' },
+                { label: 'Q24. Tipo de Embalagem', value: formData.tipoEmbalagemNome || formData.tipoEmbalagem || 'Não informado' },
                 { label: 'Q25. Carga Perigosa?', value: formData.cargaPerigosa === 'sim' ? 'Sim' : (formData.cargaPerigosa === 'nao' ? 'Não' : 'Não informado') },
                 { label: 'Q26. Tempo de Deslocamento', value: this._formatTempo(formData.tempoDias, formData.tempoHoras, formData.tempoMinutos) },
-                { label: 'Q27. Frequência de Deslocamento', value: formData.frequencia || 'Não informado' }
+                { label: 'Q27. Frequência de Deslocamento', value: formData.frequenciaNome || formData.frequencia || 'Não informado' }
             );
             if (formData.frequencia === 'diaria') {
                 camposCard5.push({ label: 'Quantas vezes por dia?', value: formData.frequenciaDiaria || 'Não informado' });
@@ -165,23 +181,24 @@ const PDFGenerator = {
             yPosition = this._addSection(doc, yPosition, 'CARD 5 - CARACTERÍSTICAS DO TRANSPORTE', formData, camposCard5);
             
             // ===== CARD 6: FATORES DE DECISÃO MODAL =====
+            // ⭐ Usar *Nome para campos de importância
             const camposCard6 = [
-                { label: 'Q29. Importância do CUSTO', value: formData.importanciaCusto || 'Não informado' },
+                { label: 'Q29. Importância do CUSTO', value: formData.importanciaCustoNome || formData.importanciaCusto || 'Não informado' },
                 { label: 'Q30. Variação % de Custo', value: formData.variacaoCusto ? `${formData.variacaoCusto}%` : 'Não informado' },
-                { label: 'Q31. Importância do TEMPO', value: formData.importanciaTempo || 'Não informado' },
+                { label: 'Q31. Importância do TEMPO', value: formData.importanciaTempoNome || formData.importanciaTempo || 'Não informado' },
                 { label: 'Q32. Variação % de Tempo', value: formData.variacaoTempo ? `${formData.variacaoTempo}%` : 'Não informado' },
-                { label: 'Q33. Importância da CONFIABILIDADE', value: formData.importanciaConfiabilidade || 'Não informado' },
+                { label: 'Q33. Importância da CONFIABILIDADE', value: formData.importanciaConfiabilidadeNome || formData.importanciaConfiabilidade || 'Não informado' },
                 { label: 'Q34. Variação % de Confiabilidade', value: formData.variacaoConfiabilidade ? `${formData.variacaoConfiabilidade}%` : 'Não informado' },
-                { label: 'Q35. Importância da SEGURANÇA', value: formData.importanciaSeguranca || 'Não informado' },
+                { label: 'Q35. Importância da SEGURANÇA', value: formData.importanciaSegurancaNome || formData.importanciaSeguranca || 'Não informado' },
                 { label: 'Q36. Variação % de Segurança', value: formData.variacaoSeguranca ? `${formData.variacaoSeguranca}%` : 'Não informado' },
-                { label: 'Q37. Importância da CAPACIDADE', value: formData.importanciaCapacidade || 'Não informado' },
+                { label: 'Q37. Importância da CAPACIDADE', value: formData.importanciaCapacidadeNome || formData.importanciaCapacidade || 'Não informado' },
                 { label: 'Q38. Variação % de Capacidade', value: formData.variacaoCapacidade ? `${formData.variacaoCapacidade}%` : 'Não informado' }
             ];
             yPosition = this._addSection(doc, yPosition, 'CARD 6 - FATORES DE DECISÃO MODAL', formData, camposCard6);
             
             // ===== CARD 7: ANÁLISE ESTRATÉGICA =====
             const camposCard7 = [
-                { label: 'Q39. Tipo de Cadeia', value: formData.tipoCadeia || 'Não informado' },
+                { label: 'Q39. Tipo de Cadeia', value: formData.tipoCadeiaNome || formData.tipoCadeia || 'Não informado' },
                 { label: 'Q40. Modais Alternativos', value: this._formatModaisAlternativos(formData.modaisAlternativos) },
                 { label: 'Q41. Fator Adicional', value: formData.fatorAdicional || 'Não informado' }
             ];
@@ -364,6 +381,7 @@ const PDFGenerator = {
     
     /**
      * Adiciona tabela de produtos transportados
+     * ⭐ CORRIGIDO: Usar NOMES ao invés de códigos + Tabela dividida para não cortar
      */
     _addProdutosTable(doc, yPosition, produtos) {
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -385,43 +403,27 @@ const PDFGenerator = {
         
         yPosition += 12;
         
-        // Tabela usando autoTable - expandida para conter todos os campos do schema
-        const tableData = produtos.map(p => {
-            // origem/destino: aceitar campos compactos (origem/destino) ou detalhados (origem_pais, origem_estado,...)
-            const origemPais = p.origem_pais || (p.origem && p.origem.pais) || p.origem || '-';
-            const origemEstado = p.origem_estado || (p.origem && p.origem.estado) || p.origem_estado || '-';
-            const origemMunicipio = p.origem_municipio || (p.origem && p.origem.municipio) || p.origem_municipio || '-';
-
-            const destinoPais = p.destino_pais || (p.destino && p.destino.pais) || p.destino || '-';
-            const destinoEstado = p.destino_estado || (p.destino && p.destino.estado) || p.destino_estado || '-';
-            const destinoMunicipio = p.destino_municipio || (p.destino && p.destino.municipio) || p.destino_municipio || '-';
-
+        // ⭐ ESTRATÉGIA: Dividir em 2 tabelas para caber na página A4 portrait
+        // Tabela 1: Dados básicos (Produto, Movimentação, Acondicionamento, Modal, Distância)
+        // Tabela 2: Origem e Destino (detalhados)
+        
+        // ===== TABELA 1: DADOS BÁSICOS =====
+        const tableData1 = produtos.map((p, idx) => {
             return [
-                p.carga || '-',
-                p.movimentacao != null ? `${Number(p.movimentacao).toLocaleString('pt-BR')} ton/ano` : '-',
-                p.acondicionamento || '-',
-                p.ordem != null ? String(p.ordem) : '-',
-                origemPais,
-                origemEstado,
-                origemMunicipio,
-                destinoPais,
-                destinoEstado,
-                destinoMunicipio,
-                p.distancia != null ? `${p.distancia} km` : '-',
-                p.modalidade || '-',
-                p.observacoes || '-'
+                idx + 1,                                                           // #
+                p.carga || '-',                                                    // Produto
+                p.movimentacao != null ? `${Number(p.movimentacao).toLocaleString('pt-BR')} t/ano` : '-',
+                p.acondicionamento || '-',                                         // Acondicionamento
+                p.modalidade || '-',                                               // Modal
+                p.distancia != null ? `${p.distancia} km` : '-',                   // Distância
+                p.observacoes ? (p.observacoes.length > 30 ? p.observacoes.substring(0, 30) + '...' : p.observacoes) : '-'
             ];
         });
 
         doc.autoTable({
             startY: yPosition,
-            head: [[
-                'Produto', 'Movimentação', 'Acondicionamento', 'Ordem',
-                'Origem (País)', 'Origem (Estado)', 'Origem (Município)',
-                'Destino (País)', 'Destino (Estado)', 'Destino (Município)',
-                'Distância', 'Modal', 'Observações'
-            ]],
-            body: tableData,
+            head: [['#', 'Produto', 'Movimentação', 'Acondicionamento', 'Modal', 'Distância', 'Observações']],
+            body: tableData1,
             margin: { left: 15, right: 15 },
             theme: 'grid',
             headStyles: {
@@ -429,33 +431,129 @@ const PDFGenerator = {
                 textColor: [255, 255, 255],
                 fontSize: 8,
                 fontStyle: 'bold',
-                halign: 'left'
+                halign: 'center'
             },
             bodyStyles: {
-                fontSize: 7.5,
+                fontSize: 8,
                 textColor: [31, 41, 55]
             },
             alternateRowStyles: {
                 fillColor: [249, 250, 251]
             },
             columnStyles: {
-                0: { cellWidth: 36 }, // Produto
-                1: { cellWidth: 24 }, // Movimentação
-                2: { cellWidth: 28 }, // Acondicionamento
-                3: { cellWidth: 12 }, // Ordem
-                4: { cellWidth: 22 }, // Origem País
-                5: { cellWidth: 18 }, // Origem Estado
-                6: { cellWidth: 28 }, // Origem Município
-                7: { cellWidth: 22 }, // Destino País
-                8: { cellWidth: 18 }, // Destino Estado
-                9: { cellWidth: 28 }, // Destino Município
-                10: { cellWidth: 16 }, // Distância
-                11: { cellWidth: 20 }, // Modal
-                12: { cellWidth: 40 }  // Observações
+                0: { cellWidth: 10, halign: 'center' },  // #
+                1: { cellWidth: 40 },                     // Produto
+                2: { cellWidth: 28 },                     // Movimentação
+                3: { cellWidth: 30 },                     // Acondicionamento
+                4: { cellWidth: 25 },                     // Modal
+                5: { cellWidth: 20 },                     // Distância
+                6: { cellWidth: 'auto' }                  // Observações
+            }
+        });
+
+        yPosition = doc.lastAutoTable.finalY + 5;
+        
+        // ===== TABELA 2: ORIGEM E DESTINO (usando NOMES, não códigos) =====
+        // Verificar se precisa de nova página
+        if (yPosition > pageHeight - 60) {
+            doc.addPage();
+            yPosition = 20;
+        }
+        
+        // Subtítulo
+        doc.setFillColor(96, 165, 250); // accent color (azul mais claro)
+        doc.rect(15, yPosition, pageWidth - 30, 6, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Origem e Destino dos Produtos', 20, yPosition + 4);
+        yPosition += 8;
+        
+        const tableData2 = produtos.map((p, idx) => {
+            // ⭐ PRIORIZAR campos *Nome (texto legível) ao invés de códigos
+            // Fallback para campos com código se nome não existir
+            const origemPais = p.origemPaisNome || p.origem_pais_nome || p.origem_pais || '-';
+            const origemEstado = p.origemEstadoNome || p.origem_estado_nome || p.origemEstadoUf || p.origem_estado || '-';
+            const origemMunicipio = p.origemMunicipioNome || p.origem_municipio_nome || p.origem_municipio || '-';
+            
+            const destinoPais = p.destinoPaisNome || p.destino_pais_nome || p.destino_pais || '-';
+            const destinoEstado = p.destinoEstadoNome || p.destino_estado_nome || p.destinoEstadoUf || p.destino_estado || '-';
+            const destinoMunicipio = p.destinoMunicipioNome || p.destino_municipio_nome || p.destino_municipio || '-';
+            
+            // Formatar origem e destino de forma compacta
+            const origemFormatada = this._formatLocalidade(origemMunicipio, origemEstado, origemPais);
+            const destinoFormatado = this._formatLocalidade(destinoMunicipio, destinoEstado, destinoPais);
+            
+            return [
+                idx + 1,
+                p.carga || '-',
+                origemFormatada,
+                destinoFormatado
+            ];
+        });
+
+        doc.autoTable({
+            startY: yPosition,
+            head: [['#', 'Produto', 'Origem (Município/Estado/País)', 'Destino (Município/Estado/País)']],
+            body: tableData2,
+            margin: { left: 15, right: 15 },
+            theme: 'grid',
+            headStyles: {
+                fillColor: [96, 165, 250],
+                textColor: [255, 255, 255],
+                fontSize: 8,
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            bodyStyles: {
+                fontSize: 8,
+                textColor: [31, 41, 55]
+            },
+            alternateRowStyles: {
+                fillColor: [249, 250, 251]
+            },
+            columnStyles: {
+                0: { cellWidth: 10, halign: 'center' },   // #
+                1: { cellWidth: 40 },                      // Produto
+                2: { cellWidth: 'auto' },                  // Origem
+                3: { cellWidth: 'auto' }                   // Destino
             }
         });
 
         return doc.lastAutoTable.finalY + 10;
+    },
+    
+    /**
+     * Formata localidade de forma compacta: "Município/UF - País" ou "Município/UF" se Brasil
+     */
+    _formatLocalidade(municipio, estado, pais) {
+        const parts = [];
+        
+        // Município
+        if (municipio && municipio !== '-' && municipio.trim() !== '') {
+            parts.push(municipio.trim());
+        }
+        
+        // Estado (UF)
+        if (estado && estado !== '-' && estado.trim() !== '') {
+            if (parts.length > 0) {
+                parts[0] = parts[0] + '/' + estado.trim();
+            } else {
+                parts.push(estado.trim());
+            }
+        }
+        
+        // País (só adiciona se não for Brasil ou se for o único dado)
+        if (pais && pais !== '-' && pais.trim() !== '') {
+            const paisNormalizado = pais.trim().toLowerCase();
+            if (paisNormalizado !== 'brasil' && paisNormalizado !== 'br' && paisNormalizado !== '31') {
+                parts.push(pais.trim());
+            } else if (parts.length === 0) {
+                parts.push('Brasil');
+            }
+        }
+        
+        return parts.length > 0 ? parts.join(' - ') : '-';
     },
     
     /**

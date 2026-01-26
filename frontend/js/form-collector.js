@@ -148,11 +148,65 @@ const FormCollector = {
             await DropdownManager.applyToEntrevistador(); // Q0
             await DropdownManager.applyToNaturalidade(); // Q7-Q8 (Naturalidade)
             
+            // ⭐ NOVO: Configurar listener para buscar dados completos do entrevistador
+            this._setupEntrevistadorListener();
+            
             console.log('✅ Dropdowns carregados via DropdownManager');
         } catch (error) {
             console.error('❌ Erro ao carregar dropdowns:', error);
         }
     },
+    
+    /**
+     * ⭐ NOVO: Configura listener para buscar dados completos do entrevistador + instituição
+     * Quando um entrevistador é selecionado, busca todos os dados via API
+     */
+    _setupEntrevistadorListener() {
+        const entrevistadorSelect = document.getElementById('id-entrevistador');
+        if (!entrevistadorSelect) return;
+        
+        entrevistadorSelect.addEventListener('change', async (e) => {
+            const idEntrevistador = e.target.value;
+            
+            if (!idEntrevistador) {
+                this._entrevistadorCompleto = null;
+                console.log('📋 Entrevistador desmarcado - dados limpos');
+                return;
+            }
+            
+            try {
+                console.log(`🔍 Buscando dados completos do entrevistador ID ${idEntrevistador}...`);
+                
+                // Buscar dados completos via API
+                const response = await fetch(`/api/entrevistadores/${idEntrevistador}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    this._entrevistadorCompleto = {
+                        entrevistador: result.entrevistador,
+                        instituicao: result.instituicao
+                    };
+                    console.log('✅ Dados completos do entrevistador carregados:', this._entrevistadorCompleto);
+                } else {
+                    console.warn('⚠️ API retornou erro:', result);
+                    this._entrevistadorCompleto = null;
+                }
+            } catch (error) {
+                console.error('❌ Erro ao buscar dados do entrevistador:', error);
+                this._entrevistadorCompleto = null;
+            }
+        });
+        
+        console.log('✅ Listener de entrevistador configurado');
+    },
+    
+    // Armazena dados completos do entrevistador + instituição
+    _entrevistadorCompleto: null,
     
     /**
      * Configura campos condicionais (mostrar/esconder baseado em seleções)
@@ -346,30 +400,10 @@ const FormCollector = {
             const idEntrevistadorValue = this._getInteger('id-entrevistador');
             if (idEntrevistadorValue) {
                 data.idResponsavel = idEntrevistadorValue;
-                data.idEntrevistador = idEntrevistadorValue;
-                
-                // ⭐ NOVO: Buscar dados completos do entrevistador para Card 0 do PDF
-                if (window.DropdownManager && window.DropdownManager._cache.entrevistadores) {
-                    const entrevistador = window.DropdownManager._cache.entrevistadores.find(
-                        e => e.id_entrevistador === idEntrevistadorValue
-                    );
-                    if (entrevistador) {
-                        data.entrevistadorNome = entrevistador.nome_completo;
-                        data.entrevistadorEmail = entrevistador.email;
-                        data.entrevistadorIdInstituicao = entrevistador.id_instituicao;
-                        
-                        // ⭐ Buscar dados da instituição do cache
-                        if (entrevistador.id_instituicao && window.DropdownManager && window.DropdownManager._cache.instituicoes) {
-                            const instituicao = window.DropdownManager._cache.instituicoes.find(
-                                i => i.id_instituicao === entrevistador.id_instituicao
-                            );
-                            if (instituicao) {
-                                data.instituicaoNome = instituicao.nome_instituicao;
-                                data.instituicaoTipo = instituicao.tipo_instituicao;
-                                data.instituicaoCnpj = instituicao.cnpj;
-                            }
-                        }
-                    }
+                // ⭐ NOVO: Armazenar dados completos do entrevistador + instituição para o PDF
+                // Esses dados são buscados pelo evento 'change' do select e armazenados em _entrevistadorCompleto
+                if (this._entrevistadorCompleto) {
+                    data.entrevistadorCompleto = this._entrevistadorCompleto;
                 }
             } else {
                 console.error('❌ ERRO: tipo_responsavel é "entrevistador" mas id-entrevistador não foi selecionado');
@@ -382,7 +416,10 @@ const FormCollector = {
         
         // ==== SEÇÃO 1: Dados do Entrevistado ====
         data.nome = this._getValue('nome');
-        data.funcao = this._getValue('funcao');
+        // Função: código para banco + nome para PDF
+        const funcaoData = this._getValueWithText('funcao');
+        data.funcao = funcaoData.codigo;
+        data.funcaoNome = funcaoData.nome;
         data.telefone = this._getValue('telefone');
         data.email = this._getValue('email');
         data.estadoCivil = this._getValue('estado-civil'); // Q5
@@ -391,13 +428,19 @@ const FormCollector = {
         data.municipioNaturalidade = this._getValue('municipio-naturalidade'); // Q8
         
         // ==== SEÇÃO 2: Dados da Empresa ====
-        data.tipoEmpresa = this._getValue('tipo-empresa');
+        // Tipo empresa: código para banco + nome para PDF
+        const tipoEmpresaData = this._getValueWithText('tipo-empresa');
+        data.tipoEmpresa = tipoEmpresaData.codigo;
+        data.tipoEmpresaNome = tipoEmpresaData.nome;
         if (data.tipoEmpresa === 'outro') {
             data.outroTipo = this._getValue('outro-tipo');
         }
         data.razaoSocial = this._getValue('razao-social'); // Q6b - Nome da empresa
         data.nomeEmpresa = this._getValue('razao-social'); // Backend espera nomeEmpresa
-        data.municipio = this._getValue('municipio-empresa'); // Q7 - Município
+        // Município da Empresa: código para banco + nome para PDF
+        const municipioEmpresaData = this._getValueWithText('municipio-empresa');
+        data.municipio = municipioEmpresaData.codigo; // Q7 - Código do Município
+        data.municipioNome = municipioEmpresaData.nome; // Nome para PDF
         data.cnpj = this._getValue('cnpj-empresa');
         data.nomeFantasia = this._getValue('nome-fantasia');
         
@@ -417,20 +460,43 @@ const FormCollector = {
         
         // ==== SEÇÃO 4: Produto Principal ====
         data.produtoPrincipal = this._getValue('produto-principal');
-        data.agrupamentoProduto = this._getValue('agrupamento-produto');
+        // Agrupamento: código para banco + nome para PDF
+        const agrupamentoData = this._getValueWithText('agrupamento-produto');
+        data.agrupamentoProduto = agrupamentoData.codigo;
+        data.agrupamentoProdutoNome = agrupamentoData.nome;
         if (data.agrupamentoProduto === 'outro-produto') {
             data.outroProduto = this._getValue('outro-produto');
         }
         data.observacoesProdutoPrincipal = this._getValue('observacoes-produto-principal');
         
         // ==== SEÇÃO 5: Características do Transporte ====
-        data.tipoTransporte = this._getValue('tipo-transporte');
-        data.origemPais = this._getValue('origem-pais');
-        data.origemEstado = this._getValue('origem-estado');
-        data.origemMunicipio = this._getValue('origem-municipio');
-        data.destinoPais = this._getValue('destino-pais');
-        data.destinoEstado = this._getValue('destino-estado');
-        data.destinoMunicipio = this._getValue('destino-municipio');
+        // Tipo de transporte: código para banco + nome para PDF
+        const tipoTransporteData = this._getValueWithText('tipo-transporte');
+        data.tipoTransporte = tipoTransporteData.codigo;
+        data.tipoTransporteNome = tipoTransporteData.nome;
+        
+        // Origem: código para banco + nome para PDF
+        const origemPaisData = this._getValueWithText('origem-pais');
+        const origemEstadoData = this._getValueWithText('origem-estado');
+        const origemMunicipioData = this._getValueWithText('origem-municipio');
+        data.origemPais = origemPaisData.codigo;           // Código para banco
+        data.origemPaisNome = origemPaisData.nome;         // Nome para PDF
+        data.origemEstado = origemEstadoData.codigo;       // Código para banco
+        data.origemEstadoNome = origemEstadoData.nome;     // Nome para PDF
+        data.origemMunicipio = origemMunicipioData.codigo; // Código para banco
+        data.origemMunicipioNome = origemMunicipioData.nome; // Nome para PDF
+        
+        // Destino: código para banco + nome para PDF
+        const destinoPaisData = this._getValueWithText('destino-pais');
+        const destinoEstadoData = this._getValueWithText('destino-estado');
+        const destinoMunicipioData = this._getValueWithText('destino-municipio');
+        data.destinoPais = destinoPaisData.codigo;           // Código para banco
+        data.destinoPaisNome = destinoPaisData.nome;         // Nome para PDF
+        data.destinoEstado = destinoEstadoData.codigo;       // Código para banco
+        data.destinoEstadoNome = destinoEstadoData.nome;     // Nome para PDF
+        data.destinoMunicipio = destinoMunicipioData.codigo; // Código para banco
+        data.destinoMunicipioNome = destinoMunicipioData.nome; // Nome para PDF
+        
         data.distancia = this._getNumeric('distancia');
         data.temParadas = this._getValue('tem-paradas');
         
@@ -442,22 +508,34 @@ const FormCollector = {
         data.modos = this._getCheckedValues('modo');
         
         if (data.modos && data.modos.includes('rodoviario')) {
-            data.configVeiculo = this._getValue('config-veiculo');
+            // Config veículo: código para banco + nome para PDF
+            const configVeiculoData = this._getValueWithText('config-veiculo');
+            data.configVeiculo = configVeiculoData.codigo;
+            data.configVeiculoNome = configVeiculoData.nome;
         }
         
         data.capacidadeUtilizada = this._getNumeric('capacidade-utilizada');
         data.pesoCarga = this._getNumeric('peso-carga');
-        data.unidadePeso = this._getValue('unidade-peso');
+        // Unidade de peso: código para banco + nome para PDF
+        const unidadePesoData = this._getValueWithText('unidade-peso');
+        data.unidadePeso = unidadePesoData.codigo;
+        data.unidadePesoNome = unidadePesoData.nome;
         data.custoTransporte = this._getNumeric('custo-transporte');
         data.valorCarga = this._getNumeric('valor-carga');
-        data.tipoEmbalagem = this._getValue('tipo-embalagem');
+        // Tipo de embalagem: código para banco + nome para PDF
+        const tipoEmbalagemData = this._getValueWithText('tipo-embalagem');
+        data.tipoEmbalagem = tipoEmbalagemData.codigo;
+        data.tipoEmbalagemNome = tipoEmbalagemData.nome;
         data.cargaPerigosa = this._getValue('carga-perigosa');
         
         data.tempoDias = this._getInteger('tempo-dias');
         data.tempoHoras = this._getInteger('tempo-horas');
         data.tempoMinutos = this._getInteger('tempo-minutos');
         
-        data.frequencia = this._getValue('frequencia');
+        // Frequência: código para banco + nome para PDF
+        const frequenciaData = this._getValueWithText('frequencia');
+        data.frequencia = frequenciaData.codigo;
+        data.frequenciaNome = frequenciaData.nome;
         if (data.frequencia === 'diaria') {
             data.frequenciaDiaria = this._getNumeric('frequencia-diaria');
         }
@@ -467,19 +545,33 @@ const FormCollector = {
         data.observacoesSazonalidade = this._getValue('observacoes-sazonalidade');
         
         // ==== SEÇÃO 6: Fatores de Decisão ====
-        data.importanciaCusto = this._getValue('importancia-custo');
+        // Importância: código para banco + nome para PDF
+        const importanciaCustoData = this._getValueWithText('importancia-custo');
+        data.importanciaCusto = importanciaCustoData.codigo;
+        data.importanciaCustoNome = importanciaCustoData.nome;
         data.variacaoCusto = this._getNumeric('variacao-custo');
-        data.importanciaTempo = this._getValue('importancia-tempo');
+        const importanciaTempoData = this._getValueWithText('importancia-tempo');
+        data.importanciaTempo = importanciaTempoData.codigo;
+        data.importanciaTempoNome = importanciaTempoData.nome;
         data.variacaoTempo = this._getNumeric('variacao-tempo');
-        data.importanciaConfiabilidade = this._getValue('importancia-confiabilidade');
+        const importanciaConfiabilidadeData = this._getValueWithText('importancia-confiabilidade');
+        data.importanciaConfiabilidade = importanciaConfiabilidadeData.codigo;
+        data.importanciaConfiabilidadeNome = importanciaConfiabilidadeData.nome;
         data.variacaoConfiabilidade = this._getNumeric('variacao-confiabilidade');
-        data.importanciaSeguranca = this._getValue('importancia-seguranca');
+        const importanciaSegurancaData = this._getValueWithText('importancia-seguranca');
+        data.importanciaSeguranca = importanciaSegurancaData.codigo;
+        data.importanciaSegurancaNome = importanciaSegurancaData.nome;
         data.variacaoSeguranca = this._getNumeric('variacao-seguranca');
-        data.importanciaCapacidade = this._getValue('importancia-capacidade');
+        const importanciaCapacidadeData = this._getValueWithText('importancia-capacidade');
+        data.importanciaCapacidade = importanciaCapacidadeData.codigo;
+        data.importanciaCapacidadeNome = importanciaCapacidadeData.nome;
         data.variacaoCapacidade = this._getNumeric('variacao-capacidade');
         
         // ==== SEÇÃO 7: Análise Estratégica ====
-        data.tipoCadeia = this._getValue('tipo-cadeia');
+        // Tipo de cadeia: código para banco + nome para PDF
+        const tipoCadeiaData = this._getValueWithText('tipo-cadeia');
+        data.tipoCadeia = tipoCadeiaData.codigo;
+        data.tipoCadeiaNome = tipoCadeiaData.nome;
         data.modaisAlternativos = this._getCheckedValues('modal-alternativo');
         data.fatorAdicional = this._getValue('fator-adicional');
         
@@ -742,6 +834,19 @@ const FormCollector = {
         const el = document.getElementById(id);
         // Retornar string vazia ao invés de null para campos vazios
         return el ? (el.value || '') : '';
+    },
+
+    /**
+     * Obtém valor E texto selecionado de um select
+     * Retorna objeto { codigo: 'XX', nome: 'Nome Texto' }
+     * Útil para campos que precisam mostrar nome no PDF mas salvar código no banco
+     */
+    _getValueWithText(id) {
+        const el = document.getElementById(id);
+        if (!el) return { codigo: '', nome: '' };
+        const codigo = el.value || '';
+        const nome = el.selectedOptions && el.selectedOptions[0] ? el.selectedOptions[0].textContent || '' : '';
+        return { codigo, nome };
     },
     
     _getNumeric(id) {

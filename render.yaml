@@ -21,15 +21,17 @@ services:
       uvicorn backend-fastapi.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PGHOST
-        value: sigma-pli-postgresql-db.cwlmgwc4igdh.us-east-1.rds.amazonaws.com
+        value: dpg-d5rc90pr0fns73e2q4n0-a.oregon-postgres.render.com
       - key: PGPORT
         value: 5432
       - key: PGDATABASE
-        value: sigma_pli
+        value: sigma_pli_qr53
       - key: PGUSER
-        value: sigma_admin
+        value: sigma_user
       - key: PGPASSWORD
-        value: Malditas131533*
+        value: pzRszi7xZ4IzjehPVNdCR73DNCJ9jiq5
+      - key: POSTGRES_SSLMODE
+        value: require
       - key: SCHEMA_NAME
         value: formulario_embarcadores
       - key: ALLOWED_ORIGINS

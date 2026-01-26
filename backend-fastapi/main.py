@@ -21,6 +21,8 @@ from app.routers.health import routes as health_router
 from app.routers.submit import routes as submit_router
 # NOVO: Router de pesquisas
 from app.routers.pesquisas import router as pesquisas_router
+# NOVO: Router de entrevistadores (dados completos + instituição)
+from app.routers.entrevistadores import routes as entrevistadores_router
 # DEPRECATED: Agora são JSONs estáticos
 # from app.routers.lists import routes as lists_router
 from app.routers.analytics import routes as analytics_router
@@ -189,6 +191,7 @@ else:
 
 app.include_router(health_router.router)    # GET /health, /info
 app.include_router(submit_router.router)    # POST /api/submit-form, /api/submit-form-divided
+app.include_router(entrevistadores_router.router)  # GET /api/entrevistadores, /api/entrevistadores/{id}
 # app.include_router(pesquisas_router)        # GET /api/pesquisas/* (NOVO) - TEMPORARIAMENTE DESABILITADO
 # app.include_router(lists_router.router)   # DEPRECATED: JSONs estáticos
 # app.include_router(analytics_router.router)  # GET /api/analytics/* - TEMPORARIAMENTE DESABILITADO
