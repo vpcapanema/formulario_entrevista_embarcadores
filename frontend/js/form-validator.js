@@ -15,9 +15,10 @@
  * - pesquisas: outro_produto, config_veiculo, num_paradas, etc
  * 
  * VALIDAÇÕES DE FORMATO (constraints PostgreSQL):
- * - cnpj: VARCHAR(18) formato XX.XXX.XXX/XXXX-XX
+ * - cnpj: VARCHAR(18) formato visual XX.XXX.XXX/XXXX-XX (aceita apenas números)
  * - email: VARCHAR(100) formato RFC 5322
- * - telefone: VARCHAR(15) formato (XX) XXXXX-XXXX
+ * - telefone: VARCHAR(15) formato visual (XX) XXXXX-XXXX (aceita apenas números)
+ * - cep: VARCHAR(9) formato visual XXXXX-XXX (aceita apenas números)
  * - distancia: NUMERIC(10,2) min=0
  * - peso_carga: NUMERIC(12,3) min=0
  * - custo_transporte: NUMERIC(15,2) min=0
@@ -185,6 +186,11 @@ const FormValidator = {
     init: function() {
         console.log('🔍 FormValidator: Inicializando...');
         console.log(`📋 Total de campos configurados: ${Object.keys(this.fieldValidators).length}`);
+        
+        // Inicializar máscaras visuais para campos apropriados
+        if (typeof CoreValidators !== 'undefined' && CoreValidators.initMascaras) {
+            CoreValidators.initMascaras();
+        }
         
         // Debug: verificar quais campos não foram encontrados
         let notFound = [];

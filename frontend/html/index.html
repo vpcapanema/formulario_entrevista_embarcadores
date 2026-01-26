@@ -290,6 +290,34 @@
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Modal de Prévia dos Dados do Produto -->
+                        <div id="produto-preview-modal" class="produto-preview-modal">
+                            <div class="produto-preview-content">
+                                <div class="produto-preview-header">
+                                    <h4>📋 Prévia dos Dados a Serem Inseridos</h4>
+                                    <button type="button" class="produto-preview-close" onclick="fecharPreviewProduto()">&times;</button>
+                                </div>
+                                <div class="produto-preview-body">
+                                    <p class="produto-preview-intro">Os seguintes dados serão salvos na tabela <code>produtos_transportados</code>:</p>
+                                    <table class="produto-preview-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Campo no Banco</th>
+                                                <th>Valor a Inserir</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="produto-preview-tbody">
+                                            <!-- Preenchido dinamicamente -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="produto-preview-footer">
+                                    <button type="button" class="btn-preview-cancel" onclick="fecharPreviewProduto()">Cancelar</button>
+                                    <button type="button" class="btn-preview-confirm" id="btn-confirmar-produto-final">✅ Confirmar Produto</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

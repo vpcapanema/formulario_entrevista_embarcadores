@@ -46,8 +46,8 @@ const CoreValidators = {
                 isValid: false,
                 type: 'warning',
                 badge: 'Inválido',
-                title: 'Formato incorreto',
-                details: 'Esperado: <code>XX.XXX.XXX/XXXX-XX</code><br>Exemplo: <code>12.345.678/0001-90</code>'
+                title: 'CNPJ deve ter 14 dígitos',
+                details: 'Digite apenas números (14 dígitos)<br>Máscara visual: <code>XX.XXX.XXX/XXXX-XX</code><br>Exemplo: <code>12345678000190</code>'
             };
         }
 
@@ -183,8 +183,48 @@ const CoreValidators = {
                 isValid: false,
                 type: 'warning',
                 badge: 'Inválido',
-                title: 'Formato incorreto',
-                details: 'Esperado: <code>(XX) XXXXX-XXXX</code> ou <code>(XX) XXXX-XXXX</code><br>Exemplo: <code>(11) 98765-4321</code>'
+                title: 'Telefone deve ter 10 ou 11 dígitos',
+                details: 'Digite apenas números (10 ou 11 dígitos)<br>Máscara visual: <code>(XX) XXXXX-XXXX</code><br>Exemplo: <code>11987654321</code>'
+            };
+        }
+
+        return {
+            isValid: true,
+            type: 'success',
+            badge: 'Validado',
+            title: '',
+            details: ''
+        };
+    },
+
+    /**
+     * Valida CEP - VARCHAR(9) formato: XXXXX-XXX
+     */
+    cep: function(value, isRequired = false) {
+        if (!value || value.trim() === '') {
+            if (isRequired) {
+                return {
+                    isValid: false,
+                    type: 'error',
+                    badge: 'Obrigatório',
+                    title: 'Campo não preenchido',
+                    details: 'Este campo deve ser preenchido antes de salvar'
+                };
+            }
+            return { isValid: true, type: 'success', badge: '', title: '', details: '' };
+        }
+
+        // Remove caracteres não numéricos
+        const cepLimpo = value.replace(/[^\d]/g, '');
+
+        // Verifica se tem 8 dígitos
+        if (cepLimpo.length !== 8) {
+            return {
+                isValid: false,
+                type: 'warning',
+                badge: 'Inválido',
+                title: 'CEP deve ter 8 dígitos',
+                details: 'Digite apenas números (8 dígitos)<br>Máscara visual: <code>XXXXX-XXX</code><br>Exemplo: <code>01310200</code>'
             };
         }
 
@@ -470,6 +510,150 @@ const CoreValidators = {
             };
         }
     }
+};
+
+// ============================================================
+// UTILITÁRIOS DE MÁSCARA VISUAL
+// ============================================================
+
+/**
+ * Aplica máscara visual ao CNPJ durante digitação
+ * Aceita apenas números, aplica formatação visual automaticamente
+ */
+CoreValidators.aplicarMascaraCNPJ = function(input) {
+    if (!input) return;
+
+    input.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Apenas números
+
+        // Limita a 14 dígitos
+        if (value.length > 14) {
+            value = value.substring(0, 14);
+        }
+
+        // Aplica máscara visual
+        if (value.length <= 14) {
+            value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            value = value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})/, '$1.$2.$3/$4');
+            value = value.replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3');
+            value = value.replace(/(\d{2})(\d{3})/, '$1.$2');
+            value = value.replace(/(\d{2})/, '$1');
+        }
+
+        e.target.value = value;
+    });
+
+    // Previne colar valores com formatação
+    input.addEventListener('paste', function(e) {
+        setTimeout(() => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 14) value = value.substring(0, 14);
+            e.target.value = value;
+        }, 0);
+    });
+};
+
+/**
+ * Aplica máscara visual ao telefone durante digitação
+ * Aceita apenas números, aplica formatação visual automaticamente
+ */
+CoreValidators.aplicarMascaraTelefone = function(input) {
+    if (!input) return;
+
+    input.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Apenas números
+
+        // Limita a 11 dígitos
+        if (value.length > 11) {
+            value = value.substring(0, 11);
+        }
+
+        // Aplica máscara visual
+        if (value.length <= 11) {
+            if (value.length <= 10) {
+                // Telefone fixo: (XX) XXXX-XXXX
+                value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                value = value.replace(/(\d{2})(\d{4})/, '($1) $2');
+                value = value.replace(/(\d{2})/, '($1');
+            } else {
+                // Celular: (XX) XXXXX-XXXX
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                value = value.replace(/(\d{2})(\d{5})/, '($1) $2');
+                value = value.replace(/(\d{2})/, '($1');
+            }
+        }
+
+        e.target.value = value;
+    });
+
+    // Previne colar valores com formatação
+    input.addEventListener('paste', function(e) {
+        setTimeout(() => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.substring(0, 11);
+            e.target.value = value;
+        }, 0);
+    });
+};
+
+/**
+ * Aplica máscara visual ao CEP durante digitação
+ * Aceita apenas números, aplica formatação visual automaticamente
+ */
+CoreValidators.aplicarMascaraCEP = function(input) {
+    if (!input) return;
+
+    input.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, ''); // Apenas números
+
+        // Limita a 8 dígitos
+        if (value.length > 8) {
+            value = value.substring(0, 8);
+        }
+
+        // Aplica máscara visual
+        if (value.length <= 8) {
+            value = value.replace(/(\d{5})(\d{3})/, '$1-$2');
+            value = value.replace(/(\d{5})/, '$1');
+        }
+
+        e.target.value = value;
+    });
+
+    // Previne colar valores com formatação
+    input.addEventListener('paste', function(e) {
+        setTimeout(() => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 8) value = value.substring(0, 8);
+            e.target.value = value;
+        }, 0);
+    });
+};
+
+/**
+ * Inicializa máscaras visuais para todos os campos apropriados
+ */
+CoreValidators.initMascaras = function() {
+    // CNPJ
+    const cnpjInput = document.getElementById('cnpj-empresa');
+    if (cnpjInput) {
+        this.aplicarMascaraCNPJ(cnpjInput);
+        console.log('✅ Máscara CNPJ aplicada');
+    }
+
+    // Telefone
+    const telefoneInput = document.getElementById('telefone');
+    if (telefoneInput) {
+        this.aplicarMascaraTelefone(telefoneInput);
+        console.log('✅ Máscara telefone aplicada');
+    }
+
+    // CEP (se existir no futuro)
+    const cepInputs = document.querySelectorAll('input[name*="cep"], input[id*="cep"]');
+    cepInputs.forEach(input => {
+        this.aplicarMascaraCEP(input);
+        console.log('✅ Máscara CEP aplicada');
+    });
 };
 
 // Exporta para uso global

@@ -1175,7 +1175,7 @@ async function addProdutoRow() {
 
 /**
  * Confirma a seleção de um produto na tabela
- * Marca visualmente e garante que será enviado
+ * Agora exibe uma prévia dos dados antes de confirmar
  */
 function confirmarProduto(rowId) {
     const row = document.getElementById(rowId);
@@ -1187,20 +1187,10 @@ function confirmarProduto(rowId) {
     const confirmado = row.dataset.confirmado === 'true';
     
     if (!confirmado) {
-        // Marcar como confirmado
-        row.dataset.confirmado = 'true';
-        row.classList.add('produto-confirmado');
-        
-        // Atualizar botão
-        const btnConfirm = row.querySelector('.btn-confirm');
-        if (btnConfirm) {
-            btnConfirm.classList.add('btn-confirm-ativo');
-            btnConfirm.title = 'Produto confirmado (clique para desfazer)';
-        }
-        
-        console.log(`✅ Produto confirmado: ${rowId}`);
+        // Exibir prévia antes de confirmar
+        mostrarPreviewProduto(rowId);
     } else {
-        // Desmarcar confirmação
+        // Desmarcar confirmação (toggle)
         row.dataset.confirmado = 'false';
         row.classList.remove('produto-confirmado');
         
@@ -1213,6 +1203,193 @@ function confirmarProduto(rowId) {
         
         console.log(`🔄 Confirmação removida: ${rowId}`);
     }
+}
+
+/**
+ * Exibe o modal de prévia com os dados que serão inseridos no banco
+ */
+function mostrarPreviewProduto(rowId) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    
+    // Extrair o número da linha do rowId (ex: "produto-row-1" -> 1)
+    const rowNumber = rowId.replace('produto-row-', '');
+    
+    // Coletar dados do produto
+    const dadosProduto = coletarDadosProdutoParaPreview(row, rowNumber);
+    
+    // Mapear para o schema do banco
+    const dadosBanco = mapearParaSchemaBanco(dadosProduto);
+    
+    // Renderizar no modal
+    renderizarPreviewTabela(dadosBanco);
+    
+    // Mostrar modal
+    const modal = document.getElementById('produto-preview-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        
+        // Configurar botão de confirmação
+        const btnConfirmar = document.getElementById('btn-confirmar-produto-final');
+        if (btnConfirmar) {
+            btnConfirmar.onclick = () => {
+                confirmarProdutoFinal(rowId);
+                fecharPreviewProduto();
+            };
+        }
+    }
+    
+    console.log(`📋 Prévia exibida para: ${rowId}`, dadosBanco);
+}
+
+/**
+ * Coleta os dados de um produto da linha da tabela
+ */
+function coletarDadosProdutoParaPreview(row, rowNumber) {
+    const getValue = (name) => {
+        const el = row.querySelector(`[name="${name}"]`);
+        if (!el) return null;
+        return el.value || null;
+    };
+    
+    const getMultiValue = (name) => {
+        const el = row.querySelector(`[name="${name}"]`);
+        if (!el) return [];
+        return Array.from(el.selectedOptions || []).map(opt => opt.value);
+    };
+    
+    const getSelectText = (name) => {
+        const el = row.querySelector(`[name="${name}"]`);
+        if (!el || !el.selectedOptions || !el.selectedOptions[0]) return null;
+        const opt = el.selectedOptions[0];
+        return opt.value ? opt.text : null;
+    };
+    
+    return {
+        carga: getValue(`produto-carga-${rowNumber}`),
+        movimentacao: getValue(`produto-movimentacao-${rowNumber}`),
+        origemPais: getValue(`produto-origem-pais-${rowNumber}`),
+        origemPaisTexto: getSelectText(`produto-origem-pais-${rowNumber}`),
+        origemEstado: getValue(`produto-origem-estado-${rowNumber}`),
+        origemMunicipio: getValue(`produto-origem-municipio-${rowNumber}`),
+        origemMunicipioTexto: getSelectText(`produto-origem-municipio-${rowNumber}`),
+        destinoPais: getValue(`produto-destino-pais-${rowNumber}`),
+        destinoPaisTexto: getSelectText(`produto-destino-pais-${rowNumber}`),
+        destinoEstado: getValue(`produto-destino-estado-${rowNumber}`),
+        destinoMunicipio: getValue(`produto-destino-municipio-${rowNumber}`),
+        destinoMunicipioTexto: getSelectText(`produto-destino-municipio-${rowNumber}`),
+        distancia: getValue(`produto-distancia-${rowNumber}`),
+        modalidade: getMultiValue(`produto-modalidade-${rowNumber}[]`),
+        acondicionamento: getValue(`produto-acondicionamento-${rowNumber}`),
+        acondicionamentoOutro: getValue(`produto-acondicionamento-outro-${rowNumber}`),
+        observacoes: getValue(`produto-observacoes-${rowNumber}`)
+    };
+}
+
+/**
+ * Mapeia os dados do formulário para o schema da tabela produtos_transportados
+ */
+function mapearParaSchemaBanco(dados) {
+    // Determinar acondicionamento final
+    let acondicionamentoFinal = dados.acondicionamento;
+    if (dados.acondicionamento === 'outro' && dados.acondicionamentoOutro) {
+        acondicionamentoFinal = dados.acondicionamentoOutro;
+    }
+    
+    // Formatar origem legível
+    let origemLegivel = '';
+    if (dados.origemMunicipioTexto) {
+        origemLegivel = `${dados.origemMunicipioTexto}/${dados.origemEstado || ''}`;
+    } else if (dados.origemEstado) {
+        origemLegivel = `${dados.origemEstado} (${dados.origemPaisTexto || 'Brasil'})`;
+    } else if (dados.origemPaisTexto) {
+        origemLegivel = dados.origemPaisTexto;
+    }
+    
+    // Formatar destino legível
+    let destinoLegivel = '';
+    if (dados.destinoMunicipioTexto) {
+        destinoLegivel = `${dados.destinoMunicipioTexto}/${dados.destinoEstado || ''}`;
+    } else if (dados.destinoEstado) {
+        destinoLegivel = `${dados.destinoEstado} (${dados.destinoPaisTexto || 'Brasil'})`;
+    } else if (dados.destinoPaisTexto) {
+        destinoLegivel = dados.destinoPaisTexto;
+    }
+    
+    return [
+        { campo: 'carga', valor: dados.carga, descricao: 'Nome da carga transportada' },
+        { campo: 'movimentacao', valor: dados.movimentacao ? `${dados.movimentacao} ton/ano` : null, descricao: 'Movimentação anual' },
+        { campo: 'origem_pais', valor: dados.origemPais, descricao: `ID do país (${dados.origemPaisTexto || 'N/A'})` },
+        { campo: 'origem_estado', valor: dados.origemEstado, descricao: 'UF de origem' },
+        { campo: 'origem_municipio', valor: dados.origemMunicipio, descricao: `Código IBGE (${dados.origemMunicipioTexto || 'N/A'})` },
+        { campo: 'origem', valor: origemLegivel, descricao: 'Origem formatada' },
+        { campo: 'destino_pais', valor: dados.destinoPais, descricao: `ID do país (${dados.destinoPaisTexto || 'N/A'})` },
+        { campo: 'destino_estado', valor: dados.destinoEstado, descricao: 'UF de destino' },
+        { campo: 'destino_municipio', valor: dados.destinoMunicipio, descricao: `Código IBGE (${dados.destinoMunicipioTexto || 'N/A'})` },
+        { campo: 'destino', valor: destinoLegivel, descricao: 'Destino formatado' },
+        { campo: 'distancia', valor: dados.distancia ? `${dados.distancia} km` : null, descricao: 'Distância percorrida' },
+        { campo: 'modalidade', valor: dados.modalidade.length > 0 ? dados.modalidade.join(', ') : null, descricao: 'Modal(is) de transporte', isArray: true },
+        { campo: 'acondicionamento', valor: acondicionamentoFinal, descricao: 'Tipo de acondicionamento' },
+        { campo: 'observacoes', valor: dados.observacoes, descricao: 'Observações adicionais' }
+    ];
+}
+
+/**
+ * Renderiza a tabela de prévia no modal
+ */
+function renderizarPreviewTabela(dados) {
+    const tbody = document.getElementById('produto-preview-tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = dados.map(item => {
+        let valorFormatado;
+        
+        if (item.valor === null || item.valor === undefined || item.valor === '') {
+            valorFormatado = '<span class="preview-value-empty">(não informado)</span>';
+        } else if (item.isArray) {
+            valorFormatado = `<span class="preview-value-array">${item.valor}</span>`;
+        } else {
+            valorFormatado = `<strong>${item.valor}</strong>`;
+        }
+        
+        return `
+            <tr>
+                <td title="${item.descricao}">${item.campo}</td>
+                <td>${valorFormatado}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+/**
+ * Fecha o modal de prévia
+ */
+function fecharPreviewProduto() {
+    const modal = document.getElementById('produto-preview-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+/**
+ * Confirma o produto após visualização da prévia
+ */
+function confirmarProdutoFinal(rowId) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    
+    // Marcar como confirmado
+    row.dataset.confirmado = 'true';
+    row.classList.add('produto-confirmado');
+    
+    // Atualizar botão
+    const btnConfirm = row.querySelector('.btn-confirm');
+    if (btnConfirm) {
+        btnConfirm.classList.add('btn-confirm-ativo');
+        btnConfirm.title = 'Produto confirmado (clique para desfazer)';
+    }
+    
+    console.log(`✅ Produto confirmado: ${rowId}`);
 }
 
 /**
@@ -1259,6 +1436,14 @@ window.addProdutoRow = addProdutoRow;
 window.confirmarProduto = confirmarProduto;
 window.removeProdutoRow = removeProdutoRow;
 window.handleProdutoAcondicionamentoChange = handleProdutoAcondicionamentoChange;
+
+// Funções do preview de produto
+window.mostrarPreviewProduto = mostrarPreviewProduto;
+window.coletarDadosProdutoParaPreview = coletarDadosProdutoParaPreview;
+window.mapearParaSchemaBanco = mapearParaSchemaBanco;
+window.renderizarPreviewTabela = renderizarPreviewTabela;
+window.fecharPreviewProduto = fecharPreviewProduto;
+window.confirmarProdutoFinal = confirmarProdutoFinal;
 
 // Exportar para uso global
 window.FormCollector = FormCollector;

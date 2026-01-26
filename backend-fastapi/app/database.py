@@ -5,12 +5,13 @@ DATABASE CONNECTION - FastAPI PLI 2050
 Gerenciamento de conexões PostgreSQL com pool otimizado
 """
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from typing import Generator
 import os
 from pathlib import Path
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
 # ============================================================
@@ -26,7 +27,8 @@ print(f"🔗 DATABASE_URL configurada: {os.getenv('DATABASE_URL', 'NÃO DEFINIDA
 # Database URL - Render PostgreSQL (PRODUÇÃO)
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://sigma_user:pzRszi7xZ4IzjehPVNdCR73DNCJ9jiq5@dpg-d5rc90pr0fns73e2q4n0-a.oregon-postgres.render.com:5432/sigma_pli_qr53"
+    "postgresql://sigma_user:pzRszi7xZ4IzjehPVNdCR73DNCJ9jiq5@"
+    "dpg-d5rc90pr0fns73e2q4n0-a.oregon-postgres.render.com:5432/sigma_pli_qr53"
 )
 
 # Schema name
@@ -43,13 +45,13 @@ engine = create_engine(
     pool_timeout=30,           # Timeout para obter conexão (segundos)
     pool_recycle=3600,         # ✅ OTIMIZADO: Recicla após 1h (era 30min)
     pool_pre_ping=True,        # Testa conexão antes de usar (evita "server has gone away")
-    
+
     # ============================================================
     # PERFORMANCE
     # ============================================================
     echo=False,                # Logs SQL (True apenas em debug)
     echo_pool=False,           # Logs de pool (False em produção)
-    
+
     # ============================================================
     # POSTGRESQL ESPECÍFICO - Render
     # ============================================================
