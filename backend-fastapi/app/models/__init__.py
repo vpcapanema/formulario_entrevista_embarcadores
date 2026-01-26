@@ -15,7 +15,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
-from app.utils.timezone import now_brasilia
 
 # Schema name
 SCHEMA = "formulario_embarcadores"
@@ -260,8 +259,8 @@ class Pesquisa(Base):
     id_responsavel = Column(Integer, nullable=False)
 
     # Timestamps
-    data_entrevista = Column(DateTime(timezone=True), default=now_brasilia)
-    data_atualizacao = Column(DateTime(timezone=True), onupdate=now_brasilia)
+    data_entrevista = Column(DateTime(timezone=True), default=func.now())
+    data_atualizacao = Column(DateTime(timezone=True), onupdate=func.now())
     status = Column(String(20), default="finalizada")
 
     # Produto
