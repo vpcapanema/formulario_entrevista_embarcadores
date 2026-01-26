@@ -10,11 +10,12 @@ Models para todas as tabelas do schema formulario_embarcadores
 
 from sqlalchemy import (
     Column, Integer, String, Numeric, Boolean, Text, Date,
-    TIMESTAMP, ForeignKey, ARRAY, CheckConstraint, Index
+    TIMESTAMP, ForeignKey, ARRAY, CheckConstraint, Index, DateTime
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
+from app.utils.timezone import now_brasilia
 
 # Schema name
 SCHEMA = "formulario_embarcadores"
@@ -258,7 +259,9 @@ class Pesquisa(Base):
     tipo_responsavel = Column(String(20), nullable=False)
     id_responsavel = Column(Integer, nullable=False)
 
-        # Timestamps removed to match schema (managed externally if needed)
+    # Timestamps
+    data_entrevista = Column(DateTime(timezone=True), default=now_brasilia)
+    data_atualizacao = Column(DateTime(timezone=True), onupdate=now_brasilia)
     status = Column(String(20), default="finalizada")
 
     # Produto
