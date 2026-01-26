@@ -128,7 +128,8 @@ class Empresa(Base):
     )
 
     id_empresa = Column(Integer, primary_key=True, index=True)
-    razao_social = Column(String(255), nullable=False)  # Campo renomeado conforme migration 20251108
+    razao_social = Column(String(255), nullable=False)
+    # Campo renomeado conforme migration 20251108
     tipo_empresa = Column(String(50), nullable=False)
     outro_tipo = Column(String(255))
     municipio = Column(String(255), nullable=False)
@@ -191,7 +192,8 @@ class Entrevistado(Base):
     )
 
     id_entrevistado = Column(Integer, primary_key=True, index=True)
-    id_empresa = Column(Integer, ForeignKey(f"{SCHEMA}.empresas.id_empresa", ondelete="CASCADE"), nullable=False)
+    id_empresa = Column(Integer, ForeignKey(f"{SCHEMA}.empresas.id_empresa",
+                                     ondelete="CASCADE"), nullable=False)
     nome = Column(String(255), nullable=False)
     funcao = Column(String(255), nullable=False)
     telefone = Column(String(20), nullable=True)
@@ -262,7 +264,8 @@ class Pesquisa(Base):
     # Primary Key & Foreign Keys
     id_pesquisa = Column(Integer, primary_key=True, index=True)
     id_empresa = Column(Integer, ForeignKey(f"{SCHEMA}.empresas.id_empresa"), nullable=False)
-    id_entrevistado = Column(Integer, ForeignKey(f"{SCHEMA}.entrevistados.id_entrevistado"), nullable=False)
+    id_entrevistado = Column(Integer, ForeignKey(f"{SCHEMA}.entrevistados.id_entrevistado"),
+                              nullable=False)
     tipo_responsavel = Column(String(20), nullable=False)
     id_responsavel = Column(Integer, nullable=False)
 
@@ -396,7 +399,8 @@ class Pesquisa(Base):
     # Relationships
     empresa = relationship("Empresa", back_populates="pesquisas")
     entrevistado = relationship("Entrevistado", back_populates="pesquisas")
-    produtos_transportados = relationship("ProdutoTransportado", back_populates="pesquisa", cascade="all, delete-orphan")
+    produtos_transportados = relationship("ProdutoTransportado", back_populates="pesquisa",
+                                         cascade="all, delete-orphan")
 
 # ============================================================
 # TABELA: PRODUTOS TRANSPORTADOS

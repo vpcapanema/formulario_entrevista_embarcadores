@@ -38,7 +38,7 @@ async def submit_form(data: SubmitFormData, db: Session = Depends(get_db)):
         logger.error("❌ Erro ao converter/encaminhar payload legado: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro interno ao processar payload legado: {str(e)}"
+            detail="Erro interno ao processar payload legado: " + str(e)
         ) from e
 
 
@@ -160,7 +160,7 @@ async def submit_form_divided(data: DividedSubmitPayload, db: Session = Depends(
         id_empresa = empresa_row[0]
         razao_social = empresa_row[1]
 
-        logger.info(f"✅ Empresa UPSERT: {id_empresa} - {razao_social} (CNPJ: {cnpj_clean or 'N/A'})")
+        logger.info("✅ Empresa UPSERT: %s - %s (CNPJ: %s)", id_empresa, razao_social, cnpj_clean or 'N/A')
 
         # ====================================================
         # ETAPA 2: ENTREVISTADO (INSERT com campos manuais)
@@ -180,26 +180,32 @@ async def submit_form_divided(data: DividedSubmitPayload, db: Session = Depends(
             # UPDATE: Atualizar dados do entrevistado existente usando campos do schema
             entrevistado_existente.nome = data.entrevistado.nome
             entrevistado_existente.funcao = data.entrevistado.funcao
-            entrevistado_existente.telefone = data.entrevistado.telefone if getattr(data.entrevistado, 'telefone', None) else None
-            entrevistado_existente.email = data.entrevistado.email if getattr(data.entrevistado, 'email', None) else None
-            entrevistado_existente.principal = data.entrevistado.principal if getattr(data.entrevistado, 'principal', None) is not None else entrevistado_existente.principal
+            entrevistado_existente.telefone = data.entrevistado.telefone if getattr(
+                data.entrevistado, 'telefone', None) else None
+            entrevistado_existente.email = data.entrevistado.email if getattr(
+                data.entrevistado, 'email', None) else None
+            entrevistado_existente.principal = data.entrevistado.principal if getattr(
+                data.entrevistado, 'principal', None) is not None else entrevistado_existente.principal
             entrevistado_existente.estado_civil = getattr(data.entrevistado, 'estado_civil', None)
             entrevistado_existente.nacionalidade = getattr(data.entrevistado, 'nacionalidade', None)
             entrevistado_existente.uf_naturalidade = getattr(data.entrevistado, 'uf_naturalidade', None)
-            entrevistado_existente.municipio_naturalidade = getattr(data.entrevistado, 'municipio_naturalidade', None)
+            entrevistado_existente.municipio_naturalidade = getattr(
+                data.entrevistado, 'municipio_naturalidade', None)
             # data_atualizacao removed from model
             db.add(entrevistado_existente)
             db.flush()
             entrevistado = entrevistado_existente
-            logger.info(f"✅ Entrevistado ATUALIZADO: {entrevistado.id_entrevistado} - {entrevistado.nome} (email: {email_lower})")
+            logger.info("✅ Entrevistado ATUALIZADO: %s - %s (email: %s)", entrevistado.id_entrevistado, entrevistado.nome, email_lower)
         else:
             # CREATE: Cria novo entrevistado com os campos esperados pelo schema
             entrevistado = Entrevistado(
                 id_empresa=id_empresa,
                 nome=data.entrevistado.nome,
                 funcao=data.entrevistado.funcao,
-                telefone=data.entrevistado.telefone if getattr(data.entrevistado, 'telefone', None) else None,
-                email=data.entrevistado.email if getattr(data.entrevistado, 'email', None) else None,
+                telefone=data.entrevistado.telefone if getattr(
+                    data.entrevistado, 'telefone', None) else None,
+                email=data.entrevistado.email if getattr(
+                    data.entrevistado, 'email', None) else None,
                 principal=getattr(data.entrevistado, 'principal', False),
                 estado_civil=getattr(data.entrevistado, 'estado_civil', None),
                 nacionalidade=getattr(data.entrevistado, 'nacionalidade', None),
@@ -209,29 +215,32 @@ async def submit_form_divided(data: DividedSubmitPayload, db: Session = Depends(
             )
             db.add(entrevistado)
             db.flush()
-            logger.info(f"✅ Entrevistado CRIADO: {entrevistado.id_entrevistado} - {entrevistado.nome} (email: {email_lower or 'N/A'})")
+            logger.info("✅ Entrevistado CRIADO: %s - %s (email: %s)", entrevistado.id_entrevistado, entrevistado.nome, email_lower or 'N/A')
 
         # ====================================================
         # ETAPA 3: PESQUISA (INSERT com campos manuais)
         # ====================================================
 
         # ⭐ LÓGICA: id_responsavel OBRIGATÓRIO
-        # - Se tipo_responsavel = 'entrevistador': usa data.pesquisa.id_responsavel (deve vir do frontend)
-        # - Se tipo_responsavel = 'entrevistado': usa id_entrevistado recém-criado (ignora frontend)
+        # - Se tipo_responsavel = 'entrevistador': usa data.pesquisa.id_responsavel
+        #   (deve vir do frontend)
+        # - Se tipo_responsavel = 'entrevistado': usa id_entrevistado recém-criado
+        #   (ignora frontend)
         id_responsavel_final = None
         if data.pesquisa.tipo_responsavel == 'entrevistador':
             # ENTREVISTADOR: frontend DEVE ter enviado id_responsavel
             if data.pesquisa.id_responsavel is None:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="tipo_responsavel='entrevistador' requer id_responsavel preenchido no frontend"
+                    detail="tipo_responsavel='entrevistador' requer id_responsavel "
+                           "preenchido no frontend"
                 )
             id_responsavel_final = data.pesquisa.id_responsavel
         else:
             # ENTREVISTADO: usa id do entrevistado recém-criado
             id_responsavel_final = entrevistado.id_entrevistado
         
-        logger.info(f"✅ id_responsavel calculado: {id_responsavel_final} (tipo: {data.pesquisa.tipo_responsavel})")
+        logger.info("✅ id_responsavel calculado: %s (tipo: %s)", id_responsavel_final, data.pesquisa.tipo_responsavel)
 
         pesquisa = Pesquisa(
             id_empresa=id_empresa,
@@ -331,7 +340,7 @@ async def submit_form_divided(data: DividedSubmitPayload, db: Session = Depends(
         )
         db.add(pesquisa)
         db.flush()
-        logger.info(f"✅ Pesquisa criada: {pesquisa.id_pesquisa}")
+        logger.info("✅ Pesquisa criada: %s", pesquisa.id_pesquisa)
 
         # ====================================================
         # ETAPA 4: PRODUTOS TRANSPORTADOS (BULK INSERT)
@@ -364,7 +373,7 @@ async def submit_form_divided(data: DividedSubmitPayload, db: Session = Depends(
             # Bulk insert: 1 query para todos os produtos
             db.bulk_insert_mappings(ProdutoTransportado, produtos_list)
             produtos_count = len(produtos_list)
-            logger.info(f"✅ {produtos_count} produtos transportados inseridos (bulk insert)")
+            logger.info("✅ %s produtos transportados inseridos (bulk insert)", produtos_count)
 
         # ====================================================
         # COMMIT TRANSAÇÃO
@@ -380,8 +389,10 @@ async def submit_form_divided(data: DividedSubmitPayload, db: Session = Depends(
                 "empresa": razao_social,
                 "entrevistado": data.entrevistado.nome,
                 "produto_principal": data.pesquisa.produto_principal,
-                "origem": f"{data.pesquisa.origem_municipio or 'N/A'}/{data.pesquisa.origem_estado or 'N/A'}",
-                "destino": f"{data.pesquisa.destino_municipio or 'N/A'}/{data.pesquisa.destino_estado or 'N/A'}"
+                "origem": f"{data.pesquisa.origem_municipio or 'N/A'}/"
+                        f"{data.pesquisa.origem_estado or 'N/A'}",
+                "destino": f"{data.pesquisa.destino_municipio or 'N/A'}/"
+                         f"{data.pesquisa.destino_estado or 'N/A'}"
             },
             id_pesquisa=pesquisa.id_pesquisa,
             id_empresa=id_empresa,

@@ -5,9 +5,9 @@ Sistema PLI 2050 - Formulário de Entrevistas
 """
 
 import os
+from pathlib import Path
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from pathlib import Path
 
 # Carregar variáveis de ambiente
 env_path = Path(__file__).parent.parent / "backend-fastapi" / ".env"

@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "backend-fastapi"))
 
 try:
-    from app.database import engine  # pylint: disable=import-error
+    from app.database import engine  # type: ignore  # pylint: disable=import-error
     from sqlalchemy import text
 
     print("🔄 Iniciando migração de data_entrevista para Brasília...")
