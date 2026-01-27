@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Teste PDF com Novo Estilo - PLI 2050</title>
+    
+    <!-- jsPDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- PDF Generator Atualizado -->
+    <script src="./frontend/js/pdf-generator.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #1e40af;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .info-card {
+            background: #f0f9ff;
+            border-left: 5px solid #3b82f6;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .info-card h3 {
+            color: #1e40af;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li::before {
+            content: "✅";
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .example-box {
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .example-box h4 {
+            color: #374151;
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .example-row {
+            display: flex;
+            align-items: baseline;
+            margin: 8px 0;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .example-label {
+            color: #1e40af;
+            font-weight: bold;
+            text-transform: uppercase;
+            min-width: 200px;
+            font-size: 13px;
+        }
+
+        .example-value {
+            color: #1f2937;
+            font-size: 13px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(30, 64, 175, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #status {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #status.success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        #status.error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-item {
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .comparison-item.antes {
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+
+        .comparison-item.depois {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+        }
+
+        .comparison-item h4 {
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .comparison-item.antes h4 {
+            color: #991b1b;
+        }
+
+        .comparison-item.depois h4 {
+            color: #065f46;
+        }
+
+        code {
+            background: #374151;
+            color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Teste de PDF com Novo Estilo Visual</h1>
+        <p class="subtitle">PLI 2050 - Padronização Profissional <span class="badge">NOVO!</span></p>
+        
+        <div class="info-card">
+            <h3>📋 Melhorias Implementadas</h3>
+            <ul class="feature-list">
+                <li><strong>Labels em MAIÚSCULAS:</strong> Todos os nomes de campos em caixa alta com cor azul escuro <code>#1e40af</code></li>
+                <li><strong>Valores Capitalizados:</strong> Primeira letra maiúscula com inteligência para conectores (de, da, do, e, ou)</li>
+                <li><strong>Layout em 2 Colunas:</strong> Labels ocupam 35% e valores 60% da largura</li>
+                <li><strong>Cores Padronizadas:</strong> Azul para labels, preto para valores</li>
+                <li><strong>Espaçamento Consistente:</strong> 4mm entre campos com bordas sutis</li>
+                <li><strong>Alinhamento Perfeito:</strong> Todos os valores começam na mesma posição</li>
+            </ul>
+        </div>
+
+        <div class="comparison">
+            <div class="comparison-item antes">
+                <h4>❌ Antes</h4>
+                <div style="font-size: 12px; line-height: 1.8;">
+                    <div style="color: #6b7280;">Q1. Nome: <span style="color: #1f2937;">MARIA DA SILVA</span></div>
+                    <div style="color: #6b7280;">Q2. Função: <span style="color: #1f2937;">diretor</span></div>
+                    <div style="color: #6b7280;">Q7. Município: <span style="color: #1f2937;">sao paulo</span></div>
+                </div>
+            </div>
+            <div class="comparison-item depois">
+                <h4>✅ Depois</h4>
+                <div style="font-size: 12px; line-height: 1.8;">
+                    <div style="color: #1e40af; font-weight: bold;">Q1. NOME: <span style="color: #1f2937; font-weight: normal;">Maria da Silva</span></div>
+                    <div style="color: #1e40af; font-weight: bold;">Q2. FUNÇÃO: <span style="color: #1f2937; font-weight: normal;">Diretor</span></div>
+                    <div style="color: #1e40af; font-weight: bold;">Q7. MUNICÍPIO: <span style="color: #1f2937; font-weight: normal;">São Paulo</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-box">
+            <h4>👁️ Preview do Layout (Simulação)</h4>
+            <div class="example-row">
+                <span class="example-label">Q5. TIPO DE EMPRESA:</span>
+                <span class="example-value">Fabricante</span>
+            </div>
+            <div class="example-row">
+                <span class="example-label">Q6A. CNPJ:</span>
+                <span class="example-value">12.345.678/9012-34</span>
+            </div>
+            <div class="example-row">
+                <span class="example-label">Q7. MUNICÍPIO DA EMPRESA:</span>
+                <span class="example-value">São Paulo</span>
+            </div>
+            <div class="example-row">
+                <span class="example-label">Q11. ORIGEM - PAÍS:</span>
+                <span class="example-value">Brasil</span>
+            </div>
+        </div>
+
+        <button class="btn" onclick="gerarPDFTeste()">
+            📥 Gerar PDF de Teste com Novo Estilo
+        </button>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function mostrarStatus(mensagem, tipo) {
+            const status = document.getElementById('status');
+            status.textContent = mensagem;
+            status.className = tipo;
+            status.style.display = 'block';
+            
+            if (tipo === 'success') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function gerarPDFTeste() {
+            try {
+                console.log('🎨 Iniciando teste de geração de PDF com novo estilo...');
+                
+                // Dados de teste simulando uma pesquisa real
+                const formDataTeste = {
+                    // Card 0 - Responsável
+                    tipoResponsavel: 'entrevistador',
+                    
+                    // Card 1 - Entrevistado
+                    nome: 'MARIA DA SILVA SANTOS',
+                    funcaoNome: 'Gerente de Logística',
+                    telefone: '(11) 98765-4321',
+                    email: 'maria.santos@exemplo.com.br',
+                    
+                    // Card 2 - Empresa
+                    tipoEmpresaNome: 'Indústria',
+                    razaoSocial: 'TRANSPORTADORA EXEMPLO LTDA',
+                    cnpj: '12.345.678/0001-90',
+                    municipioEmpresa: 'sao paulo',
+                    
+                    // Card 3 - Produto Principal
+                    produtoPrincipalNome: 'Soja em Grãos',
+                    agrupamentoProdutoNome: 'Grãos e Cereais',
+                    tipoTransporte: 'exportação',
+                    
+                    // Card 4 - Origem e Destino
+                    origemPaisNome: 'Brasil',
+                    origemEstadoNome: 'São Paulo',
+                    origemMunicipioNome: 'ribeirão preto',
+                    destinoPaisNome: 'China',
+                    destinoEstadoNome: 'Guangdong',
+                    destinoMunicipioNome: 'shenzhen',
+                    distancia: 18543.50,
+                    temParadas: 'sim',
+                    numParadas: 3,
+                    modos: ['rodoviario', 'maritimo'],
+                    configVeiculo: 'Carreta bitrem',
+                    
+                    // Card 5 - Características da Carga
+                    capacidadeUtilizada: 85.5,
+                    pesoCarga: 27500,
+                    unidadePeso: 'kg',
+                    custoTransporte: 45000.00,
+                    valorCarga: 850000.00,
+                    tipoEmbalagemNome: 'Granel',
+                    cargaPerigosa: 'não',
+                    tempoDias: 35,
+                    tempoHoras: 12,
+                    tempoMinutos: 30,
+                    frequenciaNome: 'Mensal',
+                    
+                    // Card 6 - Importância dos Fatores
+                    importanciaCusto: 'muito importante',
+                    variacaoCusto: 15,
+                    importanciaTempo: 'importante',
+                    variacaoTempo: 10,
+                    importanciaConfiabilidade: 'muito importante',
+                    variacaoConfiabilidade: 5,
+                    importanciaSeguranca: 'essencial',
+                    variacaoSeguranca: 0,
+                    importanciaCapacidade: 'importante',
+                    variacaoCapacidade: 8,
+                    
+                    // Card 7 - Análise Estratégica
+                    tipoCadeiaNome: 'Supply chain completa',
+                    modaisAlternativos: ['ferroviario', 'dutoviario'],
+                    fatorAdicional: 'necessidade de rastreamento em tempo real e controle de temperatura',
+                    
+                    // Card 8 - Dificuldades
+                    dificuldades: ['infraestrutura', 'custo_combustivel', 'tempo_transporte'],
+                    detalheDificuldade: 'principais problemas incluem a precariedade das estradas no interior e alto custo do frete marítimo',
+                    
+                    // Q8 - Produtos Transportados (tabela completa)
+                    produtos: [
+                        {
+                            carga: 'Soja em grãos',
+                            movimentacao_anual: 50000,
+                            origem_pais_nome: 'Brasil',
+                            origem_estado_nome: 'São Paulo',
+                            origem_municipio_nome: 'Ribeirão Preto',
+                            destino_pais_nome: 'China',
+                            destino_estado_nome: 'Guangdong',
+                            destino_municipio_nome: 'Shenzhen',
+                            distancia: 18543.5,
+                            modalidade: 'Rodoviário + Marítimo',
+                            acondicionamento: 'Granel'
+                        },
+                        {
+                            carga: 'Milho',
+                            movimentacao_anual: 30000,
+                            origem_pais_nome: 'Brasil',
+                            origem_estado_nome: 'São Paulo',
+                            origem_municipio_nome: 'Campinas',
+                            destino_pais_nome: 'Japão',
+                            destino_estado_nome: 'Tokyo',
+                            destino_municipio_nome: 'Tokyo',
+                            distancia: 19200,
+                            modalidade: 'Rodoviário + Marítimo',
+                            acondicionamento: 'Granel'
+                        },
+                        {
+                            carga: 'Açúcar',
+                            movimentacao_anual: 25000,
+                            origem_pais_nome: 'Brasil',
+                            origem_estado_nome: 'São Paulo',
+                            origem_municipio_nome: 'Piracicaba',
+                            destino_pais_nome: 'Índia',
+                            destino_estado_nome: 'Maharashtra',
+                            destino_municipio_nome: 'Mumbai',
+                            distancia: 15800,
+                            modalidade: 'Rodoviário + Marítimo',
+                            acondicionamento: 'Ensacado'
+                        }
+                    ]
+                };
+
+                // Resposta simulada do backend
+                const responseTeste = {
+                    success: true,
+                    id_pesquisa: 999,
+                    id_empresa: 123,
+                    id_entrevistado: 456
+                };
+
+                mostrarStatus('⏳ Gerando PDF com novo estilo visual...', 'success');
+
+                // Gerar PDF com PDFGenerator
+                console.log('📄 Chamando PDFGenerator.generatePDF()...');
+                const resultado = window.PDFGenerator.generatePDF(formDataTeste, responseTeste);
+                
+                console.log('✅ PDF gerado com sucesso!');
+                console.log('📋 Arquivo:', resultado.nomeArquivo);
+                
+                mostrarStatus(
+                    `✅ PDF "${resultado.nomeArquivo}" gerado com sucesso!\n\n` +
+                    `🎨 Verifique as melhorias:\n` +
+                    `• Labels em MAIÚSCULAS azul escuro\n` +
+                    `• Valores capitalizados em preto\n` +
+                    `• Layout em 2 colunas alinhadas\n` +
+                    `• Espaçamento consistente de 4mm\n\n` +
+                    `📂 Verifique sua pasta de Downloads!`,
+                    'success'
+                );
+                
+            } catch (error) {
+                console.error('❌ Erro ao gerar PDF:', error);
+                mostrarStatus(
+                    `❌ Erro ao gerar PDF: ${error.message}\n\n` +
+                    `Detalhes: ${error.stack}\n\n` +
+                    `Verifique o console para mais informações.`,
+                    'error'
+                );
+            }
+        }
+
+        // Log de inicialização
+        console.log('🎨 Página de teste de PDF carregada');
+        console.log('✅ PDFGenerator disponível:', typeof window.PDFGenerator !== 'undefined');
+        console.log('✅ jsPDF disponível:', typeof window.jspdf !== 'undefined');
+    </script>
+</body>
+</html>

@@ -279,7 +279,9 @@
                                         <th>Origem</th>
                                         <th>Destino</th>
                                         <th>Distância (km)</th>
-                                        <th>Modalidade</th>
+                                        <th>Modalidade
+                                            <span class="modalidade-help-icon" title="Segure Ctrl e clique para selecionar múltiplos valores">ℹ️</span>
+                                        </th>
                                         <th>Acondicionamento</th>
                                         <th>Observações</th>
                                         <th>Ações</th>
@@ -296,11 +298,10 @@
                 <!-- Container de Produtos Confirmados (substitui o modal) -->
                 <div id="produtos-confirmados-container" class="produtos-confirmados-container hidden-field">
                     <div class="produtos-confirmados-header">
-                        <h4>📋 Produtos Confirmados - Payload para Banco</h4>
+                        <h4>📋 Produtos Confirmados</h4>
                         <button type="button" class="produtos-confirmados-close" onclick="fecharContainerProdutos()">&times;</button>
                     </div>
                     <div class="produtos-confirmados-body">
-                        <p class="produtos-confirmados-intro">Produtos que serão salvos na tabela <code>produtos_transportados</code>:</p>
                         <div id="produtos-confirmados-list">
                             <!-- Produtos confirmados serão listados aqui -->
                         </div>

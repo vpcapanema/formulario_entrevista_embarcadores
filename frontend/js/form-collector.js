@@ -990,7 +990,7 @@ const FormCollector = {
                 // Mostrar sucesso com botão de download
                 UI.mostrarSucesso(formData.razaoSocial || formData.nomeEmpresa, pdfResult.nomeArquivo, pdfResult.pdfDoc);
                 
-                // Gerar Excel com marcação de sucesso (download automático)
+                // Gerar 2 Excels: Técnico (backup) + Estilizado (oficial)
                 try {
                     // Inclui IDs retornados pelo backend no arquivo final
                     // ⭐ Para Excel: usar TODOS os produtos (não apenas confirmados)
@@ -1000,9 +1000,24 @@ const FormCollector = {
                         id_entrevistado: response.id_entrevistado,
                         produtos: this.collectAllProdutos()
                     });
-                    const finalFilename = `PLI2050_Resposta_${finalFormData.razaoSocial || finalFormData.nomeEmpresa || 'resposta'}_${new Date().toISOString().split('T')[0]}.xlsx`;
-                    const finalAb = window.ExcelGenerator.createWorkbookArrayBuffer(finalFormData, { success: true, statusLabel: 'SUCESSO', labels: window.ExcelLabels });
-                    window.ExcelGenerator.downloadArrayBuffer(finalAb, finalFilename);
+                    const nomeBase = finalFormData.razaoSocial || finalFormData.nomeEmpresa || 'resposta';
+                    const dataAtual = new Date().toISOString().split('T')[0];
+                    
+                    // 1️⃣ Excel Técnico (backup) - mantém estrutura original
+                    const backupFilename = `PLI2050_Backup_Tecnico_${nomeBase}_${dataAtual}.xlsx`;
+                    const backupAb = window.ExcelGenerator.createWorkbookArrayBuffer(finalFormData, { 
+                        success: true, 
+                        statusLabel: 'BACKUP TÉCNICO', 
+                        labels: window.ExcelLabels 
+                    });
+                    window.ExcelGenerator.downloadArrayBuffer(backupAb, backupFilename);
+                    
+                    // 2️⃣ Excel Estilizado (oficial) - labels amigáveis, múltiplas abas
+                    const oficialFilename = `PLI2050_Resposta_${nomeBase}_${dataAtual}.xlsx`;
+                    const oficialAb = window.ExcelGenerator.createStyledWorkbook(finalFormData, response);
+                    window.ExcelGenerator.downloadArrayBuffer(oficialAb, oficialFilename);
+                    
+                    console.log('✅ 2 arquivos Excel gerados: Backup Técnico + Oficial Estilizado');
                 } catch (err) {
                     console.error('Erro ao gerar/baixar XLSX final após sucesso:', err);
                 }

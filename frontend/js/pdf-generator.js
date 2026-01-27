@@ -7,15 +7,38 @@
 
 const PDFGenerator = {
     
-    // Cores padrão PLI
+    // Cores padrão PLI - Paleta Padronizada
     colors: {
-        primary: '#1e40af',      // Azul escuro
-        secondary: '#3b82f6',    // Azul médio
-        accent: '#60a5fa',       // Azul claro
-        text: '#1f2937',         // Cinza escuro
-        textLight: '#6b7280',    // Cinza médio
-        border: '#e5e7eb',       // Cinza claro
-        background: '#f9fafb'    // Fundo
+        primary: '#072B47',      // Azul escuro (labels)
+        secondary: '#0C4C7D',    // Azul médio (títulos seção)
+        accent: '#3949ab',       // Azul navy claro (tabelas)
+        text: '#1f2937',         // Preto (valores)
+        textLight: '#6b7280',    // Cinza médio (info secundária)
+        border: '#424242',       // Cinza escuro (bordas sólidas 1pt)
+        background: '#f9fafb',   // Fundo
+        labelColor: [7, 43, 71],  // RGB #072B47 para labels
+        valueColor: [31, 41, 55]    // RGB text para valores
+    },
+    
+    /**
+     * Formata texto com capitalização adequada
+     */
+    _capitalize(text) {
+        if (!text || text === 'Não informado' || text === '-' || text === 'N/I') {
+            return text;
+        }
+        // Se já está em maiúsculas, mantém (ex: siglas)
+        if (text === text.toUpperCase() && text.length <= 5) {
+            return text;
+        }
+        // Capitaliza primeira letra de cada palavra (exceto conectores)
+        return text.split(' ').map((word, idx) => {
+            const lower = word.toLowerCase();
+            if (idx > 0 && ['de', 'da', 'do', 'das', 'dos', 'e', 'ou', 'em', 'na', 'no'].includes(lower)) {
+                return lower;
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }).join(' ');
     },
     
     /**
@@ -86,7 +109,7 @@ const PDFGenerator = {
                 camposCard1.push({ label: 'Q2b. Outra Função (especificada)', value: formData.outraFuncao });
             }
             camposCard1.push(
-                { label: 'Q3. Telefone', value: formData.telefone },
+                { label: 'Q3. Telefone', value: this._formatTelefone(formData.telefone) },
                 { label: 'Q4. E-mail', value: formData.email }
             );
             yPosition = this._addSection(doc, yPosition, 'CARD 1 - DADOS DO ENTREVISTADO', formData, camposCard1);
@@ -110,9 +133,41 @@ const PDFGenerator = {
             );
             yPosition = this._addSection(doc, yPosition, 'CARD 2 - DADOS DA EMPRESA', formData, camposCard2);
             
-            // ===== CARD 3: PRODUTOS TRANSPORTADOS (TABELA Q8) =====
+            // ===== CARD 3: PRODUTOS TRANSPORTADOS (Q8) =====
             if (formData.produtos && formData.produtos.length > 0) {
-                yPosition = this._addProdutosTable(doc, yPosition, formData.produtos);
+                const camposCard3 = [];
+                formData.produtos.forEach((produto, idx) => {
+                    const prefixo = `Q8 - Produto ${idx + 1}`;
+                    
+                    // Origem em formato: País | Estado | Município (usar *_nome se disponível)
+                    const origemCompleta = [
+                        produto.origem_pais_nome || produto.origem_pais || '-',
+                        produto.origem_estado_nome || produto.origem_estado || '-',
+                        produto.origem_municipio_nome || produto.origem_municipio || '-'
+                    ].join(' | ');
+                    
+                    // Destino em formato: País | Estado | Município (usar *_nome se disponível)
+                    const destinoCompleto = [
+                        produto.destino_pais_nome || produto.destino_pais || '-',
+                        produto.destino_estado_nome || produto.destino_estado || '-',
+                        produto.destino_municipio_nome || produto.destino_municipio || '-'
+                    ].join(' | ');
+                    
+                    camposCard3.push({ label: `${prefixo} - Carga`, value: produto.carga || 'N/I' });
+                    camposCard3.push({ label: `${prefixo} - Movimentação Anual`, value: produto.movimentacao_anual || produto.movimentacao ? `${Number(produto.movimentacao_anual || produto.movimentacao).toLocaleString('pt-BR')} t/ano` : 'N/I' });
+                    camposCard3.push({ label: `${prefixo} - Origem (País | Estado | Município)`, value: origemCompleta });
+                    camposCard3.push({ label: `${prefixo} - Destino (País | Estado | Município)`, value: destinoCompleto });
+                    camposCard3.push({ label: `${prefixo} - Distância`, value: produto.distancia ? `${Number(produto.distancia).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km` : 'N/I' });
+                    camposCard3.push({ label: `${prefixo} - Modalidade`, value: produto.modalidade || 'N/I' });
+                    camposCard3.push({ label: `${prefixo} - Acondicionamento`, value: produto.acondicionamento || 'N/I' });
+                    camposCard3.push({ label: `${prefixo} - Observações`, value: produto.observacoes || 'N/I' });
+                    
+                    // Adicionar linha separadora após cada produto (exceto o último)
+                    if (idx < formData.produtos.length - 1) {
+                        camposCard3.push({ label: '___SEPARATOR___', value: '' });
+                    }
+                });
+                yPosition = this._addSection(doc, yPosition, 'CARD 3 - PRODUTOS TRANSPORTADOS (Q8)', formData, camposCard3);
             } else {
                 yPosition = this._addSection(doc, yPosition, 'CARD 3 - PRODUTOS TRANSPORTADOS (Q8)', formData, [
                     { label: 'Q8. Produtos', value: 'Nenhum produto cadastrado' }
@@ -145,7 +200,7 @@ const PDFGenerator = {
                 { label: 'Q13. Destino - País', value: formData.destinoPaisNome || formData.destinoPais || 'Não informado' },
                 { label: 'Q13b. Destino - Estado', value: formData.destinoEstadoNome || formData.destinoEstado || 'Não informado' },
                 { label: 'Q13c. Destino - Município', value: formData.destinoMunicipioNome || formData.destinoMunicipio || 'Não informado' },
-                { label: 'Q14. Distância do Deslocamento', value: formData.distancia ? `${formData.distancia} km` : 'Não informado' },
+                { label: 'Q14. Distância do Deslocamento', value: formData.distancia ? `${Number(formData.distancia).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} km` : 'Não informado' },
                 { label: 'Q15. Tem Paradas?', value: formData.temParadas === 'sim' ? 'Sim' : (formData.temParadas === 'nao' ? 'Não' : 'Não informado') }
             ];
             if (formData.temParadas === 'sim') {
@@ -159,8 +214,8 @@ const PDFGenerator = {
                 camposCard5.push({ label: 'Q18. Configuração do Veículo Rodoviário', value: configVeiculoExibir });
             }
             camposCard5.push(
-                { label: 'Q19. Capacidade Utilizada (%)', value: formData.capacidadeUtilizada ? `${formData.capacidadeUtilizada}%` : 'Não informado' },
-                { label: 'Q20. Peso da Carga', value: formData.pesoCarga ? `${formData.pesoCarga}` : 'Não informado' },
+                { label: 'Q19. Capacidade Utilizada (%)', value: formData.capacidadeUtilizada ? `${Number(formData.capacidadeUtilizada).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%` : 'Não informado' },
+                { label: 'Q20. Peso da Carga', value: formData.pesoCarga ? `${Number(formData.pesoCarga).toLocaleString('pt-BR')}` : 'Não informado' },
                 { label: 'Q21. Unidade de Peso', value: formData.unidadePesoNome || formData.unidadePeso || 'Não informado' },
                 { label: 'Q22. Custo Total do Transporte', value: this._formatMoeda(formData.custoTransporte) },
                 { label: 'Q23. Valor Total da Carga', value: this._formatMoeda(formData.valorCarga) },
@@ -218,27 +273,11 @@ const PDFGenerator = {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const nomeArquivo = `PLI2050_Pesquisa_${response.id_pesquisa || 'Nova'}_${timestamp}.pdf`;
             
-            // Método 1: Tentar doc.save() padrão
-            try {
-                doc.save(nomeArquivo);
-                console.log('✅ PDF COMPLETO gerado via doc.save():', nomeArquivo);
-            } catch (e) {
-                // Método 2: Fallback com Blob e createObjectURL
-                console.warn('⚠️ doc.save() falhou, usando fallback com Blob');
-                const pdfBlob = doc.output('blob');
-                const url = URL.createObjectURL(pdfBlob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = nomeArquivo;
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                console.log('✅ PDF COMPLETO gerado via Blob:', nomeArquivo);
-            }
+            // Usar jsPDF save() para download automático
+            doc.save(nomeArquivo);
+            console.log('✅ PDF COMPLETO gerado:', nomeArquivo);
             
-            // Retorna nome do arquivo e documento para download manual
+            // Retorna nome do arquivo e documento para download manual via botão
             return {
                 nomeArquivo: nomeArquivo,
                 pdfDoc: doc
@@ -256,8 +295,8 @@ const PDFGenerator = {
     _addHeader(doc, yPosition) {
         const pageWidth = doc.internal.pageSize.getWidth();
         
-        // Retângulo de cabeçalho azul
-        doc.setFillColor(30, 64, 175); // primary color
+        // Retângulo de cabeçalho azul navy
+        doc.setFillColor(7, 43, 71); // primary color #072B47
         doc.rect(0, 0, pageWidth, 35, 'F');
         
         // Título principal
@@ -289,18 +328,18 @@ const PDFGenerator = {
         
         // Box de informações
         doc.setFillColor(249, 250, 251); // background color
-        doc.setDrawColor(229, 231, 235); // border color
-        doc.roundedRect(15, yPosition, pageWidth - 30, 20, 2, 2, 'FD');
+        doc.setDrawColor(66, 66, 66); // border color (cinza escuro)
+        doc.roundedRect(10, yPosition, pageWidth - 20, 20, 2, 2, 'FD');
         
         // Informações
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(107, 114, 128); // textLight
-        doc.text('ID DA PESQUISA:', 20, yPosition + 7);
-        doc.text('DATA/HORA:', 20, yPosition + 14);
+        doc.setTextColor(...this.colors.labelColor); // Azul navy
+        doc.text('ID DA PESQUISA:', 15, yPosition + 7);
+        doc.text('DATA/HORA:', 15, yPosition + 14);
         
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(31, 41, 55); // text
+        doc.setTextColor(...this.colors.valueColor); // Preto
         doc.text(`#${response.id_pesquisa || 'Pendente'}`, 55, yPosition + 7);
         doc.text(new Date().toLocaleString('pt-BR'), 55, yPosition + 14);
         
@@ -314,67 +353,141 @@ const PDFGenerator = {
     _addSection(doc, yPosition, titulo, formData, campos) {
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-        const margemEsquerda = 20;
-        const margemDireita = 15;
+        const margemEsquerda = 10;  // Reduzido para aproveitar espaço
+        const margemDireita = 10;   // Reduzido para aproveitar espaço
         const larguraDisponivel = pageWidth - margemEsquerda - margemDireita;
         
         // Verificar se precisa de nova página
-        if (yPosition > pageHeight - 60) {
+        if (yPosition > pageHeight - 40) {
             doc.addPage();
             yPosition = 20;
         }
         
         // Título da seção
-        doc.setFillColor(59, 130, 246); // secondary color
-        doc.rect(15, yPosition, pageWidth - 30, 8, 'F');
+        doc.setFillColor(12, 76, 125); // secondary color #0C4C7D
+        doc.rect(margemEsquerda, yPosition, pageWidth - margemEsquerda - margemDireita, 8, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text(titulo, 20, yPosition + 5.5);
+        doc.text(titulo, margemEsquerda + 3, yPosition + 5.5);
         
         yPosition += 12;
         
         // Campos
         doc.setFontSize(9);
         
-        campos.forEach(campo => {
-            // Verificar quebra de página ANTES de adicionar o campo
-            const estimativaAltura = 15; // Altura estimada para evitar cortar campos
-            if (yPosition > pageHeight - estimativaAltura) {
-                doc.addPage();
-                yPosition = 20;
+        // Controle de posicionamento em grid
+        let xAtual = margemEsquerda;
+        let yLinhaAtual = yPosition;
+        let camposNaLinha = 0;
+        const maxCamposPorLinha = 2;
+        const larguraCampoCompacto = (larguraDisponivel - 4) / 2; // 2 colunas com espaço
+        
+        campos.forEach((campo, index) => {
+            // ===== DETECTAR SEPARADOR =====
+            if (campo.label === '___SEPARATOR___') {
+                // Desenhar linha separadora horizontal
+                yPosition = yLinhaAtual;
+                xAtual = margemEsquerda;
+                camposNaLinha = 0;
+                
+                // Verificar quebra de página
+                if (yPosition > pageHeight - 20) {
+                    doc.addPage();
+                    yPosition = 20;
+                    yLinhaAtual = yPosition;
+                }
+                
+                // Linha cinza com padding
+                yPosition += 5;
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.8);
+                doc.line(margemEsquerda + 5, yPosition, pageWidth - margemDireita - 5, yPosition);
+                yPosition += 5;
+                yLinhaAtual = yPosition;
+                return; // Pular para próximo campo
             }
             
-            // ===== LABEL (PERGUNTA) =====
+            // Determinar se o campo tem resposta curta (pode ficar em linha com outros)
+            const valorOriginal = campo.value || 'Não informado';
+            const valorFormatado = this._capitalize(String(valorOriginal));
+            const labelFormatado = campo.label.toUpperCase();
+            
+            // Forçar campos específicos a ficarem em linha (2 colunas) mesmo com texto longo
+            const isCampoOrigemDestino = labelFormatado.includes('ORIGEM') || labelFormatado.includes('DESTINO');
+            const isCampoTempo = labelFormatado.includes('TEMPO DE DESLOCAMENTO');
+            const isCampoCompacto = isCampoOrigemDestino || isCampoTempo || (valorFormatado.length < 30 && labelFormatado.length < 50);
+            
+            // Calcular dimensões
+            const larguraCampo = isCampoCompacto ? larguraCampoCompacto : larguraDisponivel;
+            const alturaCampo = 14;
+            
+            // Se campo não é compacto, força nova linha
+            if (!isCampoCompacto && camposNaLinha > 0) {
+                yPosition = yLinhaAtual;
+                xAtual = margemEsquerda;
+                camposNaLinha = 0;
+            }
+            
+            // Se ultrapassou limite de campos por linha, nova linha
+            if (camposNaLinha >= maxCamposPorLinha) {
+                yPosition = yLinhaAtual;
+                xAtual = margemEsquerda;
+                camposNaLinha = 0;
+            }
+            
+            // Verificar quebra de página
+            if (yPosition > pageHeight - alturaCampo - 15) {
+                doc.addPage();
+                yPosition = 20;
+                yLinhaAtual = yPosition;
+                xAtual = margemEsquerda;
+                camposNaLinha = 0;
+            }
+            
+            // ===== RETÂNGULO ARREDONDADO COM BORDA =====
+            doc.setDrawColor(66, 66, 66); // Cinza escuro
+            doc.setLineWidth(0.4);
+            doc.setFillColor(255, 255, 255); // Fundo branco
+            doc.roundedRect(xAtual, yPosition, larguraCampo, alturaCampo, 2, 2, 'D');
+            
+            // ===== LABEL (PERGUNTA) - EM CIMA, NEGRITO, MENOR =====
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor(107, 114, 128); // textLight (cinza)
+            doc.setTextColor(...this.colors.labelColor); // Azul
+            doc.setFontSize(7); // Menor para o label
             
-            // Quebrar label em múltiplas linhas se necessário (40% da largura)
-            const larguraLabel = larguraDisponivel * 0.4;
-            const labelSplit = doc.splitTextToSize(`${campo.label}:`, larguraLabel);
+            // Formatar label em MAIÚSCULAS (PERMITIR quebra se necessário)
+            const labelLinhas = doc.splitTextToSize(labelFormatado, larguraCampo - 6);
+            doc.text(labelLinhas, xAtual + 3, yPosition + 3);
             
-            // Renderizar label
-            doc.text(labelSplit, margemEsquerda, yPosition);
-            const alturaLabel = labelSplit.length * 4;
+            const alturaLabel = Math.min(labelLinhas.length * 2.5, 6); // Máximo 2 linhas
             
-            // ===== VALOR (RESPOSTA) =====
+            // ===== VALOR (RESPOSTA) - EMBAIXO, NORMAL, MAIOR =====
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(31, 41, 55); // text (preto)
+            doc.setTextColor(...this.colors.valueColor); // Preto
+            doc.setFontSize(9); // Maior para o valor
             
-            // Quebrar valor em múltiplas linhas (55% da largura)
-            const valor = campo.value || 'Não informado';
-            const larguraValor = larguraDisponivel * 0.55;
-            const xValor = margemEsquerda + larguraLabel + 5; // 5mm de espaço entre label e valor
-            const valorSplit = doc.splitTextToSize(String(valor), larguraValor);
+            // Renderizar valor (PERMITIR quebra se necessário)
+            const valorLinhas = doc.splitTextToSize(valorFormatado, larguraCampo - 6);
+            const yValor = yPosition + 3 + alturaLabel + 2; // +2mm de espaçamento extra
+            doc.text(valorLinhas, xAtual + 3, yValor);
             
-            // Renderizar valor
-            doc.text(valorSplit, xValor, yPosition);
-            const alturaValor = valorSplit.length * 4;
-            
-            // Avançar Y pela maior altura (label ou valor)
-            const alturaMaxima = Math.max(alturaLabel, alturaValor);
-            yPosition += alturaMaxima + 2; // +2mm de espaçamento entre campos
+            // Atualizar posição para próximo campo
+            if (isCampoCompacto) {
+                xAtual += larguraCampo + 4; // Próxima coluna
+                camposNaLinha++;
+                yLinhaAtual = Math.max(yLinhaAtual, yPosition + alturaCampo + 3);
+            } else {
+                // Campo largo ocupa linha inteira
+                yPosition += alturaCampo + 3;
+                yLinhaAtual = yPosition;
+                xAtual = margemEsquerda;
+                camposNaLinha = 0;
+            }
         });
+        
+        // Ajustar posição Y final
+        yPosition = yLinhaAtual;
         
         return yPosition + 5;
     },
@@ -571,11 +684,20 @@ const PDFGenerator = {
             doc.setDrawColor(229, 231, 235); // border color
             doc.line(15, pageHeight - 15, pageWidth - 15, pageHeight - 15);
             
-            // Texto do rodapé
+            // Texto do rodapé (2 linhas)
             doc.setFontSize(8);
             doc.setTextColor(107, 114, 128); // textLight
             doc.setFont('helvetica', 'italic');
-            doc.text('PLI 2050 - Secretaria de Logística e Transportes do Estado de São Paulo', pageWidth / 2, pageHeight - 10, { align: 'center' });
+            doc.text('PLI 2050 - Secretaria de Logística e Transportes do Estado de São Paulo', pageWidth / 2, pageHeight - 12, { align: 'center' });
+            
+            // Data/hora de emissão (horário de Brasília)
+            const dataEmissao = new Date().toLocaleString('pt-BR', { 
+                timeZone: 'America/Sao_Paulo',
+                dateStyle: 'short',
+                timeStyle: 'medium'
+            });
+            doc.text(`Emitido em: ${dataEmissao}`, pageWidth / 2, pageHeight - 7, { align: 'center' });
+            
             doc.text(`Página ${i} de ${pageCount}`, pageWidth - 20, pageHeight - 10, { align: 'right' });
         }
     },
@@ -591,9 +713,48 @@ const PDFGenerator = {
         return cnpj;
     },
     
+    _formatCPF(cpf) {
+        if (!cpf) return 'Não informado';
+        const cleaned = String(cpf).replace(/\D/g, '');
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+        return cpf;
+    },
+    
+    _formatTelefone(telefone) {
+        if (!telefone) return 'Não informado';
+        const cleaned = String(telefone).replace(/\D/g, '');
+        // (11) 98765-4321
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        }
+        // (11) 3456-7890
+        if (cleaned.length === 10) {
+            return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        return telefone;
+    },
+    
+    _formatCEP(cep) {
+        if (!cep) return 'Não informado';
+        const cleaned = String(cep).replace(/\D/g, '');
+        if (cleaned.length === 8) {
+            return cleaned.replace(/(\d{5})(\d{3})/, '$1-$2');
+        }
+        return cep;
+    },
+    
     _formatMoeda(valor) {
         if (!valor && valor !== 0) return 'Não informado';
+        // Formato brasileiro: separador de milhar = ponto, decimal = vírgula
         return `R$ ${Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    },
+    
+    _formatNumero(numero) {
+        if (!numero && numero !== 0) return 'Não informado';
+        // Separador de milhar = ponto, decimal = vírgula
+        return Number(numero).toLocaleString('pt-BR');
     },
     
     _formatTempo(dias, horas, minutos) {

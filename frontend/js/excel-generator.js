@@ -236,6 +236,311 @@
         },
 
         /**
+         * 📊 GERA EXCEL ESTILIZADO (OFICIAL) - Com labels amigáveis, múltiplas abas e formatação
+         * Retorna ArrayBuffer para download externo
+         */
+        createStyledWorkbook(formData, response = {}) {
+            const wb = XLSX.utils.book_new();
+            const timestamp = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+            
+            // ===== HELPERS DE FORMATAÇÃO =====
+            const formatTelefone = (tel) => {
+                if (!tel) return '';
+                const cleaned = String(tel).replace(/\D/g, '');
+                if (cleaned.length === 11) return cleaned.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                if (cleaned.length === 10) return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                return tel;
+            };
+            
+            const formatCNPJ = (cnpj) => {
+                if (!cnpj) return '';
+                const cleaned = String(cnpj).replace(/\D/g, '');
+                if (cleaned.length === 14) return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                return cnpj;
+            };
+            
+            const formatMoeda = (valor) => {
+                if (!valor && valor !== 0) return '';
+                return `R$ ${Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            };
+            
+            const formatNumero = (num, decimais = 1) => {
+                if (!num && num !== 0) return '';
+                return Number(num).toLocaleString('pt-BR', { minimumFractionDigits: decimais, maximumFractionDigits: decimais });
+            };
+
+            // ===== ABA 1: IDENTIFICAÇÃO =====
+            const abaIdentificacao = [
+                ['PLI 2050 - FORMULÁRIO DE ENTREVISTA COM EMBARCADORES'],
+                ['Emitido em:', timestamp],
+                ['ID da Pesquisa:', `#${response.id_pesquisa || 'Pendente'}`],
+                [],
+                ['CARD 0 - RESPONSÁVEL PELO PREENCHIMENTO'],
+                ['Tipo de Responsável', formData.tipoResponsavel || 'N/I'],
+                ['ID do Responsável', formData.idResponsavel || 'N/I'],
+                [],
+                ['CARD 1 - DADOS DO ENTREVISTADO'],
+                ['Q1. Nome', formData.nome || 'N/I'],
+                ['Q2. Função', formData.funcaoNome || formData.funcao || 'N/I'],
+                ['Q2b. Outra Função', formData.outraFuncao || ''],
+                ['Q3. Telefone', formatTelefone(formData.telefone)],
+                ['Q4. E-mail', formData.email || 'N/I'],
+                [],
+                ['CARD 2 - DADOS DA EMPRESA'],
+                ['Q5. Tipo de Empresa', formData.tipoEmpresaNome || formData.tipoEmpresa || 'N/I'],
+                ['Q5b. Outro Tipo', formData.outroTipo || ''],
+                ['Q6a. CNPJ', formatCNPJ(formData.cnpj)],
+                ['Q6b. Razão Social', formData.razaoSocial || 'N/I'],
+                ['Q6c. Nome Fantasia (Receita Federal)', formData.nomeFantasiaReceita || ''],
+                ['Q6d. Situação Cadastral (Receita Federal)', formData.situacaoCadastralReceita || ''],
+                ['Q6e. Atividade Principal CNAE (Receita Federal)', formData.atividadePrincipalReceita || ''],
+                ['Q7. Município da Empresa', formData.municipioNome || formData.municipio || 'N/I']
+            ];
+            const wsIdentificacao = XLSX.utils.aoa_to_sheet(abaIdentificacao);
+            // Larguras de coluna
+            wsIdentificacao['!cols'] = [{ wch: 45 }, { wch: 50 }];
+            XLSX.utils.book_append_sheet(wb, wsIdentificacao, '1. Identificação');
+
+            // ===== ABA 2: PRODUTOS (Q8) =====
+            const produtos = Array.isArray(formData.produtos) ? formData.produtos : [];
+            if (produtos.length > 0) {
+                const headerProdutos = [
+                    '#',
+                    'Carga Transportada',
+                    'Movimentação (ton/ano)',
+                    'Origem - País',
+                    'Origem - Estado',
+                    'Origem - Município',
+                    'Destino - País',
+                    'Destino - Estado',
+                    'Destino - Município',
+                    'Distância (km)',
+                    'Modalidade',
+                    'Acondicionamento',
+                    'Observações'
+                ];
+                const rowsProdutos = [headerProdutos];
+                
+                produtos.forEach((p, idx) => {
+                    rowsProdutos.push([
+                        idx + 1,
+                        p.carga || '',
+                        p.movimentacao_anual || p.movimentacao ? formatNumero(p.movimentacao_anual || p.movimentacao, 0) : '',
+                        p.origem_pais_nome || p.origem_pais || '',
+                        p.origem_estado_nome || p.origem_estado || '',
+                        p.origem_municipio_nome || p.origem_municipio || '',
+                        p.destino_pais_nome || p.destino_pais || '',
+                        p.destino_estado_nome || p.destino_estado || '',
+                        p.destino_municipio_nome || p.destino_municipio || '',
+                        p.distancia ? formatNumero(p.distancia) : '',
+                        p.modalidade || '',
+                        p.acondicionamento || '',
+                        p.observacoes || ''
+                    ]);
+                });
+                
+                const wsProdutos = XLSX.utils.aoa_to_sheet(rowsProdutos);
+                wsProdutos['!cols'] = [
+                    { wch: 5 },   // #
+                    { wch: 25 },  // Carga
+                    { wch: 18 },  // Movimentação
+                    { wch: 15 },  // Origem - País
+                    { wch: 15 },  // Origem - Estado
+                    { wch: 20 },  // Origem - Município
+                    { wch: 15 },  // Destino - País
+                    { wch: 15 },  // Destino - Estado
+                    { wch: 20 },  // Destino - Município
+                    { wch: 12 },  // Distância
+                    { wch: 20 },  // Modalidade
+                    { wch: 18 },  // Acondicionamento
+                    { wch: 30 }   // Observações
+                ];
+                XLSX.utils.book_append_sheet(wb, wsProdutos, '2. Produtos (Q8)');
+            } else {
+                const wsEmpty = XLSX.utils.aoa_to_sheet([['Nenhum produto cadastrado']]);
+                XLSX.utils.book_append_sheet(wb, wsEmpty, '2. Produtos (Q8)');
+            }
+
+            // ===== ABA 3: TRANSPORTE =====
+            const abaTransporte = [
+                ['CARD 4 - PRODUTO PRINCIPAL'],
+                ['Q9. Produto Mais Representativo', formData.produtoPrincipal || 'N/I'],
+                ['Q10. Agrupamento do Produto', formData.agrupamentoProdutoNome || formData.agrupamentoProduto || 'N/I'],
+                ['Q10b. Outro Produto', formData.outroProduto || ''],
+                [],
+                ['CARD 5 - CARACTERÍSTICAS DO TRANSPORTE'],
+                ['Q11. Tipo de Transporte', formData.tipoTransporteNome || formData.tipoTransporte || 'N/I'],
+                ['Q12. Origem - País', formData.origemPaisNome || formData.origemPais || 'N/I'],
+                ['Q12b. Origem - Estado', formData.origemEstadoNome || formData.origemEstado || 'N/I'],
+                ['Q12c. Origem - Município', formData.origemMunicipioNome || formData.origemMunicipio || 'N/I'],
+                ['Q13. Destino - País', formData.destinoPaisNome || formData.destinoPais || 'N/I'],
+                ['Q13b. Destino - Estado', formData.destinoEstadoNome || formData.destinoEstado || 'N/I'],
+                ['Q13c. Destino - Município', formData.destinoMunicipioNome || formData.destinoMunicipio || 'N/I'],
+                ['Q14. Distância do Deslocamento', formData.distancia ? `${formatNumero(formData.distancia)} km` : 'N/I'],
+                ['Q15. Tem Paradas?', formData.temParadas === 'sim' ? 'Sim' : (formData.temParadas === 'nao' ? 'Não' : 'N/I')],
+                ['Q16. Número de Paradas', formData.numParadas || ''],
+                ['Q17. Modais Utilizados', Array.isArray(formData.modos) ? formData.modos.join(', ') : formData.modos || 'N/I'],
+                ['Q18. Configuração do Veículo Rodoviário', formData.configVeiculoNome || formData.configVeiculo || ''],
+                ['Q19. Capacidade Utilizada (%)', formData.capacidadeUtilizada ? `${formatNumero(formData.capacidadeUtilizada)}%` : 'N/I'],
+                ['Q20. Peso da Carga', formData.pesoCarga ? formatNumero(formData.pesoCarga, 0) : 'N/I'],
+                ['Q21. Unidade de Peso', formData.unidadePesoNome || formData.unidadePeso || 'N/I'],
+                ['Q22. Custo Total do Transporte', formatMoeda(formData.custoTransporte)],
+                ['Q23. Valor Total da Carga', formatMoeda(formData.valorCarga)],
+                ['Q24. Tipo de Embalagem', formData.tipoEmbalagemNome || formData.tipoEmbalagem || 'N/I'],
+                ['Q25. Carga Perigosa?', formData.cargaPerigosa === 'sim' ? 'Sim' : (formData.cargaPerigosa === 'nao' ? 'Não' : 'N/I')],
+                ['Q26. Tempo de Deslocamento', `${formData.tempoDias || 0} dia(s), ${formData.tempoHoras || 0} hora(s), ${formData.tempoMinutos || 0} minuto(s)`],
+                ['Q27. Frequência de Deslocamento', formData.frequenciaNome || formData.frequencia || 'N/I'],
+                ['Q28. Observações sobre Sazonalidade', formData.observacoesSazonalidade || '']
+            ];
+            const wsTransporte = XLSX.utils.aoa_to_sheet(abaTransporte);
+            wsTransporte['!cols'] = [{ wch: 45 }, { wch: 50 }];
+            XLSX.utils.book_append_sheet(wb, wsTransporte, '3. Transporte');
+
+            // ===== ABA 4: INFRAESTRUTURA =====
+            const abaInfra = [
+                ['CARD 6 - FATORES DE DECISÃO MODAL'],
+                ['Q29. Importância do Custo', formData.importanciaCustoNome || formData.importanciaCusto || 'N/I'],
+                ['Q30. Variação Tolerada - Custo (%)', formData.variacaoCusto || ''],
+                ['Q31. Importância do Tempo', formData.importanciaTempoNome || formData.importanciaTempo || 'N/I'],
+                ['Q32. Variação Tolerada - Tempo (%)', formData.variacaoTempo || ''],
+                ['Q33. Importância da Confiabilidade', formData.importanciaConfiabilidadeNome || formData.importanciaConfiabilidade || 'N/I'],
+                ['Q34. Variação Tolerada - Confiabilidade (%)', formData.variacaoConfiabilidade || ''],
+                ['Q35. Importância da Segurança', formData.importanciaSegurancaNome || formData.importanciaSeguranca || 'N/I'],
+                ['Q36. Variação Tolerada - Segurança (%)', formData.variacaoSeguranca || ''],
+                ['Q37. Importância da Capacidade', formData.importanciaCapacidadeNome || formData.importanciaCapacidade || 'N/I'],
+                ['Q38. Variação Tolerada - Capacidade (%)', formData.variacaoCapacidade || ''],
+                [],
+                ['CARD 7 - POSICIONAMENTO ESTRATÉGICO'],
+                ['Q39. Tipo de Cadeia', formData.tipoCadeiaNome || formData.tipoCadeia || 'N/I'],
+                ['Q40. Modais Alternativos', Array.isArray(formData.modaisAlternativos) ? formData.modaisAlternativos.join(', ') : formData.modaisAlternativos || 'N/I'],
+                ['Q41. Fator Adicional', formData.fatorAdicional || ''],
+                [],
+                ['CARD 8 - AVALIAÇÃO DA INFRAESTRUTURA'],
+                ['Q42. Dificuldades', Array.isArray(formData.dificuldades) ? formData.dificuldades.join('; ') : formData.dificuldades || 'N/I'],
+                ['Q43. Detalhe das Dificuldades', formData.detalheDificuldade || '']
+            ];
+            const wsInfra = XLSX.utils.aoa_to_sheet(abaInfra);
+            wsInfra['!cols'] = [{ wch: 50 }, { wch: 50 }];
+            XLSX.utils.book_append_sheet(wb, wsInfra, '4. Infraestrutura');
+
+            // ===== ABA 5: TODOS OS DADOS (COMPLETO) =====
+            const abaTodosDados = [
+                ['PLI 2050 - DADOS COMPLETOS DA PESQUISA'],
+                ['Emitido em:', timestamp],
+                ['ID da Pesquisa:', `#${response.id_pesquisa || 'Pendente'}`],
+                ['ID da Empresa:', response.id_empresa || 'Pendente'],
+                ['ID do Entrevistado:', response.id_entrevistado || 'Pendente'],
+                [],
+                ['CAMPO', 'VALOR'],
+                // Card 0
+                ['--- RESPONSÁVEL PELO PREENCHIMENTO ---', ''],
+                ['Tipo de Responsável', formData.tipoResponsavel || 'N/I'],
+                ['ID do Responsável', formData.idResponsavel || 'N/I'],
+                // Card 1
+                ['--- DADOS DO ENTREVISTADO ---', ''],
+                ['Q1. Nome', formData.nome || 'N/I'],
+                ['Q2. Função', formData.funcaoNome || formData.funcao || 'N/I'],
+                ['Q2b. Outra Função', formData.outraFuncao || ''],
+                ['Q3. Telefone', formatTelefone(formData.telefone)],
+                ['Q4. E-mail', formData.email || 'N/I'],
+                // Card 2
+                ['--- DADOS DA EMPRESA ---', ''],
+                ['Q5. Tipo de Empresa', formData.tipoEmpresaNome || formData.tipoEmpresa || 'N/I'],
+                ['Q5b. Outro Tipo', formData.outroTipo || ''],
+                ['Q6a. CNPJ', formatCNPJ(formData.cnpj)],
+                ['Q6b. Razão Social', formData.razaoSocial || 'N/I'],
+                ['Q6c. Nome Fantasia (Receita Federal)', formData.nomeFantasiaReceita || ''],
+                ['Q6d. Situação Cadastral (Receita Federal)', formData.situacaoCadastralReceita || ''],
+                ['Q6e. Atividade Principal CNAE (Receita Federal)', formData.atividadePrincipalReceita || ''],
+                ['Q7. Município da Empresa', formData.municipioNome || formData.municipio || 'N/I'],
+                // Card 3 - Produtos (resumo)
+                ['--- PRODUTOS TRANSPORTADOS (Q8) ---', ''],
+                ['Quantidade de Produtos', produtos.length]
+            ];
+            
+            // Adicionar resumo dos produtos
+            produtos.forEach((p, idx) => {
+                abaTodosDados.push([`Produto ${idx + 1} - Carga`, p.carga || '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Movimentação (ton/ano)`, p.movimentacao_anual || p.movimentacao ? formatNumero(p.movimentacao_anual || p.movimentacao, 0) : '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Origem - País`, p.origem_pais_nome || p.origem_pais || '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Origem - Estado`, p.origem_estado_nome || p.origem_estado || '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Origem - Município`, p.origem_municipio_nome || p.origem_municipio || '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Destino - País`, p.destino_pais_nome || p.destino_pais || '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Destino - Estado`, p.destino_estado_nome || p.destino_estado || '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Destino - Município`, p.destino_municipio_nome || p.destino_municipio || '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Distância (km)`, p.distancia ? formatNumero(p.distancia) : '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Modalidade`, p.modalidade || '']);
+                abaTodosDados.push([`Produto ${idx + 1} - Acondicionamento`, p.acondicionamento || '']);
+                if (p.observacoes) {
+                    abaTodosDados.push([`Produto ${idx + 1} - Observações`, p.observacoes]);
+                }
+            });
+            
+            // Card 4 - Produto Principal
+            abaTodosDados.push(['--- PRODUTO PRINCIPAL ---', '']);
+            abaTodosDados.push(['Q9. Produto Mais Representativo', formData.produtoPrincipal || 'N/I']);
+            abaTodosDados.push(['Q10. Agrupamento do Produto', formData.agrupamentoProdutoNome || formData.agrupamentoProduto || 'N/I']);
+            abaTodosDados.push(['Q10b. Outro Produto', formData.outroProduto || '']);
+            
+            // Card 5 - Transporte
+            abaTodosDados.push(['--- CARACTERÍSTICAS DO TRANSPORTE ---', '']);
+            abaTodosDados.push(['Q11. Tipo de Transporte', formData.tipoTransporteNome || formData.tipoTransporte || 'N/I']);
+            abaTodosDados.push(['Q12. Origem - País', formData.origemPaisNome || formData.origemPais || 'N/I']);
+            abaTodosDados.push(['Q12b. Origem - Estado', formData.origemEstadoNome || formData.origemEstado || 'N/I']);
+            abaTodosDados.push(['Q12c. Origem - Município', formData.origemMunicipioNome || formData.origemMunicipio || 'N/I']);
+            abaTodosDados.push(['Q13. Destino - País', formData.destinoPaisNome || formData.destinoPais || 'N/I']);
+            abaTodosDados.push(['Q13b. Destino - Estado', formData.destinoEstadoNome || formData.destinoEstado || 'N/I']);
+            abaTodosDados.push(['Q13c. Destino - Município', formData.destinoMunicipioNome || formData.destinoMunicipio || 'N/I']);
+            abaTodosDados.push(['Q14. Distância do Deslocamento', formData.distancia ? `${formatNumero(formData.distancia)} km` : 'N/I']);
+            abaTodosDados.push(['Q15. Tem Paradas?', formData.temParadas === 'sim' ? 'Sim' : (formData.temParadas === 'nao' ? 'Não' : 'N/I')]);
+            abaTodosDados.push(['Q16. Número de Paradas', formData.numParadas || '']);
+            abaTodosDados.push(['Q17. Modais Utilizados', Array.isArray(formData.modos) ? formData.modos.join(', ') : formData.modos || 'N/I']);
+            abaTodosDados.push(['Q18. Configuração do Veículo Rodoviário', formData.configVeiculoNome || formData.configVeiculo || '']);
+            abaTodosDados.push(['Q19. Capacidade Utilizada (%)', formData.capacidadeUtilizada ? `${formatNumero(formData.capacidadeUtilizada)}%` : 'N/I']);
+            abaTodosDados.push(['Q20. Peso da Carga', formData.pesoCarga ? formatNumero(formData.pesoCarga, 0) : 'N/I']);
+            abaTodosDados.push(['Q21. Unidade de Peso', formData.unidadePesoNome || formData.unidadePeso || 'N/I']);
+            abaTodosDados.push(['Q22. Custo Total do Transporte', formatMoeda(formData.custoTransporte)]);
+            abaTodosDados.push(['Q23. Valor Total da Carga', formatMoeda(formData.valorCarga)]);
+            abaTodosDados.push(['Q24. Tipo de Embalagem', formData.tipoEmbalagemNome || formData.tipoEmbalagem || 'N/I']);
+            abaTodosDados.push(['Q25. Carga Perigosa?', formData.cargaPerigosa === 'sim' ? 'Sim' : (formData.cargaPerigosa === 'nao' ? 'Não' : 'N/I')]);
+            abaTodosDados.push(['Q26. Tempo de Deslocamento', `${formData.tempoDias || 0} dia(s), ${formData.tempoHoras || 0} hora(s), ${formData.tempoMinutos || 0} minuto(s)`]);
+            abaTodosDados.push(['Q27. Frequência de Deslocamento', formData.frequenciaNome || formData.frequencia || 'N/I']);
+            abaTodosDados.push(['Q28. Observações sobre Sazonalidade', formData.observacoesSazonalidade || '']);
+            
+            // Card 6 - Fatores de Decisão
+            abaTodosDados.push(['--- FATORES DE DECISÃO MODAL ---', '']);
+            abaTodosDados.push(['Q29. Importância do Custo', formData.importanciaCustoNome || formData.importanciaCusto || 'N/I']);
+            abaTodosDados.push(['Q30. Variação Tolerada - Custo (%)', formData.variacaoCusto || '']);
+            abaTodosDados.push(['Q31. Importância do Tempo', formData.importanciaTempoNome || formData.importanciaTempo || 'N/I']);
+            abaTodosDados.push(['Q32. Variação Tolerada - Tempo (%)', formData.variacaoTempo || '']);
+            abaTodosDados.push(['Q33. Importância da Confiabilidade', formData.importanciaConfiabilidadeNome || formData.importanciaConfiabilidade || 'N/I']);
+            abaTodosDados.push(['Q34. Variação Tolerada - Confiabilidade (%)', formData.variacaoConfiabilidade || '']);
+            abaTodosDados.push(['Q35. Importância da Segurança', formData.importanciaSegurancaNome || formData.importanciaSeguranca || 'N/I']);
+            abaTodosDados.push(['Q36. Variação Tolerada - Segurança (%)', formData.variacaoSeguranca || '']);
+            abaTodosDados.push(['Q37. Importância da Capacidade', formData.importanciaCapacidadeNome || formData.importanciaCapacidade || 'N/I']);
+            abaTodosDados.push(['Q38. Variação Tolerada - Capacidade (%)', formData.variacaoCapacidade || '']);
+            
+            // Card 7 - Estratégico
+            abaTodosDados.push(['--- POSICIONAMENTO ESTRATÉGICO ---', '']);
+            abaTodosDados.push(['Q39. Tipo de Cadeia', formData.tipoCadeiaNome || formData.tipoCadeia || 'N/I']);
+            abaTodosDados.push(['Q40. Modais Alternativos', Array.isArray(formData.modaisAlternativos) ? formData.modaisAlternativos.join(', ') : formData.modaisAlternativos || 'N/I']);
+            abaTodosDados.push(['Q41. Fator Adicional', formData.fatorAdicional || '']);
+            
+            // Card 8 - Infraestrutura
+            abaTodosDados.push(['--- AVALIAÇÃO DA INFRAESTRUTURA ---', '']);
+            abaTodosDados.push(['Q42. Dificuldades', Array.isArray(formData.dificuldades) ? formData.dificuldades.join('; ') : formData.dificuldades || 'N/I']);
+            abaTodosDados.push(['Q43. Detalhe das Dificuldades', formData.detalheDificuldade || '']);
+            
+            const wsTodosDados = XLSX.utils.aoa_to_sheet(abaTodosDados);
+            wsTodosDados['!cols'] = [{ wch: 50 }, { wch: 70 }];
+            XLSX.utils.book_append_sheet(wb, wsTodosDados, '5. Todos os Dados');
+
+            // Retorna ArrayBuffer
+            const ab = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            return ab;
+        },
+
+        /**
          * Faz o download de um ArrayBuffer com o nome de arquivo.
          */
         downloadArrayBuffer(ab, filename) {
@@ -417,10 +722,9 @@
                 // Default filename
                 const fileName = filename || `PLI2050_Resposta_${(formData.nomeEmpresa || formData.razaoSocial || 'resposta')}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-                // Default behavior: download the final workbook
+                // Gerar apenas o ArrayBuffer (sem download automático)
+                // O download deve ser feito externamente via downloadArrayBuffer()
                 const ab = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                const blob = new Blob([ab], { type: 'application/octet-stream' });
-                XLSX.writeFile(wb, fileName);
 
                 return { success: true, filename: fileName, arrayBuffer: ab };
             } catch (err) {
